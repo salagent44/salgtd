@@ -993,6 +993,7 @@
             @keydown.enter.prevent="quickCaptureSubmit"
             @keydown.esc="quickCapture = false"
             rows="1"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             placeholder="What's on your mind?"
             class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
             @input="autoResize($event)"
@@ -1023,6 +1024,7 @@
             @keydown.enter.prevent="quickNextActionSubmit"
             @keydown.esc="quickNextAction = false"
             rows="1"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             placeholder="What's the next physical action?"
             class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
             @input="autoResize($event)"
@@ -1063,6 +1065,7 @@
             @keydown.enter.prevent="quickWaitingSubmit"
             @keydown.esc="quickWaiting = false"
             rows="1"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             placeholder="What are you waiting for?"
             class="w-full rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
             @input="autoResize($event)"
@@ -1073,6 +1076,7 @@
               @keydown.enter="quickWaitingSubmit"
               @keydown.esc="quickWaiting = false"
               type="text"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
               placeholder="Who? (person or org)"
               class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             />
@@ -1195,7 +1199,7 @@
 
         <!-- Context sub-step -->
         <div v-else-if="processStep === 'context' && currentProcessItem" class="space-y-4">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1218,7 +1222,7 @@
 
         <!-- Waiting sub-step -->
         <div v-else-if="processStep === 'waiting' && currentProcessItem" class="space-y-4">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1230,6 +1234,7 @@
             ref="processWaitingInput"
             v-model="processWaitingFor"
             type="text"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             placeholder="e.g. John, Design team…"
             @keydown.enter="processConfirmWaiting"
             class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
@@ -1246,7 +1251,7 @@
 
         <!-- Tickler sub-step -->
         <div v-else-if="processStep === 'tickler' && currentProcessItem" class="space-y-4">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1265,7 +1270,7 @@
 
         <!-- Event sub-step -->
         <div v-else-if="processStep === 'event' && currentProcessItem" class="space-y-4">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1309,7 +1314,7 @@
 
         <!-- Project sub-step -->
         <div v-else-if="processStep === 'project' && currentProcessItem" class="space-y-4">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <p class="text-sm font-semibold">Set up project</p>
@@ -1376,7 +1381,7 @@
 
         <!-- Main bucket picker -->
         <div v-else-if="currentProcessItem">
-          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 mb-4 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
+          <textarea v-model="processEditTitle" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 mb-4 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <p class="text-xs text-muted-foreground mb-3">Where does this belong?</p>
           <div class="space-y-2">
             <button @click="processStep = 'context'" class="w-full text-left rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/15 px-4 py-3 transition-all">
