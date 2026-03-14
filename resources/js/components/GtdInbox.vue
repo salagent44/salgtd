@@ -88,6 +88,13 @@
             </div>
           </div>
           <button
+            @click="hotkeysOpen = true"
+            class="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            title="Keyboard shortcuts (?)"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
+          </button>
+          <button
             @click="settingsOpen = true"
             class="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title="Settings"
@@ -774,6 +781,75 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hotkeys modal -->
+    <div
+      v-if="hotkeysOpen"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      @click.self="hotkeysOpen = false"
+    >
+      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl overflow-hidden max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <div class="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
+            <p class="text-sm font-semibold text-foreground">Keyboard Shortcuts</p>
+          </div>
+          <button @click="hotkeysOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="px-5 pb-5">
+          <!-- Global -->
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Global</p>
+          <div class="space-y-1 mb-4">
+            <div class="hotkey-row"><span>Tasks view</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}1</kbd></div>
+            <div class="hotkey-row"><span>Notes view</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}2</kbd></div>
+            <div class="hotkey-row"><span>Calendar view</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}3</kbd></div>
+            <div class="hotkey-row"><span>Search</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}F</kbd></div>
+            <div class="hotkey-row"><span>Capture to inbox</span><kbd>I</kbd></div>
+            <div class="hotkey-row"><span>Close / Back</span><kbd>Esc</kbd></div>
+            <div class="hotkey-row"><span>This dialog</span><kbd>?</kbd></div>
+          </div>
+
+          <!-- Tasks -->
+          <template v-if="currentView === 'tasks'">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Tasks</p>
+            <div class="space-y-1 mb-4">
+              <div class="hotkey-row"><span>New next action</span><kbd>N</kbd></div>
+              <div class="hotkey-row"><span>New waiting for</span><kbd>W</kbd></div>
+              <div class="hotkey-row"><span>Next review step</span><kbd>→</kbd></div>
+              <div class="hotkey-row"><span>Previous review step</span><kbd>←</kbd></div>
+            </div>
+          </template>
+
+          <!-- Notes -->
+          <template v-if="currentView === 'notes'">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Notes</p>
+            <div class="space-y-1 mb-4">
+              <div class="hotkey-row"><span>New note</span><kbd>N</kbd></div>
+              <div class="hotkey-row"><span>Edit title</span><kbd>E</kbd></div>
+              <div class="hotkey-row"><span>Add tag</span><kbd>T</kbd></div>
+              <div class="hotkey-row"><span>Toggle pin</span><kbd>P</kbd></div>
+              <div class="hotkey-row"><span>Trash note</span><kbd>Backspace</kbd></div>
+              <div class="hotkey-row"><span>Toggle sidebar</span><kbd>Shift+B</kbd></div>
+              <div class="hotkey-row"><span>Edit / Preview</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}E</kbd></div>
+              <div class="hotkey-row"><span>Lock / Unlock</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}L</kbd></div>
+              <div class="hotkey-row"><span>Fullscreen</span><kbd>{{ isMac ? '⌘' : 'Ctrl+' }}⇧F</kbd></div>
+            </div>
+          </template>
+
+          <!-- Calendar -->
+          <template v-if="currentView === 'calendar'">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Calendar</p>
+            <div class="space-y-1 mb-4">
+              <div class="hotkey-row"><span>Save event</span><kbd>Enter</kbd></div>
+              <div class="hotkey-row"><span>Cancel editing</span><kbd>Esc</kbd></div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -2075,6 +2151,8 @@ const themes = [
 ]
 const currentTheme = ref('default')
 const settingsOpen = ref(false)
+const hotkeysOpen = ref(false)
+const isMac = computed(() => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent))
 
 const themeIcons = computed(() => {
   if (currentTheme.value === 'theme-poe') {
@@ -2770,6 +2848,7 @@ function onKeydown(e: KeyboardEvent) {
       return
     }
     if (settingsOpen.value) { e.preventDefault(); settingsOpen.value = false; return }
+    if (hotkeysOpen.value) { e.preventDefault(); hotkeysOpen.value = false; return }
     if (dialogOpen.value) { return }
     if (activePill.value !== 'next-actions' || activeContextFilter.value !== null || activeTagFilter.value !== null) {
       e.preventDefault()
@@ -2815,6 +2894,7 @@ function onKeydown(e: KeyboardEvent) {
   }
   const tag = (e.target as HTMLElement).tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
+  if (e.key === '?') { e.preventDefault(); hotkeysOpen.value = true; return }
   if (e.key === 'i') { e.preventDefault(); openQuickCapture() }
   if (e.key === 'n' && currentView.value === 'tasks') { e.preventDefault(); openQuickNextAction() }
   if (e.key === 'w' && currentView.value === 'tasks') { e.preventDefault(); openQuickWaiting() }
@@ -3357,6 +3437,28 @@ function bucketVariant(status: Status): 'default' | 'secondary' | 'outline' | 'd
 </script>
 
 <style scoped>
+.hotkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--foreground);
+}
+.hotkey-row span {
+  color: color-mix(in oklch, var(--foreground), transparent 30%);
+}
+.hotkey-row kbd {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid color-mix(in oklch, var(--border), transparent 40%);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--border), transparent 50%);
+}
+
 /* Hide scrollbar for pill rows on mobile */
 .no-scrollbar {
   -ms-overflow-style: none;
