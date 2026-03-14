@@ -2918,33 +2918,52 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateIsMobile)
   if (smtpPollInterval) clearInterval(smtpPollInterval)
   if (healthPollInterval) clearInterval(healthPollInterval)
-  if (itemsPollInterval) clearInterval(itemsPollInterval)
   teardownEcho()
 })
 
-// Real-time sync via Echo (WebSocket) with polling fallback
-let itemsPollInterval: ReturnType<typeof setInterval> | null = null
+// Smart sync: lightweight version polling (3s) + full reload only on change
+let syncPollInterval: ReturnType<typeof setInterval> | null = null
+let knownSyncVersion = 0
 let echoChannel: any = null
 let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
+async function checkSyncVersion() {
+  if (!isOnline.value) return
+  try {
+    const res = await fetch('/api/sync/version', { cache: 'no-store' })
+    if (!res.ok) return
+    const data = await res.json()
+    const serverVersion = data.v as number
+    if (knownSyncVersion === 0) {
+      // First check — just record the version, don't reload
+      knownSyncVersion = serverVersion
+      return
+    }
+    if (serverVersion > knownSyncVersion) {
+      knownSyncVersion = serverVersion
+      reloadData()
+    }
+  } catch {}
+}
+
+function reloadData() {
+  if (processing.value) return // don't refresh while editing
+  router.reload({ only: ['items', 'events', 'notes'], preserveScroll: true, preserveState: true })
+}
+
 function setupEcho() {
+  // Start lightweight version polling (every 3s)
+  checkSyncVersion()
+  syncPollInterval = setInterval(checkSyncVersion, 3000)
+
   const echo = getEcho()
-  if (!echo) {
-    // Fallback to polling if Echo not configured
-    itemsPollInterval = setInterval(pollForNewItems, 30000)
-    return
-  }
+  if (!echo) return
 
   echoChannel = echo.private('sync').listen('.SyncUpdated', () => {
-    // Debounce rapid-fire events (500ms)
+    // WebSocket event = instant check instead of waiting for next poll
     if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
-    syncDebounceTimer = setTimeout(() => {
-      pollForNewItems()
-    }, 500)
+    syncDebounceTimer = setTimeout(checkSyncVersion, 300)
   })
-
-  // Keep a slower fallback poll for resilience
-  itemsPollInterval = setInterval(pollForNewItems, 60000)
 }
 
 function teardownEcho() {
@@ -2954,12 +2973,7 @@ function teardownEcho() {
     echoChannel = null
   }
   if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
-}
-
-function pollForNewItems() {
-  if (!isOnline.value) return
-  if (processing.value) return // don't refresh while clarifying
-  router.reload({ only: ['items'], preserveScroll: true, preserveState: true })
+  if (syncPollInterval) clearInterval(syncPollInterval)
 }
 
 const processing = ref<Item | null>(null)

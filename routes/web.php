@@ -83,6 +83,13 @@ Route::middleware('auth')->group(function () {
 
     // SMTP status
     Route::get('/api/smtp-status', SmtpStatusController::class);
+
+    // Lightweight sync version check (returns just the current version number)
+    Route::get('/api/sync/version', function () {
+        return response()->json([
+            'v' => (int) \Illuminate\Support\Facades\DB::table('sync_cursor')->where('id', 1)->value('version'),
+        ]);
+    });
 });
 
 // Health check (no auth)
