@@ -694,30 +694,39 @@
 
               <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Forwarding address</p>
               <div class="flex items-center gap-2">
-                <code class="flex-1 text-[11px] bg-background border border-border rounded px-2 py-1.5 text-foreground select-all truncate">inbox@tasks.salmaster.dev</code>
-                <button @click="copyText('inbox@tasks.salmaster.dev', 'fwd')" class="text-[10px] text-muted-foreground hover:text-foreground transition-colors shrink-0 px-2 py-1">{{ copiedField === 'fwd' ? 'Copied!' : 'Copy' }}</button>
+                <code class="flex-1 text-[11px] bg-background border border-border rounded px-2 py-1.5 text-foreground select-all truncate">inbox@{{ emailDomain }}</code>
+                <button @click="copyText('inbox@' + emailDomain, 'fwd')" class="text-[10px] text-muted-foreground hover:text-foreground transition-colors shrink-0 px-2 py-1">{{ copiedField === 'fwd' ? 'Copied!' : 'Copy' }}</button>
               </div>
 
               <details class="group">
                 <summary class="text-[11px] font-semibold text-primary cursor-pointer hover:underline">Setup instructions</summary>
                 <div class="mt-2 space-y-2 text-[11px] text-muted-foreground leading-relaxed">
-                  <p class="font-semibold text-foreground">1. Add MX record in your DNS provider</p>
-                  <p>Add a new DNS record:</p>
+                  <p class="font-semibold text-foreground">1. Add DNS records</p>
+                  <p>Add two records in your DNS provider (e.g. Cloudflare):</p>
                   <div class="bg-background border border-border rounded p-2 text-[10px] font-mono space-y-1">
+                    <p class="font-semibold text-foreground/70">A record (points your domain to this server)</p>
+                    <p>Type: <span class="text-foreground">A</span></p>
+                    <p>Name: <span class="text-foreground">{{ emailDomain }}</span></p>
+                    <p>Value: <span class="text-foreground">your VPS IP address</span></p>
+                    <p>Proxy: <span class="text-foreground">DNS only (not proxied)</span></p>
+                  </div>
+                  <div class="bg-background border border-border rounded p-2 text-[10px] font-mono space-y-1 mt-1">
+                    <p class="font-semibold text-foreground/70">MX record (routes mail to this server)</p>
                     <p>Type: <span class="text-foreground">MX</span></p>
-                    <p>Name: <span class="text-foreground">tasks.salmaster.dev</span></p>
-                    <p>Mail server: <span class="text-foreground">tasks.salmaster.dev</span></p>
+                    <p>Name: <span class="text-foreground">{{ emailDomain }}</span></p>
+                    <p>Mail server: <span class="text-foreground">{{ emailDomain }}</span></p>
                     <p>Priority: <span class="text-foreground">10</span></p>
                   </div>
+                  <p class="text-[10px]">If using Cloudflare, the A record <span class="text-foreground font-semibold">must be DNS only</span> (grey cloud) — Cloudflare's proxy doesn't pass port 25 (SMTP).</p>
 
                   <p class="font-semibold text-foreground">2. Forward from Gmail</p>
                   <p>In Gmail: <span class="text-foreground">Settings &rarr; Forwarding &rarr; Add forwarding address</span></p>
-                  <p>Enter: <code class="bg-background border border-border rounded px-1 py-0.5">inbox@tasks.salmaster.dev</code></p>
+                  <p>Enter: <code class="bg-background border border-border rounded px-1 py-0.5">inbox@{{ emailDomain }}</code></p>
                   <p>Gmail will send a confirmation email. The SMTP server will receive it and it'll appear in your inbox as a task. Open it, find the confirmation code, and confirm in Gmail.</p>
-                  <p>Then choose: <span class="text-foreground">Forward a copy of incoming mail to inbox@tasks.salmaster.dev</span></p>
+                  <p>Then choose: <span class="text-foreground">Forward a copy of incoming mail to inbox@{{ emailDomain }}</span></p>
 
                   <p class="font-semibold text-foreground">3. (Optional) Use a filter instead</p>
-                  <p>If you only want certain emails forwarded, create a Gmail filter instead of forwarding all mail. Go to <span class="text-foreground">Settings &rarr; Filters &rarr; Create filter</span> and set the action to forward to <code class="bg-background border border-border rounded px-1 py-0.5">inbox@tasks.salmaster.dev</code>.</p>
+                  <p>If you only want certain emails forwarded, create a Gmail filter instead of forwarding all mail. Go to <span class="text-foreground">Settings &rarr; Filters &rarr; Create filter</span> and set the action to forward to <code class="bg-background border border-border rounded px-1 py-0.5">inbox@{{ emailDomain }}</code>.</p>
 
                   <p class="font-semibold text-foreground">Done!</p>
                   <p>Forwarded emails arrive in real-time as inbox items. Gmail keeps its own copy untouched.</p>
@@ -1912,6 +1921,7 @@ function setTheme(key: string) {
 const page = usePage()
 
 // Email integration settings
+const emailDomain = computed(() => window.location.hostname)
 const savedEmailAddress = ref((page.props.email_address as string) || '')
 const emailAddressSetting = ref(savedEmailAddress.value)
 const copiedField = ref<string | null>(null)
