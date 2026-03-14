@@ -2544,7 +2544,7 @@ function showFlashAndAdvance(label: string) {
   processFlash.value = true
   processFlashLabel.value = label
   processIndex.value++
-  toast.success(`Clarified as ${label}`)
+  // no toast for clarify edits
   setTimeout(() => {
     processFlash.value = false
     processStep.value = 'main'
@@ -3147,7 +3147,7 @@ function bulkAction(status: Status) {
   if (ids.length === 0) return
   guardedRouter.post('/items/bulk-process', { ids, status }, {
     ...itemOnly,
-    onSuccess: () => { selectedIds.value = new Set(); toast.success(`${ids.length} item${ids.length > 1 ? 's' : ''} moved to ${bucketLabel(status)}`) },
+    onSuccess: () => { selectedIds.value = new Set() },
   })
 }
 
@@ -3462,7 +3462,7 @@ function saveEdits() {
 
 function saveChecklist() {
   if (processing.value && editItem.value) {
-    guardedRouter.put(`/items/${processing.value.id}`, { title: editItem.value.title.trim() }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; toast.success('Checklist saved') } })
+    guardedRouter.put(`/items/${processing.value.id}`, { title: editItem.value.title.trim() }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
   }
 }
 
@@ -3478,12 +3478,12 @@ function remove(id: string) {
 
 function moveToInbox() {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/move-to-inbox`, {}, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; toast.success('Moved to inbox') } })
+  guardedRouter.post(`/items/${processing.value.id}/move-to-inbox`, {}, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
 }
 
-function clarify(status: Status, context?: string, waitingForName?: string) {
+function clarify(status: Status, context?: string | null, waitingForName?: string) {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, { status, title: editItem.value?.title?.trim() || undefined, context, waiting_for: waitingForName }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false; toast.success(`Moved to ${bucketLabel(status)}`) } })
+  guardedRouter.post(`/items/${processing.value.id}/process`, { status, title: editItem.value?.title?.trim() || undefined, context: context ?? null, waiting_for: waitingForName }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false } })
 }
 
 function clarifyWithContext(ctx: string) {
@@ -3491,7 +3491,7 @@ function clarifyWithContext(ctx: string) {
 }
 
 function confirmNextAction() {
-  clarify('next-action', selectedContext.value || undefined)
+  clarify('next-action', selectedContext.value ?? null)
 }
 
 // Email viewer
