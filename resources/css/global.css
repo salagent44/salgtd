@@ -1189,7 +1189,18 @@
   box-shadow: none !important;
   text-align: center !important;
   pointer-events: auto !important;
-  opacity: 0.9 !important;
+  animation: toast-fade-in 0.3s ease-out !important;
+}
+[data-sonner-toast][data-removed="true"] {
+  animation: toast-fade-out 0.3s ease-in forwards !important;
+}
+@keyframes toast-fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 0.9; transform: translateY(0); }
+}
+@keyframes toast-fade-out {
+  from { opacity: 0.9; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
 }
 [data-sonner-toast] [data-content] {
   text-align: center !important;
