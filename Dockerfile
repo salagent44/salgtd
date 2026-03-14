@@ -28,6 +28,8 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ARG COMMIT_HASH=unknown
+RUN echo "$COMMIT_HASH" > /var/www/COMMIT_HASH
 RUN npm run build
 RUN composer dump-autoload --optimize
 

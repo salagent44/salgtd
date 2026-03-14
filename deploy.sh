@@ -261,9 +261,47 @@ else
     echo "    Skipping S3 configuration."
 fi
 
+# --- Set commit hash for build ---
+COMMIT_HASH=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+set_env "COMMIT_HASH" "$COMMIT_HASH" .env
+
 echo ""
 echo "==> Building and starting containers..."
 docker compose up -d --build
+
+# --- Install update watcher cron ---
+echo "==> Installing update watcher..."
+mkdir -p /opt/gtd-app/scripts
+cat > /opt/gtd-app/scripts/auto-update.sh <<'UPDATEEOF'
+#!/bin/bash
+# Triggered by in-app update button — checks for trigger file on the data volume
+VOLUME_PATH=$(docker volume inspect gtd-app_gtd-data --format '{{ .Mountpoint }}' 2>/dev/null)
+[ -z "$VOLUME_PATH" ] && exit 0
+
+TRIGGER="$VOLUME_PATH/update-trigger"
+STATUS="$VOLUME_PATH/update-status"
+
+[ ! -f "$TRIGGER" ] && exit 0
+
+rm -f "$TRIGGER"
+echo "updating:$(date -Iseconds)" > "$STATUS"
+
+cd /opt/gtd-app || exit 1
+git fetch origin main
+git reset --hard origin/main
+
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+sed -i "s|^COMMIT_HASH=.*|COMMIT_HASH=${COMMIT_HASH}|" .env 2>/dev/null || echo "COMMIT_HASH=${COMMIT_HASH}" >> .env
+
+docker compose up -d --build
+
+echo "done:$(date -Iseconds)" > "$STATUS"
+UPDATEEOF
+chmod +x /opt/gtd-app/scripts/auto-update.sh
+
+# Cron: check every minute for update trigger
+echo "* * * * * root /opt/gtd-app/scripts/auto-update.sh >> /var/log/gtd-update.log 2>&1" > /etc/cron.d/gtd-update
+chmod 644 /etc/cron.d/gtd-update
 
 echo ""
 echo "============================================"

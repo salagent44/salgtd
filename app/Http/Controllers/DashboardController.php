@@ -30,6 +30,7 @@ class DashboardController extends Controller
             'last_review' => fn () => Setting::get('last_review'),
             'review_progress' => fn () => Setting::get('review_progress'),
             'email_address' => Setting::get('email_address'),
+            'commit_hash' => trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown'),
         ]);
     }
 }

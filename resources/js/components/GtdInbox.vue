@@ -757,6 +757,42 @@
               </div>
             </div>
           </div>
+
+          <!-- App Updates -->
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">App Updates</p>
+            <div class="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[12px] text-muted-foreground">
+                    Running version <code class="bg-background border border-border rounded px-1 py-0.5 text-[11px] font-mono text-foreground">{{ deployedCommit }}</code>
+                  </p>
+                </div>
+                <button
+                  v-if="updateAvailable && !updateTriggered"
+                  @click="triggerUpdate"
+                  class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                >Update Now</button>
+                <span v-else-if="updateTriggered" class="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  Updating...
+                </span>
+                <span v-else-if="updateChecking" class="text-xs text-muted-foreground">Checking...</span>
+                <span v-else class="text-xs text-green-500">Up to date</span>
+              </div>
+              <p v-if="updateAvailable && !updateTriggered" class="text-[11px] text-primary">
+                A new version is available.
+              </p>
+              <p v-if="updateTriggered" class="text-[11px] text-muted-foreground">
+                The app will restart automatically. This page will reload when ready.
+              </p>
+              <button
+                v-if="!updateTriggered"
+                @click="checkForUpdate"
+                class="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >Check for updates</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2199,6 +2235,61 @@ function saveEmailAddress() {
   guardedRouter.put('/settings/email_address', { value: val || null }, { preserveScroll: true, preserveState: true })
   savedEmailAddress.value = val
 }
+
+// --- App Updates ---
+const deployedCommit = computed(() => (page.props.commit_hash as string) || 'unknown')
+const updateAvailable = ref(false)
+const updateChecking = ref(false)
+const updateTriggered = ref(false)
+let updatePollTimer: ReturnType<typeof setInterval> | null = null
+
+async function checkForUpdate() {
+  updateChecking.value = true
+  try {
+    const res = await fetch('https://api.github.com/repos/salagent44/salgtd/commits/main', {
+      headers: { 'Accept': 'application/vnd.github.v3.sha' },
+    })
+    if (res.ok) {
+      const latestFull = (await res.text()).trim()
+      const latestShort = latestFull.substring(0, 7)
+      updateAvailable.value = deployedCommit.value !== 'unknown' && latestShort !== deployedCommit.value
+    }
+  } catch {
+    // silently fail — network issue or rate limit
+  }
+  updateChecking.value = false
+}
+
+async function triggerUpdate() {
+  updateTriggered.value = true
+  try {
+    await fetch('/api/update-trigger', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
+  } catch {}
+  // Poll for completion — the container will restart, so we watch for the page to come back
+  updatePollTimer = setInterval(async () => {
+    try {
+      const res = await fetch('/api/update-status')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.last_status?.startsWith('done:') && !data.updating) {
+          clearInterval(updatePollTimer!)
+          window.location.reload()
+        }
+      }
+    } catch {
+      // server is down during rebuild — that's expected
+    }
+  }, 5000)
+}
+
+function getCsrfToken(): string {
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
+// Check for updates on load and every 30 minutes
+checkForUpdate()
+setInterval(checkForUpdate, 30 * 60 * 1000)
 
 function copyText(text: string, field = 'url') {
   navigator.clipboard.writeText(text)
