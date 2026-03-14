@@ -531,6 +531,14 @@
     </div><!-- end max-w wrapper -->
 
     <!-- ===== Mobile Bottom Nav ===== -->
+    <!-- Mobile FAB: Add to inbox -->
+    <button
+      @click="openQuickCapture"
+      class="fixed bottom-20 right-4 z-50 md:hidden w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
     <nav class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-lg border-t border-border safe-bottom">
       <div class="flex items-center justify-around h-14">
         <button
