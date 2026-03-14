@@ -131,6 +131,15 @@
       <!-- Task pills — only shown when count > 0 -->
       <div class="flex items-center gap-1 md:gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
         <button
+          v-if="inbox.length > 0 || activePill === 'inbox'"
+          @click="setActivePill('inbox')"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
+          :class="activePill === 'inbox' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
+          data-testid="inbox-btn"
+        >
+          Inbox <span class="ml-1 opacity-70">{{ inbox.length }}</span>
+        </button>
+        <button
           v-if="nextActions.length > 0 || activePill === 'next-actions'"
           @click="setActivePill('next-actions')"
           class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
@@ -164,15 +173,6 @@
           data-testid="checklists-btn"
         >
           ☑ Checklists <span v-if="checklistItems.length > 0" class="ml-1 opacity-70">{{ checklistItems.length }}</span>
-        </button>
-        <button
-          v-if="inbox.length > 0 || activePill === 'inbox'"
-          @click="setActivePill('inbox')"
-          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
-          :class="activePill === 'inbox' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
-          data-testid="inbox-btn"
-        >
-          Inbox <span class="ml-1 opacity-70">{{ inbox.length }}</span>
         </button>
         <button
           v-if="somedayItems.length > 0 || activePill === 'someday'"
@@ -646,13 +646,6 @@
           <span class="text-lg leading-none">{{ v.icon }}</span>
           <span class="text-[10px] font-semibold">{{ v.label }}</span>
         </button>
-        <button
-          @click="settingsOpen = true"
-          class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors text-muted-foreground"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span class="text-[10px] font-semibold">Settings</span>
-        </button>
       </div>
     </nav>
 
@@ -993,20 +986,21 @@
     >
       <div class="bg-card border border-border rounded-xl p-5 w-full max-w-lg shadow-xl">
         <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Quick Capture <span class="ml-1 opacity-50">— press I</span></p>
-        <div class="flex gap-2">
-          <input
+        <div class="flex gap-2 items-end pr-1">
+          <textarea
             ref="quickInput"
             v-model="quickTitle"
-            @keydown.enter="quickCaptureSubmit"
+            @keydown.enter.prevent="quickCaptureSubmit"
             @keydown.esc="quickCapture = false"
-            type="text"
+            rows="1"
             placeholder="What's on your mind?"
-            class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-          />
+            class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
+            @input="autoResize($event)"
+          ></textarea>
           <button
             @click="quickCaptureSubmit"
             :disabled="!quickTitle.trim()"
-            class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0"
           >Capture</button>
         </div>
       </div>
@@ -1023,15 +1017,16 @@
       <div class="bg-card border border-border rounded-xl p-5 w-full max-w-lg shadow-xl">
         <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">New Next Action <span class="ml-1 opacity-50">— press N</span></p>
         <div class="flex gap-2 mb-3">
-          <input
+          <textarea
             ref="quickNextInput"
             v-model="quickNextTitle"
-            @keydown.enter="quickNextActionSubmit"
+            @keydown.enter.prevent="quickNextActionSubmit"
             @keydown.esc="quickNextAction = false"
-            type="text"
+            rows="1"
             placeholder="What's the next physical action?"
-            class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-          />
+            class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
+            @input="autoResize($event)"
+          ></textarea>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-xs text-muted-foreground shrink-0">Context:</span>
@@ -1062,15 +1057,16 @@
       <div class="bg-card border border-border rounded-xl p-5 w-full max-w-lg shadow-xl">
         <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">New Waiting For <span class="ml-1 opacity-50">— press W</span></p>
         <div class="space-y-3">
-          <input
+          <textarea
             ref="quickWaitingInput"
             v-model="quickWaitingTitle"
-            @keydown.enter="quickWaitingSubmit"
+            @keydown.enter.prevent="quickWaitingSubmit"
             @keydown.esc="quickWaiting = false"
-            type="text"
+            rows="1"
             placeholder="What are you waiting for?"
-            class="w-full rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-          />
+            class="w-full rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
+            @input="autoResize($event)"
+          ></textarea>
           <div class="flex gap-2">
             <input
               v-model="quickWaitingFor"
@@ -1199,7 +1195,7 @@
 
         <!-- Context sub-step -->
         <div v-else-if="processStep === 'context' && currentProcessItem" class="space-y-4">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1222,7 +1218,7 @@
 
         <!-- Waiting sub-step -->
         <div v-else-if="processStep === 'waiting' && currentProcessItem" class="space-y-4">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1250,7 +1246,7 @@
 
         <!-- Tickler sub-step -->
         <div v-else-if="processStep === 'tickler' && currentProcessItem" class="space-y-4">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1269,7 +1265,7 @@
 
         <!-- Event sub-step -->
         <div v-else-if="processStep === 'event' && currentProcessItem" class="space-y-4">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <div>
@@ -1313,7 +1309,7 @@
 
         <!-- Project sub-step -->
         <div v-else-if="processStep === 'project' && currentProcessItem" class="space-y-4">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <div class="flex items-center gap-3 mb-2">
             <button @click="processStep = 'main'" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
             <p class="text-sm font-semibold">Set up project</p>
@@ -1380,7 +1376,7 @@
 
         <!-- Main bucket picker -->
         <div v-else-if="currentProcessItem">
-          <input v-model="processEditTitle" type="text" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 mb-4" />
+          <textarea v-model="processEditTitle" rows="1" class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 mb-4 resize-none overflow-hidden" @input="autoResize($event)"></textarea>
           <p class="text-xs text-muted-foreground mb-3">Where does this belong?</p>
           <div class="space-y-2">
             <button @click="processStep = 'context'" class="w-full text-left rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/15 px-4 py-3 transition-all">
@@ -2582,18 +2578,18 @@ watch([activeContextFilter, activeTagFilter], () => {
 
 const quickCapture = ref(false)
 const quickTitle = ref('')
-const quickInput = ref<HTMLInputElement | null>(null)
+const quickInput = ref<HTMLTextAreaElement | null>(null)
 
 const quickNextAction = ref(false)
 const quickNextTitle = ref('')
 const quickNextContext = ref('')
-const quickNextInput = ref<HTMLInputElement | null>(null)
+const quickNextInput = ref<HTMLTextAreaElement | null>(null)
 
 const quickWaiting = ref(false)
 const quickWaitingTitle = ref('')
 const quickWaitingFor = ref('')
 const quickWaitingDate = ref('')
-const quickWaitingInput = ref<HTMLInputElement | null>(null)
+const quickWaitingInput = ref<HTMLTextAreaElement | null>(null)
 
 
 // Process inbox
@@ -2830,6 +2826,12 @@ function onReviewComplete() {
   reviewOpen.value = false
   reviewJustCompleted.value = true
   lastReviewDate.value = new Date().toISOString()
+}
+
+function autoResize(e: Event) {
+  const el = e.target as HTMLTextAreaElement
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
 }
 
 function openQuickCapture() {
