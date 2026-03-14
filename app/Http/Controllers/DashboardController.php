@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CalendarEvent;
 use App\Models\Context;
 use App\Models\Item;
+use App\Models\ChecklistTemplate;
 use App\Models\Note;
 use App\Models\Setting;
 use Inertia\Inertia;
@@ -29,6 +30,7 @@ class DashboardController extends Controller
             'note_font_css' => Setting::getNoteFontCss(),
             'last_review' => fn () => Setting::get('last_review'),
             'review_progress' => fn () => Setting::get('review_progress'),
+            'checklist_templates' => fn () => ChecklistTemplate::with('steps')->orderBy('name')->get(),
             'email_address' => Setting::get('email_address'),
             'commit_hash' => trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown'),
         ]);

@@ -11,6 +11,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteVersionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ChecklistItemController;
+use App\Http\Controllers\ChecklistTemplateController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UpdateController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'destroy']);
     Route::post('/checklist-items/{checklistItem}/toggle', [ChecklistItemController::class, 'toggle']);
     Route::post('/items/{item}/checklist/reorder', [ChecklistItemController::class, 'reorder']);
+
+    // Checklist Templates API
+    Route::post('/checklist-templates', [ChecklistTemplateController::class, 'store']);
+    Route::post('/checklist-templates/apply', [ChecklistTemplateController::class, 'apply']);
+    Route::delete('/checklist-templates/{checklistTemplate}', [ChecklistTemplateController::class, 'destroy']);
 
     // Notes API
     Route::post('/notes', [NoteController::class, 'store']);

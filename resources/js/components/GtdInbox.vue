@@ -360,17 +360,33 @@
         <div v-if="checklistItems.length === 0" class="text-center py-10 text-muted-foreground">
           <p class="text-4xl mb-3">☑</p>
           <p class="text-sm font-medium">No checklists yet</p>
-          <button @click="createAndOpenChecklist" class="mt-4 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors inline-flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Checklist
-          </button>
+          <div class="mt-4 flex items-center justify-center gap-2">
+            <button @click="createAndOpenChecklist" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors inline-flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Checklist
+            </button>
+            <button v-if="checklistTemplates.length > 0" @click="templatePickerOpen = true" class="rounded-xl bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors inline-flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              From Template
+            </button>
+          </div>
           <p class="text-xs mt-3 text-muted-foreground/60">or press <kbd class="px-1.5 py-0.5 rounded bg-muted text-foreground text-[10px] font-mono">C</kbd></p>
         </div>
-        <div v-if="checklistItems.length > 0" class="mb-3 flex justify-end">
-          <button @click="createAndOpenChecklist" class="rounded-lg bg-muted hover:bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New
+        <div v-if="checklistItems.length > 0" class="mb-3 flex items-center justify-between">
+          <button v-if="checklistTemplates.length > 0" @click="manageTemplatesOpen = true" class="text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            {{ checklistTemplates.length }} template{{ checklistTemplates.length !== 1 ? 's' : '' }}
           </button>
+          <span v-else></span>
+          <div class="flex items-center gap-1.5">
+            <button v-if="checklistTemplates.length > 0" @click="templatePickerOpen = true" class="rounded-lg bg-muted hover:bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Template
+            </button>
+            <button @click="createAndOpenChecklist" class="rounded-lg bg-muted hover:bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+            </button>
+          </div>
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
@@ -1072,6 +1088,78 @@
       </div>
     </div>
 
+    <!-- Template picker modal -->
+    <div
+      v-if="templatePickerOpen"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      @click.self="templatePickerOpen = false"
+    >
+      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <p class="text-sm font-semibold text-foreground">New from Template</p>
+          <button @click="templatePickerOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="px-5 pb-5 space-y-1.5 max-h-[60vh] overflow-y-auto">
+          <button
+            v-for="t in checklistTemplates"
+            :key="t.id"
+            @click="createFromTemplate(t.id)"
+            class="w-full text-left rounded-xl border border-border/60 bg-card hover:bg-accent px-4 py-3 transition-colors group"
+          >
+            <p class="text-sm font-semibold group-hover:text-foreground">{{ t.name }}</p>
+            <p class="text-xs text-muted-foreground mt-0.5">{{ t.steps.length }} step{{ t.steps.length !== 1 ? 's' : '' }}</p>
+          </button>
+          <div v-if="checklistTemplates.length === 0" class="text-center py-6 text-muted-foreground text-sm">
+            No templates yet. Save a checklist as a template first.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage templates modal -->
+    <div
+      v-if="manageTemplatesOpen"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      @click.self="manageTemplatesOpen = false"
+    >
+      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <p class="text-sm font-semibold text-foreground">Manage Templates</p>
+          <button @click="manageTemplatesOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="px-5 pb-5 space-y-1.5 max-h-[60vh] overflow-y-auto">
+          <div
+            v-for="t in checklistTemplates"
+            :key="t.id"
+            class="flex items-center justify-between rounded-xl border border-border/60 bg-card px-4 py-3"
+          >
+            <div>
+              <p class="text-sm font-semibold">{{ t.name }}</p>
+              <p class="text-xs text-muted-foreground mt-0.5">{{ t.steps.length }} step{{ t.steps.length !== 1 ? 's' : '' }}: {{ t.steps.map(s => s.title).join(', ') }}</p>
+            </div>
+            <button
+              v-if="deletingTemplateId !== t.id"
+              @click="deletingTemplateId = t.id"
+              class="text-muted-foreground/40 hover:text-destructive transition-colors shrink-0 ml-3"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+            <div v-else class="flex items-center gap-1.5 shrink-0 ml-3">
+              <button @click="deleteTemplate(t.id); deletingTemplateId = null" class="rounded bg-destructive hover:bg-destructive/90 text-white px-2 py-0.5 text-[11px] font-semibold transition-colors">Delete</button>
+              <button @click="deletingTemplateId = null" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+            </div>
+          </div>
+          <div v-if="checklistTemplates.length === 0" class="text-center py-6 text-muted-foreground text-sm">
+            No templates yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Process modal -->
     <div
       v-if="processingInbox"
@@ -1533,7 +1621,7 @@
         </div>
 
         <div v-if="processing?.status === 'checklist'" class="px-6 pb-4 space-y-3">
-          <!-- Checklist-specific: Mark Done / Trash -->
+          <!-- Checklist-specific actions -->
           <div class="flex gap-2">
             <button
               @click="clarify('done')"
@@ -1547,6 +1635,17 @@
               Trash
             </button>
           </div>
+          <!-- Save as Template -->
+          <button
+            v-if="processing.checklist_items && processing.checklist_items.length > 0"
+            @click="saveAsTemplate"
+            :disabled="savedAsTemplate"
+            class="w-full rounded-xl py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+            :class="savedAsTemplate ? 'bg-green-500/10 text-green-500' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+          >
+            <svg v-if="!savedAsTemplate" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            {{ savedAsTemplate ? 'Saved as template!' : 'Save as Template' }}
+          </button>
           <div v-if="confirmingChecklistDelete" class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 flex items-center justify-between gap-3">
             <p class="text-sm text-destructive font-medium">Delete this checklist?</p>
             <div class="flex gap-2">
@@ -2008,6 +2107,7 @@ type Status = 'inbox' | 'next-action' | 'project' | 'checklist' | 'waiting' | 's
 interface ItemTagRecord { id: number; item_id: string; tag: string }
 interface Email { id: string; item_id: string; from_address: string; from_name?: string | null; to_address: string; subject: string; body_text: string; received_at: string; message_id?: string | null }
 interface ChecklistItemRecord { id: string; item_id: string; title: string; completed: boolean; sort_order: number }
+interface ChecklistTemplateRecord { id: string; name: string; steps: { id: string; title: string; sort_order: number }[] }
 interface Item { id: string; title: string; status: Status; context?: string; waiting_for?: string; waiting_date?: string; tickler_date?: string; notes?: string; sort_order?: number; flagged?: boolean; completed_at?: string; original_status?: string; tags?: ItemTagRecord[]; email?: Email | null; goal?: string | null; project_id?: string | null; updated_at?: string; checklist_items?: ChecklistItemRecord[] }
 
 // View navigation
@@ -2325,6 +2425,7 @@ function commitNewContext() {
 }
 
 const items = computed(() => (page.props.items || []) as Item[])
+const checklistTemplates = computed(() => (page.props.checklist_templates || []) as ChecklistTemplateRecord[])
 const activeContextFilter = ref<string | null>(null)
 const activeTagFilter = ref<string | null>(null)
 
@@ -2707,6 +2808,11 @@ function quickWaitingSubmit() {
   guardedRouter.post('/items', { title: quickWaitingTitle.value.trim(), status: 'waiting', waiting_for: quickWaitingFor.value.trim(), waiting_date: quickWaitingDate.value || undefined }, { ...itemOnly, onSuccess: () => { quickWaiting.value = false } })
 }
 
+const templatePickerOpen = ref(false)
+const manageTemplatesOpen = ref(false)
+const savedAsTemplate = ref(false)
+const deletingTemplateId = ref<string | null>(null)
+
 function createAndOpenChecklist() {
   const existingIds = new Set(items.value.map(i => i.id))
   guardedRouter.post('/items', { title: 'Untitled Checklist', status: 'checklist' }, {
@@ -2717,7 +2823,6 @@ function createAndOpenChecklist() {
         const newItem = items.value.find(i => i.status === 'checklist' && !existingIds.has(i.id))
         if (newItem) {
           openItem(newItem)
-          // Auto-select the title text for immediate renaming
           nextTick(() => {
             const titleInput = document.querySelector<HTMLInputElement>('.dialog-title-input')
             titleInput?.select()
@@ -2726,6 +2831,36 @@ function createAndOpenChecklist() {
       })
     },
   })
+}
+
+function createFromTemplate(templateId: string) {
+  templatePickerOpen.value = false
+  const existingIds = new Set(items.value.map(i => i.id))
+  guardedRouter.post('/checklist-templates/apply', { template_id: templateId }, {
+    ...itemOnly,
+    onSuccess: () => {
+      activePill.value = 'checklists'
+      nextTick(() => {
+        const newItem = items.value.find(i => i.status === 'checklist' && !existingIds.has(i.id))
+        if (newItem) openItem(newItem)
+      })
+    },
+  })
+}
+
+function saveAsTemplate() {
+  if (!processing.value) return
+  guardedRouter.post('/checklist-templates', { item_id: processing.value.id }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      savedAsTemplate.value = true
+      setTimeout(() => { savedAsTemplate.value = false }, 2000)
+    },
+  })
+}
+
+function deleteTemplate(id: string) {
+  guardedRouter.delete(`/checklist-templates/${id}`, { preserveScroll: true })
 }
 
 function onKeydown(e: KeyboardEvent) {
