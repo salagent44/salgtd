@@ -1952,7 +1952,7 @@
     "src": "node_modules/@fontsource/space-grotesk/files/space-grotesk-vietnamese-700-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-b_hnIaYi.css",
+    "file": "assets/app-Drnf_oUA.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -1961,13 +1961,13 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-YaQgFVwe.js",
+    "file": "assets/app-CY2-hB4M.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-ClAllSp9.css",
-      "assets/app-b_hnIaYi.css"
+      "assets/app-BPK8GrP1.css",
+      "assets/app-Drnf_oUA.css"
     ],
     "assets": [
       "assets/inter-cyrillic-ext-400-normal-BQZuk6qB.woff2",

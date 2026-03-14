@@ -1599,49 +1599,8 @@
 
         <div v-if="processing?.status !== 'checklist'" class="px-6 py-5 space-y-5">
 
-          <!-- ═══ PROJECT PICKER (inline sub-view) ═══ -->
-          <div v-if="pickingProject" class="space-y-4">
-            <div class="flex items-center gap-3">
-              <button @click="pickingProject = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
-              <p class="text-sm font-semibold">Assign to project</p>
-            </div>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input
-                ref="projectSearchInput"
-                v-model="projectSearchQuery"
-                type="text"
-                placeholder="Search projects..."
-                class="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div class="max-h-[300px] overflow-y-auto space-y-0.5">
-              <button
-                v-if="!projectSearchQuery"
-                @click="assignProjectToItem(null)"
-                class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors text-muted-foreground"
-              >
-                <span class="text-base">—</span>
-                <span class="text-sm font-medium">No project</span>
-              </button>
-              <button
-                v-for="p in filteredProjects.slice(0, 15)"
-                :key="p.id"
-                @click="assignProjectToItem(p.id)"
-                class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors"
-              >
-                <span class="text-base">📁</span>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">{{ p.title }}</p>
-                </div>
-                <span class="text-[10px] text-muted-foreground shrink-0">{{ (projectTasksMap.get(p.id) || []).length }} tasks</span>
-              </button>
-              <p v-if="projectSearchQuery && filteredProjects.length === 0" class="text-sm text-muted-foreground text-center py-6">No projects match</p>
-            </div>
-          </div>
-
           <!-- ═══ INBOX ITEMS: show bucket picker ═══ -->
-          <template v-else-if="processing?.status === 'inbox'">
+          <template v-if="processing?.status === 'inbox'">
 
             <!-- Context sub-step -->
             <div v-if="pickingContext" class="space-y-5" @keydown.enter="confirmNextAction">
@@ -1664,16 +1623,6 @@
                     class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                     :class="selectedContext === ctx ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent'"
                   >{{ ctx }}</button>
-                </div>
-              </div>
-              <div class="space-y-2.5">
-                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
-                <div class="flex flex-wrap gap-2">
-                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
-                    📁 {{ projectName(processing.project_id) }}
-                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
-                  </button>
-                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
                 </div>
               </div>
               <button @click="confirmNextAction" class="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
@@ -1860,7 +1809,7 @@
           <!-- ═══ CLARIFIED ITEMS: show status-specific view only ═══ -->
           <template v-else>
 
-            <!-- Next Action: context + project -->
+            <!-- Next Action: context + read-only project -->
             <div v-if="processing?.status === 'next-action'" class="space-y-5" @keydown.enter="confirmNextAction">
               <div class="space-y-2.5">
                 <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Context</p>
@@ -1879,15 +1828,9 @@
                   >{{ ctx }}</button>
                 </div>
               </div>
-              <div class="space-y-2.5">
+              <div v-if="processing?.project_id" class="space-y-2.5">
                 <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
-                <div class="flex flex-wrap gap-2">
-                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
-                    📁 {{ projectName(processing.project_id) }}
-                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
-                  </button>
-                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
-                </div>
+                <p class="text-sm font-medium text-primary">📁 {{ projectName(processing.project_id) }}</p>
               </div>
               <button @click="confirmNextAction" class="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
@@ -1912,15 +1855,9 @@
                   class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
                 />
               </div>
-              <div class="space-y-2.5">
+              <div v-if="processing?.project_id" class="space-y-2.5">
                 <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
-                <div class="flex flex-wrap gap-2">
-                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
-                    📁 {{ projectName(processing.project_id) }}
-                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
-                  </button>
-                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
-                </div>
+                <p class="text-sm font-medium text-primary">📁 {{ projectName(processing.project_id) }}</p>
               </div>
               <button @click="clarifyWaiting" class="w-full rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
@@ -1931,24 +1868,18 @@
               <div class="flex justify-center">
                 <Calendar v-model="ticklerDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-violet-500/20 bg-violet-500/5" />
               </div>
-              <div class="space-y-2.5">
+              <div v-if="processing?.project_id" class="space-y-2.5">
                 <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
-                <div class="flex flex-wrap gap-2">
-                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
-                    📁 {{ projectName(processing.project_id) }}
-                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
-                  </button>
-                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
-                </div>
+                <p class="text-sm font-medium text-primary">📁 {{ projectName(processing.project_id) }}</p>
               </div>
               <button @click="clarifyTickler" :disabled="!ticklerDate" class="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
 
-            <!-- Project: read-only linked actions -->
+            <!-- Project: link/unlink actions -->
             <div v-else-if="processing?.status === 'project'" class="space-y-4">
               <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Linked actions</p>
               <div v-if="(projectTasksMap.get(processing.id) || []).length > 0" class="space-y-1.5">
-                <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30">
+                <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30 group">
                   <span class="w-2 h-2 rounded-full shrink-0" :class="{
                     'bg-primary': task.status === 'next-action',
                     'bg-amber-500': task.status === 'waiting',
@@ -1957,10 +1888,41 @@
                     'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
                   }"></span>
                   <span class="text-[13px] font-medium flex-1 truncate">{{ task.title }}</span>
-                  <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
+                  <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0 mr-1">{{ task.context }}</span>
+                  <button @click="unlinkActionFromProject(task.id)" class="text-muted-foreground/40 hover:text-destructive transition-colors shrink-0 opacity-0 group-hover:opacity-100" title="Unlink">&times;</button>
                 </div>
               </div>
-              <p v-else class="text-sm text-muted-foreground">No linked actions — assign from the Next Actions view.</p>
+              <p v-else class="text-sm text-muted-foreground/60">No linked actions yet.</p>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Add action</p>
+                <div class="relative">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input
+                    v-model="projectActionSearch"
+                    type="text"
+                    placeholder="Search actions to link..."
+                    class="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div v-if="projectActionSearch.trim()" class="max-h-[200px] overflow-y-auto space-y-0.5">
+                  <button
+                    v-for="action in linkableActions"
+                    :key="action.id"
+                    @click="linkActionToProject(action.id)"
+                    class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  >
+                    <span class="w-2 h-2 rounded-full shrink-0" :class="{
+                      'bg-primary': action.status === 'next-action',
+                      'bg-amber-500': action.status === 'waiting',
+                      'bg-violet-500': action.status === 'tickler',
+                      'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler'].includes(action.status),
+                    }"></span>
+                    <span class="text-sm font-medium flex-1 truncate">{{ action.title }}</span>
+                    <span v-if="action.context" class="text-[11px] text-muted-foreground shrink-0">{{ action.context }}</span>
+                  </button>
+                  <p v-if="linkableActions.length === 0" class="text-sm text-muted-foreground text-center py-4">No matching actions</p>
+                </div>
+              </div>
             </div>
 
             <!-- Someday / Done: just title + tags (no extra fields) -->
@@ -3270,6 +3232,36 @@ function assignProjectToItem(projectId: string | null) {
   guardedRouter.post(`/items/${processing.value.id}/assign-project`, { project_id: projectId }, itemOnly)
   processing.value.project_id = projectId
   pickingProject.value = false
+}
+
+const projectActionSearch = ref('')
+
+const linkableActions = computed(() => {
+  const q = projectActionSearch.value.trim().toLowerCase()
+  if (!q || !processing.value) return []
+  const linkedIds = (projectTasksMap.value.get(processing.value.id) || []).map(t => t.id)
+  return items.value
+    .filter(i =>
+      i.id !== processing.value!.id &&
+      !linkedIds.includes(i.id) &&
+      ['next-action', 'waiting', 'tickler', 'someday'].includes(i.status) &&
+      i.title.toLowerCase().includes(q)
+    )
+    .slice(0, 10)
+})
+
+function linkActionToProject(actionId: string) {
+  if (!processing.value) return
+  guardedRouter.post(`/items/${actionId}/assign-project`, { project_id: processing.value.id }, itemOnly)
+  const action = items.value.find(i => i.id === actionId)
+  if (action) action.project_id = processing.value.id
+  projectActionSearch.value = ''
+}
+
+function unlinkActionFromProject(actionId: string) {
+  guardedRouter.post(`/items/${actionId}/assign-project`, { project_id: null }, itemOnly)
+  const action = items.value.find(i => i.id === actionId)
+  if (action) action.project_id = null
 }
 
 function openItem(item: Item) {
