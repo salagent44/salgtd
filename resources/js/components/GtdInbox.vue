@@ -1,5 +1,6 @@
 <template>
   <div class="h-screen bg-background text-foreground flex flex-col overflow-hidden">
+    <Toaster position="bottom-center" :visible-toasts="3" :duration="2500" rich-colors />
     <!-- Offline banner -->
     <div v-if="!isOnline" class="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium shrink-0">
       <span class="mr-1">🔌</span> No connection — changes are disabled until reconnected
@@ -2107,6 +2108,7 @@ import { CalendarDate, getLocalTimeZone, today as getToday } from '@internationa
 import NotesView from './NotesView.vue'
 import CalendarView from './CalendarView.vue'
 import { getEcho } from '@/echo'
+import { toast, Toaster } from 'vue-sonner'
 import ReviewView from './ReviewView.vue'
 import TimePicker from './TimePicker.vue'
 
@@ -2196,9 +2198,9 @@ function onTouchEnd(item: Item) {
   if (!swipeState.value || !swipeState.value.swiping) { swipeState.value = null; return }
   const dx = swipeState.value.currentX - swipeState.value.startX
   if (dx > 80) {
-    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)
+    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, { ...itemOnly, onSuccess: () => toast.success('Marked as done') })
   } else if (dx < -80) {
-    guardedRouter.delete(`/items/${item.id}`, itemOnly)
+    guardedRouter.delete(`/items/${item.id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
   }
   swipeState.value = null
 }
@@ -2490,7 +2492,7 @@ function toggleContextFilter(ctx: string) {
   activeContextFilter.value = activeContextFilter.value === ctx ? null : ctx
 }
 type PillKey = 'next-actions' | 'waiting' | 'projects' | 'checklists' | 'inbox' | 'someday' | 'tickler' | 'done' | 'flagged'
-const activePill = ref<PillKey>('next-actions')
+const activePill = ref<PillKey>(isMobile.value ? 'inbox' : 'next-actions')
 
 function setActivePill(pill: PillKey) {
   activePill.value = activePill.value === pill ? 'next-actions' : pill
@@ -2624,6 +2626,7 @@ function showFlashAndAdvance(label: string) {
   processFlash.value = true
   processFlashLabel.value = label
   processIndex.value++
+  toast.success(`Clarified as ${label}`)
   setTimeout(() => {
     processFlash.value = false
     processStep.value = 'main'
@@ -2638,7 +2641,7 @@ const confirmingProcessDelete = ref(false)
 function deleteProcessItem() {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.delete(`/items/${item.id}`, itemOnly)
+  guardedRouter.delete(`/items/${item.id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
   confirmingProcessDelete.value = false
   showFlashAndAdvance('Deleted')
 }
@@ -2837,7 +2840,7 @@ function openQuickCapture() {
 
 function quickCaptureSubmit() {
   if (!quickTitle.value.trim()) return
-  guardedRouter.post('/items', { title: quickTitle.value.trim(), status: 'inbox' }, { ...itemOnly, onSuccess: () => { quickCapture.value = false } })
+  guardedRouter.post('/items', { title: quickTitle.value.trim(), status: 'inbox' }, { ...itemOnly, onSuccess: () => { quickCapture.value = false; toast.success('Added to inbox') } })
 }
 
 function openQuickNextAction() {
@@ -2849,7 +2852,7 @@ function openQuickNextAction() {
 
 function quickNextActionSubmit() {
   if (!quickNextTitle.value.trim()) return
-  guardedRouter.post('/items', { title: quickNextTitle.value.trim(), status: 'next-action', context: quickNextContext.value || undefined }, { ...itemOnly, onSuccess: () => { quickNextAction.value = false } })
+  guardedRouter.post('/items', { title: quickNextTitle.value.trim(), status: 'next-action', context: quickNextContext.value || undefined }, { ...itemOnly, onSuccess: () => { quickNextAction.value = false; toast.success('Next action created') } })
 }
 
 function openQuickWaiting() {
@@ -2862,7 +2865,7 @@ function openQuickWaiting() {
 
 function quickWaitingSubmit() {
   if (!quickWaitingTitle.value.trim() || !quickWaitingFor.value.trim()) return
-  guardedRouter.post('/items', { title: quickWaitingTitle.value.trim(), status: 'waiting', waiting_for: quickWaitingFor.value.trim(), waiting_date: quickWaitingDate.value || undefined }, { ...itemOnly, onSuccess: () => { quickWaiting.value = false } })
+  guardedRouter.post('/items', { title: quickWaitingTitle.value.trim(), status: 'waiting', waiting_for: quickWaitingFor.value.trim(), waiting_date: quickWaitingDate.value || undefined }, { ...itemOnly, onSuccess: () => { quickWaiting.value = false; toast.success('Waiting item created') } })
 }
 
 const templatePickerOpen = ref(false)
@@ -2876,6 +2879,7 @@ function createAndOpenChecklist() {
     ...itemOnly,
     onSuccess: () => {
       activePill.value = 'checklists'
+      toast.success('Checklist created')
       nextTick(() => {
         const newItem = items.value.find(i => i.status === 'checklist' && !existingIds.has(i.id))
         if (newItem) {
@@ -3204,7 +3208,7 @@ function bulkAction(status: Status) {
   if (ids.length === 0) return
   guardedRouter.post('/items/bulk-process', { ids, status }, {
     ...itemOnly,
-    onSuccess: () => { selectedIds.value = new Set() },
+    onSuccess: () => { selectedIds.value = new Set(); toast.success(`${ids.length} item${ids.length > 1 ? 's' : ''} moved to ${bucketLabel(status)}`) },
   })
 }
 
@@ -3213,7 +3217,7 @@ function bulkDelete() {
   if (ids.length === 0) return
   guardedRouter.post('/items/bulk-delete', { ids }, {
     ...itemOnly,
-    onSuccess: () => { selectedIds.value = new Set() },
+    onSuccess: () => { selectedIds.value = new Set(); toast(`${ids.length} item${ids.length > 1 ? 's' : ''} deleted`) },
   })
 }
 
@@ -3235,7 +3239,7 @@ function clearAllDone() {
   if (ids.length === 0) return
   guardedRouter.post('/items/bulk-delete', { ids }, {
     ...itemOnly,
-    onSuccess: () => { confirmingClearDone.value = false },
+    onSuccess: () => { confirmingClearDone.value = false; toast(`${ids.length} completed items cleared`) },
   })
 }
 
@@ -3509,22 +3513,22 @@ function saveEdits() {
 
 function deleteItem() {
   if (processing.value) {
-    guardedRouter.delete(`/items/${processing.value.id}`, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
+    guardedRouter.delete(`/items/${processing.value.id}`, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; toast('Item deleted') } })
   }
 }
 
 function remove(id: string) {
-  guardedRouter.delete(`/items/${id}`, itemOnly)
+  guardedRouter.delete(`/items/${id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
 }
 
 function moveToInbox() {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/move-to-inbox`, {}, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
+  guardedRouter.post(`/items/${processing.value.id}/move-to-inbox`, {}, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; toast.success('Moved to inbox') } })
 }
 
 function clarify(status: Status, context?: string, waitingForName?: string) {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, { status, title: editItem.value?.title?.trim() || undefined, context, waiting_for: waitingForName }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false } })
+  guardedRouter.post(`/items/${processing.value.id}/process`, { status, title: editItem.value?.title?.trim() || undefined, context, waiting_for: waitingForName }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false; toast.success(`Moved to ${bucketLabel(status)}`) } })
 }
 
 function clarifyWithContext(ctx: string) {

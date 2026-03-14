@@ -18,4 +18,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.pid
 /docker/Caddyfile
