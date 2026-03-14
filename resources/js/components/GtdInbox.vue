@@ -1537,9 +1537,16 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Mark Done
             </button>
-            <button @click="clarify('trash')" class="rounded-xl px-4 py-2.5 text-sm font-medium text-destructive/60 hover:text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors">
+            <button v-if="!confirmingChecklistDelete" @click="confirmingChecklistDelete = true" class="rounded-xl px-4 py-2.5 text-sm font-medium text-destructive/60 hover:text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors">
               Trash
             </button>
+          </div>
+          <div v-if="confirmingChecklistDelete" class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 flex items-center justify-between gap-3">
+            <p class="text-sm text-destructive font-medium">Delete this checklist?</p>
+            <div class="flex gap-2">
+              <button @click="confirmingChecklistDelete = false" class="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors">Cancel</button>
+              <button @click="clarify('trash')" class="rounded-lg bg-destructive hover:bg-destructive/90 text-white px-4 py-2 text-sm font-semibold transition-colors">Delete</button>
+            </div>
           </div>
         </div>
 
@@ -2856,6 +2863,7 @@ const processEventEndTime = ref('')
 const processEventColor = ref('blue')
 const processEventRecurrence = ref('')
 const confirmingDelete = ref(false)
+const confirmingChecklistDelete = ref(false)
 const pickingProject = ref(false)
 const pickingProjectGoal = ref(false)
 const editGoal = ref('')
@@ -3104,6 +3112,7 @@ function openItem(item: Item) {
   pickingProject.value = false
   pickingProjectGoal.value = false
   confirmingDelete.value = false
+  confirmingChecklistDelete.value = false
   addingContext.value = false
   waitingFor.value = ''
   waitingDateInput.value = ''
