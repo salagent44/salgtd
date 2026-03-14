@@ -1293,7 +1293,7 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject">
+      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject" @escape-key-down="(e: Event) => { if (emailViewerOpen) e.preventDefault() }" @interact-outside="(e: Event) => { if (emailViewerOpen) e.preventDefault() }">
 
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
@@ -1311,7 +1311,7 @@
             v-model="editItem.title"
             type="text"
             @keydown.enter="saveEdits"
-            @keydown.esc="dialogOpen = false"
+            @keydown.esc="if (!emailViewerOpen) dialogOpen = false"
             class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2"
           />
         </div>
