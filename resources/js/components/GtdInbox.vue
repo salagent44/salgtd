@@ -6,7 +6,7 @@
       <span class="mr-1">🔌</span> No connection — changes are disabled until reconnected
     </div>
 
-    <div class="max-w-[1800px] w-full mx-auto flex flex-col flex-1 min-h-0 px-3 md:px-6 pt-3 md:pt-6">
+    <div class="max-w-[1800px] w-full mx-auto flex flex-col flex-1 min-h-0 px-4 md:px-6 pt-3 md:pt-6">
 
       <!-- Top nav bar -->
       <div class="flex items-center justify-between mb-4 md:mb-6">
@@ -206,7 +206,7 @@
       </div><!-- end sticky task header -->
 
       <!-- ===== SCROLLABLE CONTENT AREA ===== -->
-      <div class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6 pt-3" style="scrollbar-gutter: stable">
+      <div class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6 pt-3 px-1" :style="{ scrollbarGutter: isMobile ? 'auto' : 'stable' }">
 
       <!-- Next Actions (default) -->
       <div v-if="activePill === 'next-actions'">
@@ -318,7 +318,7 @@
           </Card>
           <!-- Expanded project tasks -->
           <div v-if="expandedProjects.has(item.id)" class="ml-6 space-y-1 border-l-2 border-border/40 pl-3">
-            <div v-if="(projectTasksMap.get(item.id) || []).length === 0" class="py-2 text-xs text-muted-foreground">No linked tasks — assign tasks to this project</div>
+            <div v-if="(projectTasksMap.get(item.id) || []).length === 0" class="py-2 text-xs text-muted-foreground">No linked actions — assign from the Next Actions view</div>
             <Card v-for="task in (projectTasksMap.get(item.id) || [])" :key="task.id" class="!py-0 !gap-0 cursor-pointer transition-colors bg-muted/20 hover:!bg-muted/40" @click="openItem(task)">
               <CardContent class="!px-4 py-2 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full shrink-0" :class="{
@@ -1294,59 +1294,7 @@
             <p class="text-sm font-semibold">Set up project</p>
           </div>
 
-          <!-- First next action -->
-          <div>
-            <p class="text-xs font-semibold text-muted-foreground mb-2">First next action <span class="font-normal">(optional)</span></p>
-            <input
-              v-model="processProjectNextAction"
-              type="text"
-              placeholder="e.g. Draft project brief"
-              class="w-full rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 font-medium"
-            />
-          </div>
-
-          <!-- Link existing tasks -->
-          <div>
-            <button
-              v-if="!processProjectLinkExisting"
-              @click="processProjectLinkExisting = true; processProjectSearchItems = ''"
-              class="text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-            >+ Link existing tasks</button>
-            <div v-else class="space-y-2">
-              <p class="text-xs font-semibold text-muted-foreground">Link existing tasks</p>
-              <div class="relative">
-                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input
-                  v-model="processProjectSearchItems"
-                  type="text"
-                  placeholder="Search tasks..."
-                  class="w-full rounded-lg border border-border bg-background pl-8 pr-3 py-1.5 text-[12px] outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div v-if="processProjectSearchResults.length > 0" class="max-h-32 overflow-y-auto space-y-0.5 rounded-lg border border-border/60 bg-card p-1">
-                <button
-                  v-for="t in processProjectSearchResults"
-                  :key="t.id"
-                  @click="processProjectLinkedIds.push(t.id)"
-                  class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] hover:bg-accent transition-colors"
-                >
-                  <span class="w-2 h-2 rounded-full shrink-0" :class="{ 'bg-primary': t.status === 'next-action', 'bg-amber-500': t.status === 'waiting', 'bg-muted-foreground/40': t.status !== 'next-action' && t.status !== 'waiting' }"></span>
-                  <span class="truncate flex-1">{{ t.title }}</span>
-                  <span class="text-[10px] text-muted-foreground shrink-0">{{ bucketLabel(t.status) }}</span>
-                </button>
-              </div>
-              <div v-if="processProjectLinkedIds.length > 0" class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="id in processProjectLinkedIds"
-                  :key="id"
-                  class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary"
-                >
-                  {{ items.find(i => i.id === id)?.title?.slice(0, 25) }}{{ (items.find(i => i.id === id)?.title?.length || 0) > 25 ? '...' : '' }}
-                  <button @click="processProjectLinkedIds = processProjectLinkedIds.filter(x => x !== id)" class="hover:text-destructive ml-0.5">&times;</button>
-                </span>
-              </div>
-            </div>
-          </div>
+          <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
 
           <div class="flex gap-2 justify-end">
             <button @click="processConfirmProject" class="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
@@ -1783,47 +1731,21 @@
               <p class="text-sm font-semibold">Set up project</p>
             </div>
 
-            <!-- First next action -->
-            <div>
-              <label class="text-xs text-muted-foreground block mb-1">First next action <span class="opacity-50">(optional)</span></label>
-              <input
-                v-model="editProjectNextAction"
-                placeholder="What's the very first step?"
-                class="w-full rounded-xl border border-border/60 bg-card px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-              />
-            </div>
+            <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
 
-            <!-- Link existing tasks -->
-            <div>
-              <button
-                v-if="!editProjectLinkExisting"
-                @click="editProjectLinkExisting = true; editProjectSearchItems = ''"
-                class="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >+ Link existing tasks</button>
-              <div v-else class="space-y-2">
-                <label class="text-xs text-muted-foreground block">Search tasks to link</label>
-                <input
-                  v-model="editProjectSearchItems"
-                  placeholder="Search by title…"
-                  class="w-full rounded-xl border border-border/60 bg-card px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-                />
-                <div v-if="editProjectSearchResults.length > 0" class="max-h-32 overflow-y-auto space-y-0.5 rounded-lg border border-border/60 bg-card p-1">
-                  <button
-                    v-for="t in editProjectSearchResults"
-                    :key="t.id"
-                    @click="editProjectLinkedIds.push(t.id)"
-                    class="w-full text-left px-3 py-1.5 text-sm rounded-md hover:bg-accent transition-colors truncate"
-                  >{{ t.title }}</button>
-                </div>
-                <div v-if="editProjectLinkedIds.length > 0" class="flex flex-wrap gap-1.5">
-                  <span
-                    v-for="id in editProjectLinkedIds"
-                    :key="id"
-                    class="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2.5 py-0.5 text-xs font-medium"
-                  >{{ items.find(i => i.id === id)?.title || id }}
-                    <button @click="editProjectLinkedIds = editProjectLinkedIds.filter(x => x !== id)" class="hover:text-destructive ml-0.5">&times;</button>
-                  </span>
-                </div>
+            <!-- Show linked tasks (read-only) -->
+            <div v-if="processing && (projectTasksMap.get(processing.id) || []).length > 0" class="space-y-1.5">
+              <p class="text-xs font-semibold text-muted-foreground">Linked actions</p>
+              <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30">
+                <span class="w-2 h-2 rounded-full shrink-0" :class="{
+                  'bg-primary': task.status === 'next-action',
+                  'bg-amber-500': task.status === 'waiting',
+                  'bg-violet-500': task.status === 'tickler',
+                  'bg-green-500': task.status === 'done',
+                  'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
+                }"></span>
+                <span class="text-[13px] font-medium flex-1 truncate">{{ task.title }}</span>
+                <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
               </div>
             </div>
 
@@ -2183,9 +2105,13 @@ function onTouchEnd(item: Item) {
   if (!swipeState.value || !swipeState.value.swiping) { swipeState.value = null; return }
   const dx = swipeState.value.currentX - swipeState.value.startX
   if (dx > 80) {
-    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, { ...itemOnly, onSuccess: () => toast.success('Marked as done') })
+    optimisticUpdate(item.id, { status: 'done' as Status, completed_at: new Date().toISOString() })
+    toast.success('Marked as done')
+    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)
   } else if (dx < -80) {
-    guardedRouter.delete(`/items/${item.id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
+    optimisticRemove(item.id)
+    toast('Item deleted')
+    guardedRouter.delete(`/items/${item.id}`, itemOnly)
   }
   swipeState.value = null
 }
@@ -2401,7 +2327,20 @@ function commitNewContext() {
   newContextName.value = ''
 }
 
-const items = computed(() => (page.props.items || []) as Item[])
+// Optimistic items: local ref synced from Inertia props, updated instantly on mutations
+const _serverItems = computed(() => (page.props.items || []) as Item[])
+const items = ref<Item[]>([..._serverItems.value])
+watch(_serverItems, (newItems) => { items.value = [...newItems] }, { deep: true })
+
+function optimisticAdd(item: Item) {
+  items.value = [item, ...items.value]
+}
+function optimisticUpdate(id: string, changes: Partial<Item>) {
+  items.value = items.value.map(i => i.id === id ? { ...i, ...changes } : i)
+}
+function optimisticRemove(id: string) {
+  items.value = items.value.filter(i => i.id !== id)
+}
 const checklistTemplates = computed(() => (page.props.checklist_templates || []) as ChecklistTemplateRecord[])
 const activeContextFilter = ref<string | null>(null)
 const activeTagFilter = ref<string | null>(null)
@@ -2559,7 +2498,9 @@ const confirmingProcessDelete = ref(false)
 function deleteProcessItem() {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.delete(`/items/${item.id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
+  optimisticRemove(item.id)
+  toast('Item deleted')
+  guardedRouter.delete(`/items/${item.id}`, itemOnly)
   confirmingProcessDelete.value = false
   showFlashAndAdvance('Deleted')
 }
@@ -2573,14 +2514,22 @@ function processEditedTitle(): string | undefined {
 function processAs(status: Status) {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status, title: processEditedTitle(), project_id: processProjectId.value }, itemOnly)
+  const title = processEditedTitle()
+  const changes: Partial<Item> = { status }
+  if (title) changes.title = title
+  if (processProjectId.value) changes.project_id = processProjectId.value
+  if (status === 'done') changes.completed_at = new Date().toISOString()
+  if (status === 'trash') { optimisticRemove(item.id) } else { optimisticUpdate(item.id, changes) }
+  guardedRouter.post(`/items/${item.id}/process`, { status, title, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance(bucketLabel(status))
 }
 
 function processWithContext(ctx: string) {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'next-action', context: ctx, title: processEditedTitle(), project_id: processProjectId.value }, itemOnly)
+  const title = processEditedTitle()
+  optimisticUpdate(item.id, { status: 'next-action' as Status, context: ctx, ...(title ? { title } : {}), ...(processProjectId.value ? { project_id: processProjectId.value } : {}) })
+  guardedRouter.post(`/items/${item.id}/process`, { status: 'next-action', context: ctx, title, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance('Next Action — ' + ctx)
 }
 
@@ -2594,7 +2543,9 @@ function processStartWaiting() {
 function processConfirmWaiting() {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'waiting', title: processEditedTitle(), waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined, project_id: processProjectId.value }, itemOnly)
+  const title = processEditedTitle()
+  optimisticUpdate(item.id, { status: 'waiting' as Status, ...(title ? { title } : {}), waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined })
+  guardedRouter.post(`/items/${item.id}/process`, { status: 'waiting', title, waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance('Waiting For')
 }
 
@@ -2636,20 +2587,7 @@ function processStartProject() {
 function processConfirmProject() {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'project', title: processEditedTitle() }, {
-    ...itemOnly,
-    onSuccess: () => {
-      // Create new next action if provided
-      const na = processProjectNextAction.value.trim()
-      if (na) {
-        guardedRouter.post('/items', { title: na, status: 'next-action', project_id: item.id }, itemOnly)
-      }
-      // Link existing items
-      for (const id of processProjectLinkedIds.value) {
-        guardedRouter.post(`/items/${id}/assign-project`, { project_id: item.id }, itemOnly)
-      }
-    },
-  })
+  guardedRouter.post(`/items/${item.id}/process`, { status: 'project', title: processEditedTitle() }, itemOnly)
   showFlashAndAdvance('Project')
 }
 
@@ -2764,7 +2702,12 @@ function openQuickCapture() {
 
 function quickCaptureSubmit() {
   if (!quickTitle.value.trim()) return
-  guardedRouter.post('/items', { title: quickTitle.value.trim(), status: 'inbox' }, { ...itemOnly, onSuccess: () => { quickCapture.value = false; toast.success('Added to inbox') } })
+  const title = quickTitle.value.trim()
+  const tempId = 'temp-' + Date.now()
+  optimisticAdd({ id: tempId, title, status: 'inbox' } as Item)
+  quickCapture.value = false
+  toast.success('Added to inbox')
+  guardedRouter.post('/items', { title, status: 'inbox' }, itemOnly)
 }
 
 function openQuickNextAction() {
@@ -2776,7 +2719,13 @@ function openQuickNextAction() {
 
 function quickNextActionSubmit() {
   if (!quickNextTitle.value.trim()) return
-  guardedRouter.post('/items', { title: quickNextTitle.value.trim(), status: 'next-action', context: quickNextContext.value || undefined }, { ...itemOnly, onSuccess: () => { quickNextAction.value = false; toast.success('Next action created') } })
+  const title = quickNextTitle.value.trim()
+  const context = quickNextContext.value || undefined
+  const tempId = 'temp-' + Date.now()
+  optimisticAdd({ id: tempId, title, status: 'next-action', context } as Item)
+  quickNextAction.value = false
+  toast.success('Next action created')
+  guardedRouter.post('/items', { title, status: 'next-action', context }, itemOnly)
 }
 
 function openQuickWaiting() {
@@ -2789,7 +2738,14 @@ function openQuickWaiting() {
 
 function quickWaitingSubmit() {
   if (!quickWaitingTitle.value.trim() || !quickWaitingFor.value.trim()) return
-  guardedRouter.post('/items', { title: quickWaitingTitle.value.trim(), status: 'waiting', waiting_for: quickWaitingFor.value.trim(), waiting_date: quickWaitingDate.value || undefined }, { ...itemOnly, onSuccess: () => { quickWaiting.value = false; toast.success('Waiting item created') } })
+  const title = quickWaitingTitle.value.trim()
+  const waiting_for = quickWaitingFor.value.trim()
+  const waiting_date = quickWaitingDate.value || undefined
+  const tempId = 'temp-' + Date.now()
+  optimisticAdd({ id: tempId, title, status: 'waiting', waiting_for, waiting_date } as Item)
+  quickWaiting.value = false
+  toast.success('Waiting item created')
+  guardedRouter.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, itemOnly)
 }
 
 const templatePickerOpen = ref(false)
@@ -3154,18 +3110,18 @@ function bulkAction(status: Status) {
 function bulkDelete() {
   const ids = [...selectedIds.value]
   if (ids.length === 0) return
-  guardedRouter.post('/items/bulk-delete', { ids }, {
-    ...itemOnly,
-    onSuccess: () => { selectedIds.value = new Set(); toast(`${ids.length} item${ids.length > 1 ? 's' : ''} deleted`) },
-  })
+  ids.forEach(id => optimisticRemove(id))
+  selectedIds.value = new Set()
+  toast(`${ids.length} item${ids.length > 1 ? 's' : ''} deleted`)
+  guardedRouter.post('/items/bulk-delete', { ids }, itemOnly)
 }
 
 function bulkToggleFlag() {
   const ids = [...selectedIds.value]
   if (ids.length === 0) return
-  // If any selected item is unflagged, flag all; otherwise unflag all
   const anyUnflagged = items.value.filter(i => ids.includes(i.id)).some(i => !i.flagged)
   ids.forEach(id => {
+    optimisticUpdate(id, { flagged: anyUnflagged })
     guardedRouter.put(`/items/${id}`, { flagged: anyUnflagged }, itemOnly)
   })
   selectedIds.value = new Set()
@@ -3176,28 +3132,26 @@ const confirmingClearDone = ref(false)
 function clearAllDone() {
   const ids = doneItems.value.map(i => i.id)
   if (ids.length === 0) return
-  guardedRouter.post('/items/bulk-delete', { ids }, {
-    ...itemOnly,
-    onSuccess: () => { confirmingClearDone.value = false; toast(`${ids.length} completed items cleared`) },
-  })
+  ids.forEach(id => optimisticRemove(id))
+  confirmingClearDone.value = false
+  toast(`${ids.length} completed items cleared`)
+  guardedRouter.post('/items/bulk-delete', { ids }, itemOnly)
 }
 
 function toggleProcessFlag() {
   if (!currentProcessItem.value) return
   const newVal = !currentProcessItem.value.flagged
-  guardedRouter.put(`/items/${currentProcessItem.value.id}`, { flagged: newVal }, {
-    ...itemOnly,
-    onSuccess: () => { if (currentProcessItem.value) currentProcessItem.value.flagged = newVal },
-  })
+  optimisticUpdate(currentProcessItem.value.id, { flagged: newVal })
+  currentProcessItem.value.flagged = newVal
+  guardedRouter.put(`/items/${currentProcessItem.value.id}`, { flagged: newVal }, itemOnly)
 }
 
 function toggleFlag() {
   if (!processing.value) return
   const newVal = !processing.value.flagged
-  guardedRouter.put(`/items/${processing.value.id}`, { flagged: newVal }, {
-    ...itemOnly,
-    onSuccess: () => { if (processing.value) processing.value.flagged = newVal },
-  })
+  optimisticUpdate(processing.value.id, { flagged: newVal })
+  processing.value.flagged = newVal
+  guardedRouter.put(`/items/${processing.value.id}`, { flagged: newVal }, itemOnly)
 }
 
 function openProjectGoal() {
@@ -3210,20 +3164,12 @@ function openProjectGoal() {
 
 function clarifyAsProject() {
   if (!processing.value) return
-  const itemId = processing.value.id
-  guardedRouter.post(`/items/${itemId}/process`, {
+  guardedRouter.post(`/items/${processing.value.id}/process`, {
     status: 'project',
     title: editItem.value?.title?.trim() || undefined,
   }, {
     ...itemOnly,
     onSuccess: () => {
-      const na = editProjectNextAction.value.trim()
-      if (na) {
-        guardedRouter.post('/items', { title: na, status: 'next-action', project_id: itemId }, itemOnly)
-      }
-      for (const id of editProjectLinkedIds.value) {
-        guardedRouter.post(`/items/${id}/assign-project`, { project_id: itemId }, itemOnly)
-      }
       processing.value = null; editItem.value = null; pickingProjectGoal.value = false
     },
   })
@@ -3394,7 +3340,13 @@ function openWaiting() {
 
 function clarifyWaiting() {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, { status: 'waiting', title: editItem.value?.title?.trim() || undefined, waiting_for: waitingFor.value.trim() || undefined, waiting_date: waitingDateInput.value || undefined }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingWaiting.value = false } })
+  const id = processing.value.id
+  const title = editItem.value?.title?.trim() || undefined
+  const wf = waitingFor.value.trim() || undefined
+  const wd = waitingDateInput.value || undefined
+  optimisticUpdate(id, { status: 'waiting' as Status, ...(title ? { title } : {}), waiting_for: wf, waiting_date: wd })
+  processing.value = null; editItem.value = null; pickingWaiting.value = false
+  guardedRouter.post(`/items/${id}/process`, { status: 'waiting', title, waiting_for: wf, waiting_date: wd }, itemOnly)
 }
 
 function openTickler() {
@@ -3404,7 +3356,12 @@ function openTickler() {
 
 function clarifyTickler() {
   if (!ticklerDate.value || !processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, { status: 'tickler', title: editItem.value?.title?.trim() || undefined, tickler_date: ticklerDate.value?.toString() }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingTickler.value = false; ticklerDate.value = undefined } })
+  const id = processing.value.id
+  const title = editItem.value?.title?.trim() || undefined
+  const td = ticklerDate.value.toString()
+  optimisticUpdate(id, { status: 'tickler' as Status, ...(title ? { title } : {}), tickler_date: td })
+  processing.value = null; editItem.value = null; pickingTickler.value = false; ticklerDate.value = undefined
+  guardedRouter.post(`/items/${id}/process`, { status: 'tickler', title, tickler_date: td }, itemOnly)
 }
 
 function openEvent() {
@@ -3419,14 +3376,18 @@ function openEvent() {
 
 function clarifyAsEvent() {
   if (!eventDate.value || !processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/schedule-event`, {
+  const id = processing.value.id
+  optimisticRemove(id) // item becomes an event, leaves the items list
+  processing.value = null; editItem.value = null; pickingEvent.value = false
+  guardedRouter.post(`/items/${id}/schedule-event`, {
     event_date: eventDate.value.toString(),
     end_date: eventEndDate.value?.toString() || undefined,
     event_time: eventTime.value || undefined,
     end_time: eventEndTime.value || undefined,
     color: eventColor.value || 'blue',
     recurrence: eventRecurrence.value || undefined,
-  }, { preserveScroll: true, only: ['items', 'events'], onSuccess: () => { processing.value = null; editItem.value = null; pickingEvent.value = false; eventDate.value = undefined } })
+  }, { preserveScroll: true, only: ['items', 'events'] })
+  eventDate.value = undefined
 }
 
 function processStartEvent() {
@@ -3443,6 +3404,7 @@ function processConfirmEvent() {
   if (!processEventDate.value) return
   const item = currentProcessItem.value
   if (!item) return
+  optimisticRemove(item.id)
   guardedRouter.post(`/items/${item.id}/schedule-event`, {
     event_date: processEventDate.value.toString(),
     end_date: processEventEndDate.value?.toString() || undefined,
@@ -3456,34 +3418,60 @@ function processConfirmEvent() {
 
 function saveEdits() {
   if (processing.value && editItem.value) {
-    guardedRouter.put(`/items/${processing.value.id}`, { title: editItem.value.title.trim() }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
+    const id = processing.value.id
+    const title = editItem.value.title.trim()
+    optimisticUpdate(id, { title })
+    processing.value = null; editItem.value = null
+    guardedRouter.put(`/items/${id}`, { title }, itemOnly)
   }
 }
 
 function saveChecklist() {
   if (processing.value && editItem.value) {
-    guardedRouter.put(`/items/${processing.value.id}`, { title: editItem.value.title.trim() }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
+    const id = processing.value.id
+    const title = editItem.value.title.trim()
+    optimisticUpdate(id, { title })
+    processing.value = null; editItem.value = null
+    guardedRouter.put(`/items/${id}`, { title }, itemOnly)
   }
 }
 
 function deleteItem() {
   if (processing.value) {
-    guardedRouter.delete(`/items/${processing.value.id}`, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; toast('Item deleted') } })
+    const id = processing.value.id
+    optimisticRemove(id)
+    processing.value = null; editItem.value = null
+    toast('Item deleted')
+    guardedRouter.delete(`/items/${id}`, itemOnly)
   }
 }
 
 function remove(id: string) {
-  guardedRouter.delete(`/items/${id}`, { ...itemOnly, onSuccess: () => toast('Item deleted') })
+  optimisticRemove(id)
+  toast('Item deleted')
+  guardedRouter.delete(`/items/${id}`, itemOnly)
 }
 
 function moveToInbox() {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/move-to-inbox`, {}, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null } })
+  const id = processing.value.id
+  optimisticUpdate(id, { status: 'inbox' as Status })
+  processing.value = null; editItem.value = null
+  guardedRouter.post(`/items/${id}/move-to-inbox`, {}, itemOnly)
 }
 
 function clarify(status: Status, context?: string | null, waitingForName?: string) {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, { status, title: editItem.value?.title?.trim() || undefined, context: context ?? null, waiting_for: waitingForName }, { ...itemOnly, onSuccess: () => { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false } })
+  const id = processing.value.id
+  const title = editItem.value?.title?.trim() || undefined
+  const changes: Partial<Item> = { status }
+  if (title) changes.title = title
+  if (context !== undefined) changes.context = context ?? undefined
+  if (waitingForName) changes.waiting_for = waitingForName
+  if (status === 'done') changes.completed_at = new Date().toISOString()
+  if (status === 'trash') { optimisticRemove(id) } else { optimisticUpdate(id, changes) }
+  processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false
+  guardedRouter.post(`/items/${id}/process`, { status, title, context: context ?? null, waiting_for: waitingForName }, itemOnly)
 }
 
 function clarifyWithContext(ctx: string) {
