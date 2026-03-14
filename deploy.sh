@@ -138,8 +138,8 @@ else
 fi
 
 if [[ "${UPDATE_TZ,,}" == "y" ]]; then
-    read -rp "  Timezone (e.g. America/New_York) [${CURRENT_TZ:-UTC}]: " TIMEZONE < /dev/tty
-    TIMEZONE="${TIMEZONE:-${CURRENT_TZ:-UTC}}"
+    read -rp "  Timezone (e.g. America/New_York) [${CURRENT_TZ:-America/Chicago}]: " TIMEZONE < /dev/tty
+    TIMEZONE="${TIMEZONE:-${CURRENT_TZ:-America/Chicago}}"
     set_env "TIMEZONE" "$TIMEZONE" .env
     echo "    Timezone set to $TIMEZONE"
 fi
