@@ -20,7 +20,7 @@ class DashboardController extends Controller
             ->update(['status' => 'inbox', 'tickler_date' => null, 'context' => null]);
 
         return Inertia::render('Dashboard', [
-            'items' => fn () => Item::with(['tags', 'email'])->orderBy('sort_order')->get(),
+            'items' => fn () => Item::with(['tags', 'email', 'checklistItems'])->orderBy('sort_order')->get(),
             'contexts' => fn () => Context::orderBy('sort_order')->get(),
             'notes' => Inertia::lazy(fn () => Note::with('tags')->orderByDesc('updated_at')->get()),
             'events' => Inertia::lazy(fn () => CalendarEvent::orderBy('event_date')->get()),

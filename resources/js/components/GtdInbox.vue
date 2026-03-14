@@ -257,6 +257,7 @@
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
                 <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                 <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+                <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
                 <span v-if="item.context" class="text-xs text-muted-foreground shrink-0">{{ item.context }}</span>
                 <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
                 <span v-if="item.project_id" class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0 truncate max-w-[100px]" :title="projectName(item.project_id)">📁 {{ projectName(item.project_id) }}</span>
@@ -282,6 +283,7 @@
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
               <span v-if="item.waiting_for" class="text-xs font-medium px-2 py-0.5 rounded border shrink-0" :class="isWaitingStale(item) ? 'border-red-600/40 bg-red-500/15 text-red-600' : 'border-amber-600/40 bg-amber-500/10 text-amber-700'">{{ item.waiting_for }}</span>
               <span v-if="item.waiting_date" class="text-xs font-medium px-2 py-0.5 rounded border shrink-0" :class="isWaitingStale(item) ? 'border-red-600/40 bg-red-500/15 text-red-600' : 'border-amber-600/40 bg-amber-500/10 text-amber-700'">{{ formatDate(item.waiting_date) }}</span>
               <span v-if="item.project_id" class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0 truncate max-w-[100px]" :title="projectName(item.project_id)">📁 {{ projectName(item.project_id) }}</span>
@@ -332,6 +334,7 @@
                   'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
                 }"></span>
                 <p class="text-[13px] font-medium flex-1 truncate min-w-0" :title="task.title">{{ task.title }}</p>
+                <span v-if="checklistProgress(task)" class="text-[10px] font-medium px-1 py-0.5 rounded shrink-0" :class="checklistProgress(task)!.done === checklistProgress(task)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(task)!.done }}/{{ checklistProgress(task)!.total }}</span>
                 <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
                 <Badge :variant="bucketVariant(task.status)" class="text-[10px]">{{ bucketLabel(task.status) }}</Badge>
               </CardContent>
@@ -357,6 +360,7 @@
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
               <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
               <Badge variant="outline">Inbox</Badge>
             </CardContent>
@@ -380,6 +384,7 @@
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
               <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
               <span v-if="item.project_id" class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0 truncate max-w-[100px]" :title="projectName(item.project_id)">📁 {{ projectName(item.project_id) }}</span>
             </CardContent>
@@ -403,6 +408,7 @@
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
               <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
               <span v-if="item.tickler_date" class="text-xs font-medium px-2 py-0.5 rounded border border-violet-600/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 shrink-0">{{ formatDate(item.tickler_date) }}</span>
             </CardContent>
@@ -459,6 +465,7 @@
               <span class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
               <span v-if="item.context" class="text-xs text-muted-foreground shrink-0">{{ item.context }}</span>
               <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
               <span v-if="item.waiting_for" class="text-xs font-medium px-2 py-0.5 rounded border shrink-0" :class="isWaitingStale(item) ? 'border-red-600/40 bg-red-500/15 text-red-600' : 'border-amber-600/40 bg-amber-500/10 text-amber-700'">{{ item.waiting_for }}</span>
@@ -1407,6 +1414,42 @@
           </div>
         </div>
 
+        <!-- Checklist -->
+        <div v-if="processing && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
+          <div class="flex items-center gap-2 mb-2">
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Checklist</p>
+            <span v-if="checklistProgress(processing)" class="text-[11px] font-medium text-muted-foreground">{{ checklistProgress(processing)!.done }}/{{ checklistProgress(processing)!.total }}</span>
+          </div>
+          <div v-if="processing.checklist_items && processing.checklist_items.length > 0" class="space-y-1 mb-2">
+            <div
+              v-for="ci in processing.checklist_items"
+              :key="ci.id"
+              class="flex items-center gap-2 group rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors"
+            >
+              <button
+                @click="toggleChecklistItem(ci)"
+                class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all"
+                :class="ci.completed ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'"
+              ><svg v-if="ci.completed" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+              <span class="text-sm flex-1 min-w-0 truncate" :class="ci.completed ? 'line-through text-muted-foreground/50' : 'text-foreground'">{{ ci.title }}</span>
+              <button @click="removeChecklistItem(ci)" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-xs">&times;</button>
+            </div>
+          </div>
+          <div v-if="addingChecklist" class="flex items-center gap-2">
+            <input
+              ref="checklistInput"
+              v-model="newChecklistTitle"
+              type="text"
+              placeholder="Add a step…"
+              @keydown.enter.prevent="addChecklistItem"
+              @keydown.esc="addingChecklist = false; newChecklistTitle = ''"
+              class="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            />
+            <button @click="addChecklistItem" class="text-xs text-primary font-medium hover:underline shrink-0">Add</button>
+          </div>
+          <button v-else @click="startAddingChecklist" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5">+ step</button>
+        </div>
+
         <!-- View Email button -->
         <div v-if="processing?.email && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
           <button
@@ -1873,7 +1916,8 @@ type Status = 'inbox' | 'next-action' | 'project' | 'waiting' | 'someday' | 'tic
 
 interface ItemTagRecord { id: number; item_id: string; tag: string }
 interface Email { id: string; item_id: string; from_address: string; from_name?: string | null; to_address: string; subject: string; body_text: string; received_at: string; message_id?: string | null }
-interface Item { id: string; title: string; status: Status; context?: string; waiting_for?: string; waiting_date?: string; tickler_date?: string; notes?: string; sort_order?: number; flagged?: boolean; completed_at?: string; original_status?: string; tags?: ItemTagRecord[]; email?: Email | null; goal?: string | null; project_id?: string | null; updated_at?: string }
+interface ChecklistItemRecord { id: string; item_id: string; title: string; completed: boolean; sort_order: number }
+interface Item { id: string; title: string; status: Status; context?: string; waiting_for?: string; waiting_date?: string; tickler_date?: string; notes?: string; sort_order?: number; flagged?: boolean; completed_at?: string; original_status?: string; tags?: ItemTagRecord[]; email?: Email | null; goal?: string | null; project_id?: string | null; updated_at?: string; checklist_items?: ChecklistItemRecord[] }
 
 // View navigation
 type ViewKey = 'tasks' | 'notes' | 'calendar'
@@ -2748,7 +2792,7 @@ function guardDialogDismiss(e: Event) {
 
 const dialogOpen = computed({
   get: () => processing.value !== null,
-  set: (v) => { if (!v) { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false; pickingTickler.value = false; ticklerDate.value = undefined; pickingEvent.value = false; pickingProject.value = false; pickingProjectGoal.value = false; eventDate.value = undefined; eventEndDate.value = undefined; eventTime.value = ''; eventEndTime.value = ''; eventColor.value = 'blue'; eventRecurrence.value = ''; confirmingDelete.value = false; addingContext.value = false; addingTag.value = false; newTagValue.value = ''; emailViewerOpen.value = false } },
+  set: (v) => { if (!v) { processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false; pickingTickler.value = false; ticklerDate.value = undefined; pickingEvent.value = false; pickingProject.value = false; pickingProjectGoal.value = false; eventDate.value = undefined; eventEndDate.value = undefined; eventTime.value = ''; eventEndTime.value = ''; eventColor.value = 'blue'; eventRecurrence.value = ''; confirmingDelete.value = false; addingContext.value = false; addingTag.value = false; newTagValue.value = ''; addingChecklist.value = false; newChecklistTitle.value = ''; emailViewerOpen.value = false } },
 })
 
 const inbox = computed(() => items.value.filter(i => i.status === 'inbox'))
@@ -2966,6 +3010,48 @@ function openItem(item: Item) {
   eventEndTime.value = ''
   eventColor.value = 'blue'
   eventRecurrence.value = ''
+}
+
+// Checklist management
+const newChecklistTitle = ref('')
+const addingChecklist = ref(false)
+const checklistInput = ref<HTMLInputElement | null>(null)
+
+function checklistProgress(item: Item): { done: number; total: number } | null {
+  const cl = item.checklist_items
+  if (!cl || cl.length === 0) return null
+  return { done: cl.filter(c => c.completed).length, total: cl.length }
+}
+
+function toggleChecklistItem(ci: ChecklistItemRecord) {
+  guardedRouter.post(`/checklist-items/${ci.id}/toggle`, {}, itemOnly)
+  ci.completed = !ci.completed
+}
+
+function addChecklistItem() {
+  const title = newChecklistTitle.value.trim()
+  if (!title || !processing.value) return
+  const tempId = Date.now().toString()
+  const maxOrder = (processing.value.checklist_items || []).reduce((m, c) => Math.max(m, c.sort_order), -1)
+  if (!processing.value.checklist_items) processing.value.checklist_items = []
+  processing.value.checklist_items.push({ id: tempId, item_id: processing.value.id, title, completed: false, sort_order: maxOrder + 1 })
+  guardedRouter.post(`/items/${processing.value.id}/checklist`, { title }, itemOnly)
+  newChecklistTitle.value = ''
+  nextTick(() => checklistInput.value?.focus())
+}
+
+function removeChecklistItem(ci: ChecklistItemRecord) {
+  if (!processing.value) return
+  guardedRouter.delete(`/checklist-items/${ci.id}`, itemOnly)
+  if (processing.value.checklist_items) {
+    processing.value.checklist_items = processing.value.checklist_items.filter(c => c.id !== ci.id)
+  }
+}
+
+function startAddingChecklist() {
+  addingChecklist.value = true
+  newChecklistTitle.value = ''
+  nextTick(() => checklistInput.value?.focus())
 }
 
 // Tag management

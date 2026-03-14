@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CalendarEvent;
+use App\Models\ChecklistItem;
 use App\Models\Context;
 use App\Models\Item;
 use App\Models\Note;
@@ -24,6 +25,7 @@ class SyncController extends Controller
             'notes' => Note::withTrashed()->with('tags')->get()->map(fn ($n) => $this->formatNote($n)),
             'calendar_events' => CalendarEvent::withTrashed()->get()->map(fn ($e) => $this->formatEvent($e)),
             'contexts' => Context::withTrashed()->get()->map(fn ($c) => $this->formatContext($c)),
+            'checklist_items' => ChecklistItem::withTrashed()->get()->map(fn ($ci) => $this->formatChecklistItem($ci)),
             'settings' => Setting::all()->map(fn ($s) => [
                 'key' => $s->key,
                 'value' => $s->value,
@@ -55,6 +57,9 @@ class SyncController extends Controller
             'contexts' => Context::withTrashed()
                 ->where('sync_version', '>', $since)->get()
                 ->map(fn ($c) => $this->formatContext($c)),
+            'checklist_items' => ChecklistItem::withTrashed()
+                ->where('sync_version', '>', $since)->get()
+                ->map(fn ($ci) => $this->formatChecklistItem($ci)),
             'settings' => Setting::where('sync_version', '>', $since)->get()
                 ->map(fn ($s) => [
                     'key' => $s->key,
@@ -68,7 +73,7 @@ class SyncController extends Controller
     {
         $request->validate([
             'mutations' => 'required|array|min:1',
-            'mutations.*.entity' => 'required|in:item,note,calendar_event,context,setting',
+            'mutations.*.entity' => 'required|in:item,note,calendar_event,context,checklist_item,setting',
             'mutations.*.action' => 'required|in:upsert,delete',
             'mutations.*.id' => 'required|string',
             'mutations.*.base_version' => 'sometimes|integer',
@@ -141,6 +146,7 @@ class SyncController extends Controller
             'note' => Note::withTrashed()->find($id),
             'calendar_event' => CalendarEvent::withTrashed()->find($id),
             'context' => Context::withTrashed()->find($id),
+            'checklist_item' => ChecklistItem::withTrashed()->find($id),
             'setting' => Setting::find($id),
             default => null,
         };
@@ -174,6 +180,9 @@ class SyncController extends Controller
                 break;
             case 'context':
                 Context::create(array_merge($data, ['id' => $id]));
+                break;
+            case 'checklist_item':
+                ChecklistItem::create(array_merge($data, ['id' => $id]));
                 break;
             case 'setting':
                 Setting::create(['key' => $id, 'value' => $data['value'] ?? null]);
@@ -280,6 +289,21 @@ class SyncController extends Controller
             'sort_order' => $context->sort_order,
             'sync_version' => $context->sync_version,
             'deleted' => ! is_null($context->deleted_at),
+        ];
+    }
+
+    protected function formatChecklistItem($ci): array
+    {
+        return [
+            'id' => $ci->id,
+            'item_id' => $ci->item_id,
+            'title' => $ci->title,
+            'completed' => $ci->completed,
+            'sort_order' => $ci->sort_order,
+            'sync_version' => $ci->sync_version,
+            'deleted' => ! is_null($ci->deleted_at),
+            'created_at' => $ci->created_at?->toISOString(),
+            'updated_at' => $ci->updated_at?->toISOString(),
         ];
     }
 }

@@ -53,6 +53,11 @@ class Item extends Model
         return $this->hasOne(Email::class);
     }
 
+    public function checklistItems(): HasMany
+    {
+        return $this->hasMany(ChecklistItem::class)->orderBy('sort_order');
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Item::class, 'project_id');

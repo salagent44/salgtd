@@ -10,6 +10,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteVersionController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UpdateController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/items/{item}/assign-project', [ItemController::class, 'assignProject']);
     Route::post('/items/{item}/tags', [ItemController::class, 'addTag']);
     Route::delete('/items/{item}/tags/{tag}', [ItemController::class, 'removeTag']);
+
+    // Checklist Items API
+    Route::post('/items/{item}/checklist', [ChecklistItemController::class, 'store']);
+    Route::put('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'update']);
+    Route::delete('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'destroy']);
+    Route::post('/checklist-items/{checklistItem}/toggle', [ChecklistItemController::class, 'toggle']);
+    Route::post('/items/{item}/checklist/reorder', [ChecklistItemController::class, 'reorder']);
 
     // Notes API
     Route::post('/notes', [NoteController::class, 'store']);
