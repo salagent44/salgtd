@@ -1898,25 +1898,24 @@
         </div>
 
         <!-- Actions footer (not for checklists — they have their own actions) -->
-        <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5 space-y-3">
-          <!-- Primary action: Mark Done -->
-          <button
-            v-if="processing && processing.status !== 'inbox' && processing.status !== 'done'"
-            @click="clarify('done')"
-            class="w-full rounded-xl bg-green-600 hover:bg-green-500 text-white py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Done
-          </button>
-          <!-- Secondary actions row -->
+        <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5">
           <div class="flex items-center justify-between border-t border-border/40 pt-3">
-            <button
-              v-if="processing && processing.status !== 'inbox'"
-              @click="moveToInbox()"
-              class="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-              data-testid="move-to-inbox-btn"
-            >Move to Inbox</button>
-            <span v-else></span>
+            <div class="flex items-center gap-3">
+              <button
+                v-if="processing && processing.status !== 'inbox' && processing.status !== 'done'"
+                @click="clarify('done')"
+                class="inline-flex items-center gap-1.5 rounded-lg bg-green-500/15 text-green-500 hover:bg-green-500/25 px-3 py-1.5 text-xs font-semibold transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Done
+              </button>
+              <button
+                v-if="processing && processing.status !== 'inbox'"
+                @click="moveToInbox()"
+                class="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                data-testid="move-to-inbox-btn"
+              >Move to Inbox</button>
+            </div>
             <div v-if="confirmingDelete" class="flex items-center gap-2">
               <span class="text-xs text-destructive font-medium">Delete?</span>
               <button @click="confirmingDelete = false" class="text-xs text-muted-foreground hover:text-foreground px-2 py-1 transition-colors">No</button>
