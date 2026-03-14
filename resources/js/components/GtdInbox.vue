@@ -71,16 +71,10 @@
               :class="smtpStatus === 'up' ? 'text-green-500' : smtpStatus === 'down' ? 'text-red-500' : 'text-muted-foreground/40'"
               data-testid="smtp-status"
             >
-              <span class="relative flex h-2 w-2">
-                <span
-                  v-if="smtpStatus === 'up'"
-                  class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"
-                ></span>
-                <span
-                  class="relative inline-flex h-2 w-2 rounded-full"
-                  :class="smtpStatus === 'up' ? 'bg-green-500' : smtpStatus === 'down' ? 'bg-red-500' : 'bg-muted-foreground/30'"
-                ></span>
-              </span>
+              <span
+                class="inline-flex h-2 w-2 rounded-full"
+                :class="smtpStatus === 'up' ? 'bg-green-500' : smtpStatus === 'down' ? 'bg-red-500' : 'bg-muted-foreground/30'"
+              ></span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               <div class="pointer-events-none absolute top-full right-0 mt-2 w-48 rounded-lg border border-border bg-popover px-3 py-2.5 text-xs shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50">
                 <p class="font-semibold text-popover-foreground mb-0.5">Mail Server</p>
