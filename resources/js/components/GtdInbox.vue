@@ -1896,6 +1896,7 @@
     <div
       v-if="pickingProject"
       class="fixed inset-0 bg-black/60 flex items-start justify-center pt-[15vh] p-4 z-[100]"
+      data-dismissable-layer
       @click.self="pickingProject = false"
       @keydown.esc.stop="pickingProject = false"
       @pointerdown.stop

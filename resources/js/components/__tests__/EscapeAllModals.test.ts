@@ -314,4 +314,125 @@ describe('Dialog escape (guardDialogDismiss)', () => {
     }
     expect(handleDialogEscape(state)).toBe('prevented')
   })
+
+  it('multi-press: waiting → main → close dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingWaiting: true }
+    expect(handleDialogEscape(state)).toBe('pickingWaiting')
+    expect(handleDialogEscape(state)).toBe('close-dialog')
+  })
+
+  it('multi-press: tickler → main → close dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingTickler: true }
+    expect(handleDialogEscape(state)).toBe('pickingTickler')
+    expect(handleDialogEscape(state)).toBe('close-dialog')
+  })
+
+  it('multi-press: event → main → close dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingEvent: true }
+    expect(handleDialogEscape(state)).toBe('pickingEvent')
+    expect(handleDialogEscape(state)).toBe('close-dialog')
+  })
+})
+
+// ─── Dialog dismiss guard tests (pointer-down-outside / interact-outside) ───
+
+describe('Dialog dismiss guard (guardDialogDismiss)', () => {
+  /**
+   * Simulates guardDialogDismiss for pointer-down-outside and interact-outside events.
+   * Returns whether the event was prevented (dialog stays open) and what sub-view was closed.
+   */
+  function simulateDismissGuard(state: DialogSubState): { prevented: boolean; closed: string | null } {
+    // Same logic as guardDialogDismiss
+    if (state.emailViewerOpen || state.pickingProject) {
+      return { prevented: true, closed: null }
+    }
+    if (state.pickingProjectGoal) {
+      state.pickingProjectGoal = false
+      return { prevented: true, closed: 'pickingProjectGoal' }
+    }
+    if (state.pickingContext) {
+      state.pickingContext = false
+      return { prevented: true, closed: 'pickingContext' }
+    }
+    if (state.pickingWaiting) {
+      state.pickingWaiting = false
+      return { prevented: true, closed: 'pickingWaiting' }
+    }
+    if (state.pickingTickler) {
+      state.pickingTickler = false
+      return { prevented: true, closed: 'pickingTickler' }
+    }
+    if (state.pickingEvent) {
+      state.pickingEvent = false
+      return { prevented: true, closed: 'pickingEvent' }
+    }
+    return { prevented: false, closed: null }
+  }
+
+  it('clicking outside with project picker open does NOT close dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingProject: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(state.pickingProject).toBe(true) // picker stays open — has own dismiss
+  })
+
+  it('clicking outside with email viewer open does NOT close dialog', () => {
+    const state = { ...defaultDialogSubState(), emailViewerOpen: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+  })
+
+  it('clicking outside with no sub-views allows dialog to close', () => {
+    const state = defaultDialogSubState()
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(false)
+  })
+
+  it('clicking outside with pickingContext closes sub-view, keeps dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingContext: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBe('pickingContext')
+    expect(state.pickingContext).toBe(false)
+  })
+
+  it('clicking outside with pickingProjectGoal closes sub-view, keeps dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingProjectGoal: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBe('pickingProjectGoal')
+    expect(state.pickingProjectGoal).toBe(false)
+  })
+
+  it('clicking outside with pickingWaiting closes sub-view, keeps dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingWaiting: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBe('pickingWaiting')
+    expect(state.pickingWaiting).toBe(false)
+  })
+
+  it('clicking outside with pickingTickler closes sub-view, keeps dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingTickler: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBe('pickingTickler')
+    expect(state.pickingTickler).toBe(false)
+  })
+
+  it('clicking outside with pickingEvent closes sub-view, keeps dialog', () => {
+    const state = { ...defaultDialogSubState(), pickingEvent: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBe('pickingEvent')
+    expect(state.pickingEvent).toBe(false)
+  })
+
+  it('project picker + project goal: project picker takes priority (prevented, nothing closed)', () => {
+    const state = { ...defaultDialogSubState(), pickingProject: true, pickingProjectGoal: true }
+    const result = simulateDismissGuard(state)
+    expect(result.prevented).toBe(true)
+    expect(result.closed).toBeNull()
+    expect(state.pickingProjectGoal).toBe(true) // not touched
+  })
 })
