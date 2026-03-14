@@ -1304,8 +1304,9 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
+      <DialogContent :class="emailViewerOpen ? 'sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto' : 'sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto'" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
 
+      <template v-if="!emailViewerOpen">
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
           <div class="flex items-center justify-between mb-2">
@@ -1672,42 +1673,36 @@
           </button>
         </div>
 
-      <!-- Email Viewer (inside dialog portal to avoid inert) -->
-      <div
-        v-if="emailViewerOpen && processing?.email"
-        class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[100]"
-        @click.self="emailViewerOpen = false"
-        @keydown.esc.stop="emailViewerOpen = false"
-        @pointerdown.self="emailViewerOpen = false"
-      >
-        <div class="bg-card border border-border rounded-xl w-full max-w-3xl shadow-xl overflow-hidden" @pointerdown.stop>
-          <div class="flex items-center justify-between px-6 pt-6 pb-3">
-            <p class="text-base font-semibold text-foreground truncate flex-1 mr-3 select-text cursor-text">{{ processing.email.subject }}</p>
-            <button @click="emailViewerOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="px-6 pb-4 space-y-1 text-sm select-text cursor-text">
-            <p><span class="text-muted-foreground">From:</span> <span class="font-medium">{{ processing.email.from_name ? `${processing.email.from_name} <${processing.email.from_address}>` : processing.email.from_address }}</span></p>
-            <p><span class="text-muted-foreground">To:</span> {{ processing.email.to_address }}</p>
-            <p><span class="text-muted-foreground">Date:</span> {{ new Date(processing.email.received_at).toLocaleString() }}</p>
-          </div>
-          <Separator />
-          <div class="px-6 py-5 max-h-[60vh] overflow-y-auto select-text cursor-text">
-            <pre class="text-sm text-foreground whitespace-pre-wrap font-sans select-text">{{ processing.email.body_text }}</pre>
-          </div>
-          <Separator />
-          <div class="px-6 py-4 flex justify-end">
-            <a
-              :href="`mailto:${processing.email.from_address}?subject=Re: ${encodeURIComponent(processing.email.subject)}`"
-              class="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 text-sm font-medium transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-              Reply in email client
-            </a>
-          </div>
+      </template>
+
+      <!-- Email Viewer (replaces dialog content when open) -->
+      <template v-if="emailViewerOpen && processing?.email">
+        <div class="px-6 pt-6 pb-3 flex items-center justify-between">
+          <button @click="emailViewerOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <p class="text-base font-semibold text-foreground truncate flex-1 mx-3 select-text cursor-text">{{ processing.email.subject }}</p>
         </div>
-      </div>
+        <div class="px-6 pb-4 space-y-1 text-sm select-text cursor-text">
+          <p><span class="text-muted-foreground">From:</span> <span class="font-medium">{{ processing.email.from_name ? `${processing.email.from_name} <${processing.email.from_address}>` : processing.email.from_address }}</span></p>
+          <p><span class="text-muted-foreground">To:</span> {{ processing.email.to_address }}</p>
+          <p><span class="text-muted-foreground">Date:</span> {{ new Date(processing.email.received_at).toLocaleString() }}</p>
+        </div>
+        <Separator />
+        <div class="px-6 py-5 flex-1 overflow-y-auto select-text cursor-text">
+          <pre class="text-sm text-foreground whitespace-pre-wrap font-sans select-text">{{ processing.email.body_text }}</pre>
+        </div>
+        <Separator />
+        <div class="px-6 py-4 flex justify-end">
+          <a
+            :href="`mailto:${processing.email.from_address}?subject=Re: ${encodeURIComponent(processing.email.subject)}`"
+            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 text-sm font-medium transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            Reply in email client
+          </a>
+        </div>
+      </template>
 
       </DialogContent>
     </Dialog>
