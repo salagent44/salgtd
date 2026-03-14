@@ -2998,7 +2998,7 @@ const waitingDateInput = ref('')
 const waitingInput = ref<HTMLInputElement | null>(null)
 
 function guardDialogDismiss(e: Event) {
-  if (emailViewerOpen.value) { e.preventDefault(); return }
+  if (emailViewerOpen.value || pickingProject.value || pickingProjectGoal.value) { e.preventDefault(); return }
 }
 
 const dialogOpen = computed({
