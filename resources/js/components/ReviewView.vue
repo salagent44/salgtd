@@ -122,13 +122,15 @@ const checked = ref<Record<string, boolean>>({})
 const reviewProgressRaw = computed(() => page.props.review_progress as string | null)
 
 function loadProgress() {
-  if (reviewProgressRaw.value) {
-    try {
-      const data = JSON.parse(reviewProgressRaw.value)
-      checked.value = data.checked ?? {}
-    } catch {
-      checked.value = {}
-    }
+  if (!reviewProgressRaw.value) {
+    checked.value = {}
+    return
+  }
+  try {
+    const data = JSON.parse(reviewProgressRaw.value)
+    checked.value = data.checked ?? {}
+  } catch {
+    checked.value = {}
   }
 }
 
