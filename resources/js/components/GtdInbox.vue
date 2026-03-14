@@ -1322,7 +1322,7 @@
             v-model="editItem.title"
             type="text"
             @keydown.enter="saveEdits"
-            @keydown.esc="if (!emailViewerOpen) dialogOpen = false"
+            @keydown.esc="!emailViewerOpen && (dialogOpen = false)"
             class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2"
           />
         </div>
