@@ -2038,6 +2038,14 @@ import { usePage, router } from '@inertiajs/vue3'
 const isOnline = ref(true)
 let healthPollInterval: ReturnType<typeof setInterval> | null = null
 
+// Sync coordination — declared early so guardedRouter can use it
+let lastLocalSaveAt = 0
+let knownSyncVersion = 0
+function markLocalSave() {
+  lastLocalSaveAt = Date.now()
+  knownSyncVersion += 1
+}
+
 async function checkHealth() {
   try {
     const res = await fetch('/health', { method: 'GET', cache: 'no-store' })
@@ -2054,14 +2062,17 @@ checkHealth()
 const guardedRouter = {
   post(...args: Parameters<typeof router.post>) {
     if (!isOnline.value) return
+    markLocalSave()
     return router.post(...args)
   },
   put(...args: Parameters<typeof router.put>) {
     if (!isOnline.value) return
+    markLocalSave()
     return router.put(...args)
   },
   delete(...args: Parameters<typeof router.delete>) {
     if (!isOnline.value) return
+    markLocalSave()
     return router.delete(...args)
   },
   get(...args: Parameters<typeof router.get>) {
@@ -2921,19 +2932,19 @@ onUnmounted(() => {
 
 // Smart sync: lightweight version polling (3s) + full reload only on change
 let syncPollInterval: ReturnType<typeof setInterval> | null = null
-let knownSyncVersion = 0
 let echoChannel: any = null
 let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 async function checkSyncVersion() {
   if (!isOnline.value) return
+  // Skip if a local save happened in the last 2 seconds
+  if (Date.now() - lastLocalSaveAt < 2000) return
   try {
     const res = await fetch('/api/sync/version', { cache: 'no-store' })
     if (!res.ok) return
     const data = await res.json()
     const serverVersion = data.v as number
     if (knownSyncVersion === 0) {
-      // First check — just record the version, don't reload
       knownSyncVersion = serverVersion
       return
     }
