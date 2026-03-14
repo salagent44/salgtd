@@ -2520,12 +2520,22 @@ onMounted(() => {
   smtpPollInterval = setInterval(checkSmtpStatus, 30000)
   checkHealth()
   healthPollInterval = setInterval(checkHealth, 15000)
+  itemsPollInterval = setInterval(pollForNewItems, 30000)
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   if (smtpPollInterval) clearInterval(smtpPollInterval)
   if (healthPollInterval) clearInterval(healthPollInterval)
+  if (itemsPollInterval) clearInterval(itemsPollInterval)
 })
+
+// Poll for new items (e.g. inbound emails) every 30 seconds
+let itemsPollInterval: ReturnType<typeof setInterval> | null = null
+function pollForNewItems() {
+  if (!isOnline.value) return
+  if (processing.value) return // don't refresh while clarifying
+  router.reload({ only: ['items'], preserveScroll: true, preserveState: true })
+}
 
 const processing = ref<Item | null>(null)
 const editItem = ref<{ title: string } | null>(null)
