@@ -1736,14 +1736,14 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div class="px-5 pb-3 space-y-1 text-sm">
+        <div class="px-5 pb-3 space-y-1 text-sm select-text cursor-text">
           <p><span class="text-muted-foreground">From:</span> <span class="font-medium">{{ processing.email.from_name ? `${processing.email.from_name} <${processing.email.from_address}>` : processing.email.from_address }}</span></p>
           <p><span class="text-muted-foreground">To:</span> {{ processing.email.to_address }}</p>
           <p><span class="text-muted-foreground">Date:</span> {{ new Date(processing.email.received_at).toLocaleString() }}</p>
         </div>
         <Separator />
-        <div class="px-5 py-4 max-h-[400px] overflow-y-auto">
-          <pre class="text-sm text-foreground whitespace-pre-wrap font-sans">{{ processing.email.body_text }}</pre>
+        <div class="px-5 py-4 max-h-[400px] overflow-y-auto select-text cursor-text">
+          <pre class="text-sm text-foreground whitespace-pre-wrap font-sans select-text">{{ processing.email.body_text }}</pre>
         </div>
         <Separator />
         <div class="px-5 py-4 flex justify-end">
