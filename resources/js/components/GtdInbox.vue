@@ -1304,7 +1304,7 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject" @escape-key-down="(e: Event) => { if (emailViewerOpen) e.preventDefault() }" @interact-outside="(e: Event) => { if (emailViewerOpen) e.preventDefault() }">
+      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
 
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
@@ -2584,6 +2584,10 @@ watch(pickingProject, (v) => {
 const waitingFor = ref('')
 const waitingDateInput = ref('')
 const waitingInput = ref<HTMLInputElement | null>(null)
+
+function guardDialogDismiss(e: Event) {
+  if (emailViewerOpen.value) e.preventDefault()
+}
 
 const dialogOpen = computed({
   get: () => processing.value !== null,
