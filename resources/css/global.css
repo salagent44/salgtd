@@ -1168,31 +1168,36 @@
    Toast (vue-sonner) — subtle, theme-aware
    ============================================================ */
 [data-sonner-toaster] {
-  --normal-bg: var(--card) !important;
-  --normal-text: var(--foreground) !important;
-  --normal-border: var(--border) !important;
-  --success-bg: var(--card) !important;
-  --success-text: var(--foreground) !important;
-  --success-border: var(--border) !important;
   font-family: inherit !important;
   --width: auto !important;
   position: fixed !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
   z-index: 99999 !important;
   pointer-events: none !important;
 }
 [data-sonner-toast] {
+  background: var(--foreground) !important;
+  color: var(--background) !important;
+  border: none !important;
   font-size: 13px !important;
-  border-radius: 12px !important;
-  padding: 12px 24px !important;
-  box-shadow: 0 4px 16px oklch(0 0 0 / 15%) !important;
-  border: 1px solid var(--border) !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  box-shadow: none !important;
   text-align: center !important;
   pointer-events: auto !important;
+  opacity: 0.9 !important;
 }
 [data-sonner-toast] [data-content] {
   text-align: center !important;
 }
 [data-sonner-toast] [data-icon] {
+  display: none !important;
+}
+[data-sonner-toast] [data-close-button] {
   display: none !important;
 }
 
