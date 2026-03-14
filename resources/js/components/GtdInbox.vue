@@ -1428,7 +1428,7 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent :class="emailViewerOpen ? 'sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto' : 'sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto'" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss" @pointer-down-outside="guardDialogDismiss" @focus-outside="guardDialogDismiss">
+      <DialogContent :class="emailViewerOpen ? 'sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto' : 'sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto'" :show-close-button="false" :trap-focus="!emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss" @pointer-down-outside="guardDialogDismiss" @focus-outside="guardDialogDismiss">
 
       <template v-if="!emailViewerOpen">
         <!-- Title editor -->
@@ -1599,8 +1599,49 @@
 
         <div v-if="processing?.status !== 'checklist'" class="px-6 py-5 space-y-5">
 
+          <!-- ═══ PROJECT PICKER (inline sub-view) ═══ -->
+          <div v-if="pickingProject" class="space-y-4">
+            <div class="flex items-center gap-3">
+              <button @click="pickingProject = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+              <p class="text-sm font-semibold">Assign to project</p>
+            </div>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input
+                ref="projectSearchInput"
+                v-model="projectSearchQuery"
+                type="text"
+                placeholder="Search projects..."
+                class="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div class="max-h-[300px] overflow-y-auto space-y-0.5">
+              <button
+                v-if="!projectSearchQuery"
+                @click="assignProjectToItem(null)"
+                class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors text-muted-foreground"
+              >
+                <span class="text-base">—</span>
+                <span class="text-sm font-medium">No project</span>
+              </button>
+              <button
+                v-for="p in filteredProjects.slice(0, 15)"
+                :key="p.id"
+                @click="assignProjectToItem(p.id)"
+                class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors"
+              >
+                <span class="text-base">📁</span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium truncate">{{ p.title }}</p>
+                </div>
+                <span class="text-[10px] text-muted-foreground shrink-0">{{ (projectTasksMap.get(p.id) || []).length }} tasks</span>
+              </button>
+              <p v-if="projectSearchQuery && filteredProjects.length === 0" class="text-sm text-muted-foreground text-center py-6">No projects match</p>
+            </div>
+          </div>
+
           <!-- ═══ INBOX ITEMS: show bucket picker ═══ -->
-          <template v-if="processing?.status === 'inbox'">
+          <template v-else-if="processing?.status === 'inbox'">
 
             <!-- Context sub-step -->
             <div v-if="pickingContext" class="space-y-5" @keydown.enter="confirmNextAction">
@@ -1981,64 +2022,6 @@
       </DialogContent>
     </Dialog>
 
-    <!-- Project Search Modal -->
-    <Teleport to="body">
-    <div
-      v-if="pickingProject"
-      class="fixed inset-0 bg-black/60 flex items-start justify-center pt-[15vh] p-4 z-[100]"
-      data-dismissable-layer
-      @click.self="pickingProject = false"
-      @keydown.esc.stop="pickingProject = false"
-      @pointerdown.stop
-    >
-      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl overflow-hidden" @pointerdown.stop>
-        <div class="px-5 pt-5 pb-3 space-y-3">
-          <div class="flex items-center justify-between">
-            <p class="text-sm font-semibold">Assign to project</p>
-            <button @click="pickingProject = false" class="text-muted-foreground hover:text-foreground p-1 transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input
-              ref="projectSearchInput"
-              v-model="projectSearchQuery"
-              type="text"
-              placeholder="Search projects..."
-              class="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
-              @keydown.esc="pickingProject = false"
-            />
-          </div>
-        </div>
-        <div class="px-5 pb-5 max-h-[300px] overflow-y-auto">
-          <div class="space-y-0.5">
-            <button
-              v-if="!projectSearchQuery"
-              @click="assignProjectToItem(null)"
-              class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors text-muted-foreground"
-            >
-              <span class="text-base">—</span>
-              <span class="text-sm font-medium">No project</span>
-            </button>
-            <button
-              v-for="p in filteredProjects.slice(0, 15)"
-              :key="p.id"
-              @click="assignProjectToItem(p.id)"
-              class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors"
-            >
-              <span class="text-base">📁</span>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium truncate">{{ p.title }}</p>
-              </div>
-              <span class="text-[10px] text-muted-foreground shrink-0">{{ (projectTasksMap.get(p.id) || []).length }} tasks</span>
-            </button>
-            <p v-if="projectSearchQuery && filteredProjects.length === 0" class="text-sm text-muted-foreground text-center py-6">No projects match</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    </Teleport>
 
   </div>
 </template>
@@ -3089,7 +3072,8 @@ const waitingDateInput = ref('')
 const waitingInput = ref<HTMLInputElement | null>(null)
 
 function guardDialogDismiss(e: Event) {
-  if (emailViewerOpen.value || pickingProject.value) { e.preventDefault(); return }
+  if (emailViewerOpen.value) { e.preventDefault(); return }
+  if (pickingProject.value) { e.preventDefault(); pickingProject.value = false; return }
   if (pickingProjectGoal.value) { e.preventDefault(); pickingProjectGoal.value = false; return }
   if (pickingContext.value) { e.preventDefault(); pickingContext.value = false; return }
   if (pickingWaiting.value) { e.preventDefault(); pickingWaiting.value = false; return }
