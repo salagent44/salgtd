@@ -2043,7 +2043,6 @@ let lastLocalSaveAt = 0
 let knownSyncVersion = 0
 function markLocalSave() {
   lastLocalSaveAt = Date.now()
-  knownSyncVersion += 1
 }
 
 async function checkHealth() {
