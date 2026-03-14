@@ -1432,8 +1432,8 @@
           />
         </div>
 
-        <!-- Tag management -->
-        <div v-if="processing && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
+        <!-- Tag management (not for checklists) -->
+        <div v-if="processing && processing.status !== 'checklist' && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
           <div class="flex flex-wrap items-center gap-1.5">
             <span v-for="t in (processing.tags || [])" :key="t.id" class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
               #{{ t.tag }}
@@ -1495,22 +1495,20 @@
               <button @click="removeChecklistItem(ci)" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-xs">&times;</button>
             </div>
           </div>
-          <div v-if="addingChecklistStep" class="flex items-center gap-2 mt-1">
+          <div class="flex items-center gap-2 mt-2">
+            <div class="w-5 h-5 rounded border-2 border-dashed border-muted-foreground/20 shrink-0"></div>
             <input
               ref="checklistStepInput"
               v-model="newChecklistStepTitle"
               type="text"
               placeholder="Add a step…"
+              @focus="addingChecklistStep = true"
               @keydown.enter.prevent="addChecklistStep"
               @keydown.esc="addingChecklistStep = false; newChecklistStepTitle = ''"
-              class="flex-1 rounded-lg border border-border bg-background px-2.5 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              class="flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-muted-foreground/50 border-b border-transparent focus:border-primary transition-colors"
             />
-            <button @click="addChecklistStep" class="text-xs text-primary font-medium hover:underline shrink-0">Add</button>
+            <button v-if="newChecklistStepTitle.trim()" @click="addChecklistStep" class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shrink-0">Add</button>
           </div>
-          <button v-else @click="startAddingStep" class="mt-1 text-xs text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted/50 flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add step
-          </button>
         </div>
 
         <!-- View Email button -->
