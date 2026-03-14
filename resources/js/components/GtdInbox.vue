@@ -45,7 +45,7 @@
               class="rounded-lg px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors disabled:opacity-40 disabled:pointer-events-none"
               :class="clarifyBtnClass"
               data-testid="process-btn"
-            ><svg class="inline -mt-0.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="hidden sm:inline">Clarify </span>({{ inbox.length }})</button>
+            ><svg class="inline -mt-0.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg><span class="hidden sm:inline">Clarify </span>({{ inbox.length }})</button>
             <button
               @click="reviewOpen = true"
               class="hidden sm:inline-flex rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group relative"
