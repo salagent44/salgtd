@@ -1961,12 +1961,12 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BmwTOORa.js",
+    "file": "assets/app-DIUAzgke.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-DE4LjXfO.css",
+      "assets/app-ByurC0qG.css",
       "assets/app-BgjvS4DG.css"
     ],
     "assets": [

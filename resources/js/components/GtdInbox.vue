@@ -626,11 +626,12 @@
           v-for="v in views"
           :key="'mobile-' + v.key"
           @click="currentView = v.key; if (v.key === 'tasks') activePill = 'inbox'"
-          class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors"
+          class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative"
           :class="currentView === v.key ? 'text-primary' : 'text-muted-foreground'"
         >
+          <span v-if="currentView === v.key" class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"></span>
           <span class="text-lg leading-none">{{ v.icon }}</span>
-          <span class="text-[10px] font-semibold">{{ v.label }}</span>
+          <span class="text-[10px]" :class="currentView === v.key ? 'font-bold' : 'font-medium'">{{ v.label }}</span>
         </button>
       </div>
     </nav>
