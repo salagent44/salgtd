@@ -56,6 +56,16 @@
                 {{ nextReviewLabel }}
               </span>
             </button>
+            <button
+              @click="openQuickChecklist"
+              class="rounded-lg bg-muted px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group relative"
+              data-testid="new-checklist-btn"
+            >
+              ☑ <span class="hidden sm:inline ml-0.5">Checklist</span>
+              <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground text-background text-[10px] px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                New checklist (C)
+              </span>
+            </button>
           </template>
           <div class="hidden sm:flex items-center gap-2">
             <!-- App status -->
@@ -357,27 +367,7 @@
 
       <!-- Checklists -->
       <div v-else-if="activePill === 'checklists'">
-        <!-- New checklist inline creator -->
-        <div class="mb-4">
-          <div v-if="inlineChecklistOpen" class="flex gap-2">
-            <input
-              ref="inlineChecklistInput"
-              v-model="inlineChecklistTitle"
-              @keydown.enter="submitInlineChecklist"
-              @keydown.esc="inlineChecklistOpen = false; inlineChecklistTitle = ''"
-              type="text"
-              placeholder="What's the checklist for?"
-              class="flex-1 rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-            />
-            <button @click="submitInlineChecklist" :disabled="!inlineChecklistTitle.trim()" class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0">Create</button>
-          </div>
-          <button v-else @click="openInlineChecklist" class="w-full rounded-xl border-2 border-dashed border-border/60 hover:border-primary/40 bg-muted/20 hover:bg-primary/5 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-primary transition-all flex items-center justify-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Checklist
-          </button>
-        </div>
-
-        <div v-if="checklistItems.length === 0 && !inlineChecklistOpen" class="text-center py-8 text-muted-foreground">
+        <div v-if="checklistItems.length === 0" class="text-center py-8 text-muted-foreground">
           <p class="text-3xl mb-2">☑</p>
           <p class="text-sm">No checklists yet</p>
           <p class="text-xs mt-1">Press <kbd class="px-1.5 py-0.5 rounded bg-muted text-foreground text-[10px] font-mono">C</kbd> to create one</p>
@@ -1453,7 +1443,7 @@
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Task</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{{ processing?.status === 'checklist' ? 'Checklist' : 'Task' }}</p>
             <button
               v-if="processing"
               @click="toggleFlag"
@@ -1567,7 +1557,24 @@
           </button>
         </div>
 
-        <div class="px-6 py-5 space-y-5">
+        <div v-if="processing?.status === 'checklist'" class="px-6 pb-4 space-y-3">
+          <!-- Checklist-specific: Mark Done / Trash -->
+          <div class="flex gap-2">
+            <button
+              @click="clarify('done')"
+              class="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              :class="checklistProgress(processing) && checklistProgress(processing)!.total > 0 && checklistProgress(processing)!.done === checklistProgress(processing)!.total ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/30'"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark Done
+            </button>
+            <button @click="clarify('trash')" class="rounded-xl px-4 py-2.5 text-sm font-medium text-destructive/60 hover:text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors">
+              Trash
+            </button>
+          </div>
+        </div>
+
+        <div v-if="processing?.status !== 'checklist'" class="px-6 py-5 space-y-5">
 
           <!-- Context sub-step -->
           <div v-if="pickingContext" class="space-y-5" @keydown.enter="confirmNextAction">
@@ -1843,8 +1850,8 @@
           </div>
         </div>
 
-        <!-- Move to Inbox / Delete -->
-        <div class="px-6 pb-5 space-y-1">
+        <!-- Move to Inbox / Delete (not for checklists — they have their own actions) -->
+        <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5 space-y-1">
           <button
             v-if="processing && processing.status !== 'inbox'"
             @click="moveToInbox()"
@@ -2450,10 +2457,6 @@ const quickChecklist = ref(false)
 const quickChecklistTitle = ref('')
 const quickChecklistInput = ref<HTMLInputElement | null>(null)
 
-const inlineChecklistOpen = ref(false)
-const inlineChecklistTitle = ref('')
-const inlineChecklistInput = ref<HTMLInputElement | null>(null)
-
 // Process inbox
 const processingInbox = ref(false)
 const processIndex = ref(0)
@@ -2734,17 +2737,6 @@ function openQuickChecklist() {
 function quickChecklistSubmit() {
   if (!quickChecklistTitle.value.trim()) return
   guardedRouter.post('/items', { title: quickChecklistTitle.value.trim(), status: 'checklist' }, { ...itemOnly, onSuccess: () => { quickChecklist.value = false } })
-}
-
-function openInlineChecklist() {
-  inlineChecklistOpen.value = true
-  inlineChecklistTitle.value = ''
-  nextTick(() => inlineChecklistInput.value?.focus())
-}
-
-function submitInlineChecklist() {
-  if (!inlineChecklistTitle.value.trim()) return
-  guardedRouter.post('/items', { title: inlineChecklistTitle.value.trim(), status: 'checklist' }, { ...itemOnly, onSuccess: () => { inlineChecklistOpen.value = false; inlineChecklistTitle.value = '' } })
 }
 
 function onKeydown(e: KeyboardEvent) {
