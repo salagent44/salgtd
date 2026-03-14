@@ -223,6 +223,94 @@ class ChecklistTest extends TestCase
         $this->assertDatabaseHas('checklist_items', ['id' => $newId, 'title' => 'Pushed step']);
     }
 
+    public function test_can_create_checklist_type_item(): void
+    {
+        $response = $this->post('/items', [
+            'title' => 'My Checklist',
+            'status' => 'checklist',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('items', [
+            'title' => 'My Checklist',
+            'status' => 'checklist',
+        ]);
+    }
+
+    public function test_can_update_checklist_title(): void
+    {
+        $checklist = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Old Title',
+            'status' => 'checklist',
+        ]);
+
+        $response = $this->put("/items/{$checklist->id}", [
+            'title' => 'New Title',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals('New Title', $checklist->fresh()->title);
+    }
+
+    public function test_checklist_stays_checklist_after_title_update(): void
+    {
+        $checklist = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'My Checklist',
+            'status' => 'checklist',
+        ]);
+
+        $this->put("/items/{$checklist->id}", ['title' => 'Updated']);
+
+        $this->assertEquals('checklist', $checklist->fresh()->status);
+    }
+
+    public function test_can_delete_checklist(): void
+    {
+        $checklist = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Delete Me',
+            'status' => 'checklist',
+        ]);
+
+        $response = $this->delete("/items/{$checklist->id}");
+        $response->assertRedirect();
+        $this->assertSoftDeleted('items', ['id' => $checklist->id]);
+    }
+
+    public function test_deleting_checklist_soft_deletes_steps(): void
+    {
+        $checklist = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Checklist',
+            'status' => 'checklist',
+        ]);
+
+        $ci1 = ChecklistItem::create(['id' => Str::ulid(), 'item_id' => $checklist->id, 'title' => 'Step 1', 'sort_order' => 0]);
+        $ci2 = ChecklistItem::create(['id' => Str::ulid(), 'item_id' => $checklist->id, 'title' => 'Step 2', 'sort_order' => 1]);
+
+        $this->delete("/items/{$checklist->id}");
+
+        $this->assertSoftDeleted('items', ['id' => $checklist->id]);
+    }
+
+    public function test_checklist_can_be_marked_done(): void
+    {
+        $checklist = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Finish Me',
+            'status' => 'checklist',
+        ]);
+
+        ChecklistItem::create(['id' => Str::ulid(), 'item_id' => $checklist->id, 'title' => 'Step 1', 'completed' => true, 'sort_order' => 0]);
+        ChecklistItem::create(['id' => Str::ulid(), 'item_id' => $checklist->id, 'title' => 'Step 2', 'completed' => true, 'sort_order' => 1]);
+
+        $response = $this->post("/items/{$checklist->id}/process", ['status' => 'done']);
+        $response->assertRedirect();
+        $this->assertEquals('done', $checklist->fresh()->status);
+    }
+
     public function test_push_can_delete_checklist_item(): void
     {
         $ci = ChecklistItem::create([

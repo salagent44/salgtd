@@ -1607,16 +1607,16 @@
           </button>
         </div>
 
-        <div v-if="processing?.status === 'checklist'" class="px-6 pb-4 space-y-3">
+        <div v-if="processing?.status === 'checklist'" class="px-6 pb-4 space-y-2">
           <!-- Checklist-specific actions -->
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2">
             <button
               @click="saveChecklist"
-              class="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              class="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 text-xs font-semibold transition-colors"
             >
               Save
             </button>
-            <button v-if="!confirmingChecklistDelete" @click="confirmingChecklistDelete = true" class="rounded-xl px-4 py-2.5 text-sm font-medium text-destructive/60 hover:text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors">
+            <button v-if="!confirmingChecklistDelete" @click="confirmingChecklistDelete = true" class="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
               Trash
             </button>
           </div>
@@ -1631,11 +1631,11 @@
             <svg v-if="!savedAsTemplate" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             {{ savedAsTemplate ? 'Saved as template!' : 'Save as Template' }}
           </button>
-          <div v-if="confirmingChecklistDelete" class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 flex items-center justify-between gap-3">
-            <p class="text-sm text-destructive font-medium">Delete this checklist?</p>
-            <div class="flex gap-2">
-              <button @click="confirmingChecklistDelete = false" class="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors">Cancel</button>
-              <button @click="clarify('trash')" class="rounded-lg bg-destructive hover:bg-destructive/90 text-white px-4 py-2 text-sm font-semibold transition-colors">Delete</button>
+          <div v-if="confirmingChecklistDelete" class="rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 flex items-center justify-between gap-2">
+            <p class="text-xs text-destructive font-medium">Delete this checklist?</p>
+            <div class="flex gap-1.5">
+              <button @click="confirmingChecklistDelete = false" class="text-[11px] text-muted-foreground hover:text-foreground px-2 py-1 transition-colors">Cancel</button>
+              <button @click="clarify('trash')" class="rounded-md bg-destructive hover:bg-destructive/90 text-white px-3 py-1 text-[11px] font-semibold transition-colors">Delete</button>
             </div>
           </div>
         </div>
@@ -2885,6 +2885,8 @@ function onKeydown(e: KeyboardEvent) {
   }
   const tag = (e.target as HTMLElement).tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
+  // Skip single-key hotkeys when any modal/dialog is open
+  if (dialogOpen.value || settingsOpen.value || quickCapture.value || quickNextAction.value || quickWaiting.value || hotkeysOpen.value || templatePickerOpen.value || manageTemplatesOpen.value || exportModalOpen.value) return
   if (e.key === '?') { e.preventDefault(); hotkeysOpen.value = true; return }
   if (e.key === 'i') { e.preventDefault(); openQuickCapture() }
   if (e.key === 'n' && currentView.value === 'tasks') { e.preventDefault(); openQuickNextAction() }
