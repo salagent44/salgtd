@@ -1428,7 +1428,7 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent :class="emailViewerOpen ? 'sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto' : 'sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto'" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
+      <DialogContent :class="emailViewerOpen ? 'sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto' : 'sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto'" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss" @pointer-down-outside="guardDialogDismiss" @focus-outside="guardDialogDismiss">
 
       <template v-if="!emailViewerOpen">
         <!-- Title editor -->
@@ -2998,7 +2998,12 @@ const waitingDateInput = ref('')
 const waitingInput = ref<HTMLInputElement | null>(null)
 
 function guardDialogDismiss(e: Event) {
-  if (emailViewerOpen.value || pickingProject.value || pickingProjectGoal.value) { e.preventDefault(); return }
+  if (emailViewerOpen.value || pickingProject.value) { e.preventDefault(); return }
+  if (pickingProjectGoal.value) { e.preventDefault(); pickingProjectGoal.value = false; return }
+  if (pickingContext.value) { e.preventDefault(); pickingContext.value = false; return }
+  if (pickingWaiting.value) { e.preventDefault(); pickingWaiting.value = false; return }
+  if (pickingTickler.value) { e.preventDefault(); pickingTickler.value = false; return }
+  if (pickingEvent.value) { e.preventDefault(); pickingEvent.value = false; return }
 }
 
 const dialogOpen = computed({
