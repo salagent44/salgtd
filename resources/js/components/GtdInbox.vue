@@ -34,11 +34,16 @@
               data-testid="process-btn"
             ><svg class="inline -mt-0.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="hidden sm:inline">Clarify </span>({{ inbox.length }})</button>
             <button
-              @click="openReview()"
-              class="hidden sm:inline-flex rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              @click="currentView = 'review'"
+              class="hidden sm:inline-flex rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group relative"
               :class="{ 'review-pulse': reviewOverdue }"
               data-testid="review-btn"
-            >{{ themeIcons.review }} {{ hasReviewProgress ? 'Review (in progress)' : 'Review' }}</button>
+            >
+              {{ themeIcons.review }} {{ hasReviewProgress ? 'Review (in progress)' : 'Review' }}
+              <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground text-background text-[10px] px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                {{ nextReviewLabel }}
+              </span>
+            </button>
           </template>
           <div class="hidden sm:flex items-center gap-2">
             <!-- App status -->
@@ -525,6 +530,17 @@
         <CalendarView :is-online="isOnline" />
       </div>
 
+      <!-- ===== REVIEW VIEW ===== -->
+      <div v-if="currentView === 'review'" class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6">
+        <ReviewView
+          :is-online="isOnline"
+          :icons="themeIcons"
+          @open-item="openItem"
+          @open-process="openProcess"
+          @review-complete="onReviewComplete"
+        />
+      </div>
+
     </div><!-- end max-w wrapper -->
 
     <!-- ===== Mobile Bottom Nav ===== -->
@@ -725,37 +741,6 @@
               {{ themeIcons.done }} Export Completed Tasks
               <span class="text-xs text-muted-foreground ml-1">({{ doneItems.length }})</span>
             </button>
-          </div>
-
-          <!-- Keyboard shortcuts reference -->
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Keyboard Shortcuts</p>
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">Capture to inbox</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">I</kbd>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">New next action</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">N</kbd>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">New waiting for</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">W</kbd>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">Search</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">⌘F</kbd>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">Tasks / Notes / Cal</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">⌘1/2/3</kbd>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted-foreground">Close dialog</span>
-                <kbd class="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[11px]">Esc</kbd>
-              </div>
-            </div>
           </div>
 
           <!-- App Updates -->
@@ -1311,286 +1296,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Review landing -->
-    <div
-      v-if="reviewLanding"
-      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
-      @click.self="reviewLanding = false"
-    >
-      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl p-8 text-center">
-        <p class="text-4xl mb-3">{{ themeIcons.nextAction }}</p>
-        <h3 class="text-xl font-semibold text-foreground mb-1">Weekly Review</h3>
-        <p class="text-sm text-muted-foreground mb-2">
-          {{ daysSinceReview === null ? "You haven't completed a review yet." : `Last review was ${daysSinceReview} day${daysSinceReview === 1 ? '' : 's'} ago.` }}
-        </p>
-        <div class="flex items-center justify-center gap-6 text-[12px] text-muted-foreground my-5">
-          <div>
-            <p class="text-lg font-bold text-foreground">{{ inbox.length }}</p>
-            <p>Inbox</p>
-          </div>
-          <div class="w-px h-8 bg-border"></div>
-          <div>
-            <p class="text-lg font-bold text-foreground">{{ reviewItemsByStatus('next-action').length }}</p>
-            <p>Next actions</p>
-          </div>
-          <div class="w-px h-8 bg-border"></div>
-          <div>
-            <p class="text-lg font-bold text-foreground">{{ reviewItemsByStatus('waiting').length }}</p>
-            <p>Waiting</p>
-          </div>
-          <div class="w-px h-8 bg-border"></div>
-          <div>
-            <p class="text-lg font-bold text-foreground">{{ reviewItemsByStatus('project').length }}</p>
-            <p>Projects</p>
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button
-            v-if="hasReviewProgress"
-            @click="resumeReview"
-            class="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >Resume Review</button>
-          <button
-            @click="startReviewFromLanding"
-            class="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
-            :class="hasReviewProgress ? 'text-muted-foreground hover:bg-accent hover:text-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
-          >{{ hasReviewProgress ? 'Start New Review' : 'Start Review' }}</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Review wizard modal -->
-    <div
-      v-if="reviewOpen"
-      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
-      @click.self="saveReviewProgress(); reviewOpen = false"
-    >
-      <div class="bg-card border border-border rounded-xl w-full max-w-5xl shadow-xl overflow-hidden flex flex-col" style="height: 85vh;">
-
-        <!-- Progress bar -->
-        <div class="h-1.5 bg-muted">
-          <div
-            class="h-full bg-primary transition-all duration-500 ease-out rounded-r-full"
-            :style="{ width: reviewProgress + '%' }"
-          ></div>
-        </div>
-
-        <!-- Step header -->
-        <div class="px-6 pt-5 pb-3">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-medium text-muted-foreground">Step {{ reviewStep + 1 }} of {{ reviewSteps.length }}</span>
-            <button @click="saveReviewProgress(); reviewOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">{{ currentReviewStep.icon }}</span>
-            <div>
-              <h3 class="text-base font-semibold text-foreground">{{ currentReviewStep.title }}</h3>
-              <p class="text-[12px] text-muted-foreground mt-0.5">{{ currentReviewStep.description }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step content -->
-        <div class="flex-1 overflow-y-auto px-6 pb-4">
-
-          <!-- Checklist steps (collect, calendar, goals) -->
-          <div v-if="currentReviewStep.checklist" class="space-y-2 mt-2">
-            <button
-              v-for="(item, idx) in currentReviewStep.checklist"
-              :key="idx"
-              @click="toggleReviewCheck(currentReviewStep.key + '-' + idx)"
-              class="flex items-center gap-3 w-full text-left rounded-lg px-3 py-2.5 transition-colors"
-              :class="reviewChecked[currentReviewStep.key + '-' + idx] ? 'bg-primary/8' : 'hover:bg-accent'"
-            >
-              <span
-                class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all"
-                :class="reviewChecked[currentReviewStep.key + '-' + idx]
-                  ? 'bg-primary border-primary text-primary-foreground'
-                  : 'border-border'"
-              >
-                <svg v-if="reviewChecked[currentReviewStep.key + '-' + idx]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span
-                class="text-sm"
-                :class="reviewChecked[currentReviewStep.key + '-' + idx] ? 'text-muted-foreground line-through' : 'text-foreground'"
-              >{{ item }}</span>
-            </button>
-          </div>
-
-          <!-- Dynamic item steps (inbox, next-actions, projects, waiting, someday) -->
-          <div v-else-if="currentReviewStep.dynamic" class="mt-2">
-            <div v-if="reviewItemsByStatus(currentReviewStep.dynamic).length === 0" class="py-8 text-center">
-              <p class="text-3xl mb-2">✓</p>
-              <p class="text-sm text-muted-foreground">
-                No {{ currentReviewStep.dynamic === 'inbox' ? 'items in inbox' : currentReviewStep.dynamic.replace('-', ' ') + ' items' }}
-              </p>
-            </div>
-            <div v-else class="space-y-1.5">
-              <div
-                v-for="item in reviewItemsByStatus(currentReviewStep.dynamic)"
-                :key="item.id"
-                class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
-                :class="reviewChecked['item-' + item.id] ? 'bg-primary/8' : 'hover:bg-accent'"
-              >
-                <button
-                  @click="toggleReviewCheck('item-' + item.id)"
-                  class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all"
-                  :class="reviewChecked['item-' + item.id]
-                    ? 'bg-primary border-primary text-primary-foreground'
-                    : 'border-border'"
-                >
-                  <svg v-if="reviewChecked['item-' + item.id]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </button>
-                <div class="flex-1 min-w-0">
-                  <p
-                    class="text-sm font-medium truncate"
-                    :class="reviewChecked['item-' + item.id] ? 'text-muted-foreground line-through' : 'text-foreground'"
-                  >{{ item.title }}</p>
-                  <p v-if="item.context || item.waiting_for" class="text-[11px] text-muted-foreground mt-0.5">
-                    <span v-if="item.context">{{ item.context }}</span>
-                    <span v-if="item.context && item.waiting_for"> · </span>
-                    <span v-if="item.waiting_for">waiting on {{ item.waiting_for }}</span>
-                  </p>
-                </div>
-                <template v-if="currentReviewStep.dynamic === 'project'">
-                  <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0">{{ (projectTasksMap.get(item.id) || []).filter(t => t.status === 'next-action').length }} next-actions, {{ (projectTasksMap.get(item.id) || []).filter(t => t.status === 'waiting').length }} waiting</span>
-                  <span v-if="stuckProjects.has(item.id)" class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0">🪤 No next action</span>
-                </template>
-                <div class="flex items-center gap-1 shrink-0">
-                  <button
-                    @click="openItem(item)"
-                    class="text-[11px] text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-accent transition-colors"
-                  >Edit</button>
-                  <button
-                    v-if="currentReviewStep.dynamic !== 'inbox'"
-                    @click="guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)"
-                    class="text-[11px] text-muted-foreground hover:text-primary px-2 py-1 rounded-md hover:bg-primary/10 transition-colors"
-                  >Done</button>
-                </div>
-              </div>
-
-              <!-- Inbox-specific: open process button -->
-              <div v-if="currentReviewStep.dynamic === 'inbox' && reviewItemsByStatus('inbox').length > 0" class="pt-3">
-                <button
-                  @click="openProcess()"
-                  class="w-full rounded-lg bg-primary/10 text-primary px-4 py-2.5 text-sm font-medium hover:bg-primary/20 transition-colors"
-                >Process Inbox ({{ reviewItemsByStatus('inbox').length }} items)</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Stuck projects step -->
-          <div v-else-if="currentReviewStep.stuckProjects" class="mt-2">
-            <div v-if="stuckProjects.size === 0" class="py-8 text-center">
-              <p class="text-3xl mb-2">✓</p>
-              <p class="text-sm text-muted-foreground">All projects have at least one next action</p>
-            </div>
-            <div v-else class="space-y-4">
-              <div
-                v-for="project in projects.filter(p => stuckProjects.has(p.id))"
-                :key="project.id"
-                class="rounded-lg border border-border p-4"
-              >
-                <div class="flex items-center gap-2 mb-3">
-                  <span class="text-sm">🧴</span>
-                  <p class="text-sm font-semibold text-foreground truncate">{{ project.title }}</p>
-                  <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 shrink-0">No next action</span>
-                </div>
-                <div class="flex gap-2">
-                  <input
-                    v-model="stuckNextTitle[project.id]"
-                    @keydown.enter="addNextActionForProject(project.id)"
-                    type="text"
-                    placeholder="Define a next action..."
-                    class="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                  <button
-                    @click="addNextActionForProject(project.id)"
-                    :disabled="!(stuckNextTitle[project.id] || '').trim()"
-                    class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
-                  >Add</button>
-                </div>
-                <div v-if="(projectTasksMap.get(project.id) || []).length > 0" class="mt-2 text-[11px] text-muted-foreground">
-                  Existing tasks: {{ (projectTasksMap.get(project.id) || []).map(t => t.title).join(', ') }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Final step -->
-          <div v-else-if="currentReviewStep.final" class="py-6 text-center">
-            <p class="text-5xl mb-4">🎉</p>
-            <p class="text-lg font-semibold text-foreground mb-1">Well done!</p>
-            <p class="text-sm text-muted-foreground mb-6">Your system is up to date. Enjoy the clarity.</p>
-            <div class="inline-flex gap-4 text-center text-[12px] text-muted-foreground">
-              <div>
-                <p class="text-xl font-bold text-foreground">{{ reviewItemsByStatus('next-action').length }}</p>
-                <p>Next actions</p>
-              </div>
-              <div class="w-px bg-border"></div>
-              <div>
-                <p class="text-xl font-bold text-foreground">{{ reviewItemsByStatus('project').length }}</p>
-                <p>Projects</p>
-              </div>
-              <div class="w-px bg-border"></div>
-              <div>
-                <p class="text-xl font-bold text-foreground">{{ reviewItemsByStatus('waiting').length }}</p>
-                <p>Waiting</p>
-              </div>
-              <div class="w-px bg-border"></div>
-              <div>
-                <p class="text-xl font-bold text-foreground">{{ inbox.length }}</p>
-                <p>Inbox</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Navigation footer -->
-        <div class="px-6 py-4 border-t border-border flex items-center justify-between">
-          <button
-            v-if="reviewStep > 0 && !currentReviewStep.final"
-            @click="reviewPrev"
-            class="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          >← Back</button>
-          <span v-else></span>
-          <div class="flex items-center gap-3">
-            <button
-              v-if="!currentReviewStep.final"
-              @click="saveReviewProgress(); reviewOpen = false"
-              class="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            >Save & Close</button>
-            <button
-              v-if="!currentReviewStep.final && reviewStep < reviewSteps.length - 1"
-              @click="reviewNext"
-              class="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              {{ reviewStep === 0 ? "Let's go" : 'Next →' }}
-            </button>
-            <button
-              v-if="currentReviewStep.final"
-              @click="commitReview"
-              class="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >Commit Review</button>
-          </div>
-        </div>
-
-        <!-- Step dots -->
-        <div class="flex items-center justify-center gap-1.5 pb-4">
-          <button
-            v-for="(step, idx) in reviewSteps"
-            :key="step.key"
-            @click="reviewStep = idx"
-            class="w-2 h-2 rounded-full transition-all"
-            :class="idx === reviewStep ? 'bg-primary scale-125' : idx < reviewStep ? 'bg-primary/40' : 'bg-border'"
-          ></button>
-        </div>
-
-      </div>
-    </div>
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
@@ -2113,6 +1818,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { CalendarDate, getLocalTimeZone, today as getToday } from '@internationalized/date'
 import NotesView from './NotesView.vue'
 import CalendarView from './CalendarView.vue'
+import ReviewView from './ReviewView.vue'
 import TimePicker from './TimePicker.vue'
 
 type Status = 'inbox' | 'next-action' | 'project' | 'waiting' | 'someday' | 'tickler' | 'done' | 'trash'
@@ -2122,7 +1828,7 @@ interface Email { id: string; item_id: string; from_address: string; from_name?:
 interface Item { id: string; title: string; status: Status; context?: string; waiting_for?: string; waiting_date?: string; tickler_date?: string; notes?: string; sort_order?: number; flagged?: boolean; completed_at?: string; original_status?: string; tags?: ItemTagRecord[]; email?: Email | null; goal?: string | null; project_id?: string | null; updated_at?: string }
 
 // View navigation
-type ViewKey = 'tasks' | 'notes' | 'calendar'
+type ViewKey = 'tasks' | 'notes' | 'calendar' | 'review'
 const currentView = ref<ViewKey>('tasks')
 const views = computed(() => [
   { key: 'tasks' as ViewKey, label: 'Tasks', icon: '✓' },
@@ -2136,6 +1842,8 @@ watch(currentView, (v) => {
     router.reload({ only: ['notes'] })
   } else if (v === 'calendar') {
     router.reload({ only: ['events'] })
+  } else if (v === 'review') {
+    router.reload({ only: ['items'] })
   }
 })
 
@@ -2647,186 +2355,8 @@ function selectSearchResult() {
   }
 }
 
-// Review wizard
-const reviewOpen = ref(false)
-const reviewStep = ref(0)
-const reviewChecked = ref<Record<string, boolean>>({})
-
-const reviewSteps = computed(() => {
-  const icons = themeIcons.value.reviewSteps
-  return [
-    {
-      key: 'collect',
-      title: 'Collect Loose Ends',
-      icon: icons.collect,
-      description: 'Get everything out of your head and into the inbox.',
-      checklist: [
-        'Check physical inboxes (desk, bag, mail)',
-        'Check email inboxes and flag anything actionable',
-        'Check messaging apps (Slack, texts, voicemail)',
-        'Check notes, sticky notes, or scraps of paper',
-        'Do a mind sweep — anything nagging you?',
-      ],
-    },
-    {
-      key: 'inbox',
-      title: 'Process Inbox to Zero',
-      icon: icons.inbox,
-      description: 'Clarify every item in your inbox. What is it? Is it actionable?',
-      dynamic: 'inbox',
-    },
-    {
-      key: 'next-actions',
-      title: 'Review Next Actions',
-      icon: icons.nextActions,
-      description: 'Go through each next action. Is it still the right next step? Mark done or update.',
-      dynamic: 'next-action',
-    },
-    {
-      key: 'projects',
-      title: 'Review Projects',
-      icon: icons.projects,
-      description: 'Does each project have at least one next action? Any stuck?',
-      dynamic: 'project',
-    },
-    {
-      key: 'stuck-projects',
-      title: 'Fix Stuck Projects',
-      icon: icons.stuck,
-      description: 'These projects have no next action. Define one for each to keep them moving.',
-      stuckProjects: true,
-    },
-    {
-      key: 'waiting',
-      title: 'Review Waiting For',
-      icon: icons.waiting,
-      description: 'Follow up on anything overdue. Is anyone still blocked?',
-      dynamic: 'waiting',
-    },
-    {
-      key: 'someday',
-      title: 'Review Someday/Maybe',
-      icon: icons.someday,
-      description: 'Anything ready to activate? Anything to delete?',
-      dynamic: 'someday',
-    },
-    {
-      key: 'calendar',
-      title: 'Check Calendar',
-      icon: icons.calendar,
-      description: 'Look back at the past week and ahead at the next two weeks.',
-      checklist: [
-        'Review last 7 days — anything unfinished?',
-        'Review next 14 days — anything to prepare for?',
-        'Any deadlines or appointments you need to plan around?',
-      ],
-    },
-    {
-      key: 'goals',
-      title: 'Review Goals & Horizons',
-      icon: icons.goals,
-      description: 'Step back. Are your actions aligned with what matters?',
-      checklist: [
-        'Are your current projects supporting your goals?',
-        'Any new projects or commitments to capture?',
-        'Anything you should say no to or renegotiate?',
-        'How are you feeling about your workload?',
-      ],
-    },
-    {
-      key: 'done',
-      title: 'Review Complete!',
-      icon: icons.complete,
-      description: 'You just completed a full GTD weekly review.',
-      final: true,
-    },
-  ]
-})
-
-const reviewProgressLocal = ref<string | null>(page.props.review_progress as string | null)
-const hasReviewProgress = computed(() => !!reviewProgressLocal.value)
-
-const reviewLanding = ref(false)
-const stuckNextTitle = ref<Record<string, string>>({})
-
-function addNextActionForProject(projectId: string) {
-  const title = (stuckNextTitle.value[projectId] || '').trim()
-  if (!title) return
-  guardedRouter.post('/items', {
-    title,
-    status: 'next-action',
-    project_id: projectId,
-  }, {
-    ...itemOnly,
-    onSuccess: () => { stuckNextTitle.value[projectId] = '' },
-  })
-}
-
-function openReview() {
-  reviewLanding.value = true
-}
-
-function startReviewFromLanding() {
-  reviewLanding.value = false
-  reviewStep.value = 0
-  reviewChecked.value = {}
-  reviewProgressLocal.value = null
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
-  reviewOpen.value = true
-}
-
-function resumeReview() {
-  reviewLanding.value = false
-  loadReviewProgress()
-  reviewOpen.value = true
-}
-
-function reviewNext() {
-  if (reviewStep.value < reviewSteps.value.length - 1) {
-    reviewStep.value++
-    saveReviewProgress()
-  }
-}
-
-function reviewPrev() {
-  if (reviewStep.value > 0) {
-    reviewStep.value--
-    saveReviewProgress()
-  }
-}
-
-function saveReviewProgress() {
-  const progress = JSON.stringify({ step: reviewStep.value, checked: reviewChecked.value })
-  reviewProgressLocal.value = progress
-  guardedRouter.put('/settings/review_progress', { value: progress }, { preserveScroll: true, preserveState: true })
-}
-
-function loadReviewProgress() {
-  const raw = reviewProgressLocal.value
-  if (raw) {
-    try {
-      const data = JSON.parse(raw)
-      reviewStep.value = data.step ?? 0
-      reviewChecked.value = data.checked ?? {}
-    } catch {
-      reviewStep.value = 0
-      reviewChecked.value = {}
-    }
-  } else {
-    reviewStep.value = 0
-    reviewChecked.value = {}
-  }
-}
-
-function commitReview() {
-  reviewOpen.value = false
-  reviewStep.value = 0
-  reviewChecked.value = {}
-  reviewProgressLocal.value = null
-  // Clear saved progress and stamp the review date
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
-  guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true })
-}
+// Review
+const hasReviewProgress = computed(() => !!(page.props.review_progress as string | null))
 
 // Weekly review reminder
 const REVIEW_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -2838,22 +2368,19 @@ const reviewOverdue = computed(() => {
   return Date.now() - last >= REVIEW_INTERVAL_MS
 })
 
-const daysSinceReview = computed(() => {
-  if (!lastReviewDate.value) return null
-  const last = new Date(lastReviewDate.value).getTime()
-  return Math.floor((Date.now() - last) / (24 * 60 * 60 * 1000))
+const nextReviewLabel = computed(() => {
+  if (!lastReviewDate.value) return 'No review completed yet'
+  const last = new Date(lastReviewDate.value)
+  const next = new Date(last.getTime() + REVIEW_INTERVAL_MS)
+  const now = Date.now()
+  if (next.getTime() <= now) return 'Review is overdue'
+  const daysLeft = Math.ceil((next.getTime() - now) / (24 * 60 * 60 * 1000))
+  return `Next review in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
 })
 
-function toggleReviewCheck(key: string) {
-  reviewChecked.value[key] = !reviewChecked.value[key]
+function onReviewComplete() {
+  currentView.value = 'tasks'
 }
-
-function reviewItemsByStatus(status: Status) {
-  return items.value.filter(i => i.status === status)
-}
-
-const currentReviewStep = computed(() => reviewSteps.value[reviewStep.value])
-const reviewProgress = computed(() => Math.round((reviewStep.value / (reviewSteps.value.length - 1)) * 100))
 
 function openQuickCapture() {
   quickCapture.value = true
@@ -2901,13 +2428,7 @@ function onKeydown(e: KeyboardEvent) {
     if (quickCapture.value) { e.preventDefault(); quickCapture.value = false; return }
     if (quickNextAction.value) { e.preventDefault(); quickNextAction.value = false; return }
     if (quickWaiting.value) { e.preventDefault(); quickWaiting.value = false; return }
-    if (searchOpen.value) { e.preventDefault(); searchOpen.value = false; return }
-    if (reviewLanding.value) { e.preventDefault(); reviewLanding.value = false; return }
-    if (reviewOpen.value) {
-      e.preventDefault()
-      saveReviewProgress()
-      reviewOpen.value = false
-      return
+    if (searchOpen.value) { e.preventDefault(); searchOpen.value = false; return
     }
     if (settingsOpen.value) { e.preventDefault(); settingsOpen.value = false; return }
     if (hotkeysOpen.value) { e.preventDefault(); hotkeysOpen.value = false; return }
@@ -2920,19 +2441,6 @@ function onKeydown(e: KeyboardEvent) {
       return
     }
     return
-  }
-  // Review wizard keyboard navigation
-  if (reviewOpen.value) {
-    if (e.key === 'ArrowRight' || e.key === 'Enter') {
-      e.preventDefault()
-      if (currentReviewStep.value.final) { commitReview() } else { reviewNext() }
-      return
-    }
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      reviewPrev()
-      return
-    }
   }
   // Ctrl+F: view-specific search
   if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
