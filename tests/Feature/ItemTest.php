@@ -145,6 +145,7 @@ class ItemTest extends TestCase
 
     public function test_move_to_inbox_clears_all_fields(): void
     {
+        $project = Item::create(['id' => Str::ulid(), 'title' => 'P', 'status' => 'project']);
         $item = Item::create([
             'id' => Str::ulid(),
             'title' => 'Fully loaded item',
@@ -153,6 +154,8 @@ class ItemTest extends TestCase
             'waiting_for' => 'Manager',
             'waiting_date' => '2026-04-01',
             'tickler_date' => '2026-05-01',
+            'project_id' => $project->id,
+            'flagged' => true,
         ]);
 
         $response = $this->post("/items/{$item->id}/move-to-inbox");
@@ -164,6 +167,24 @@ class ItemTest extends TestCase
         $this->assertNull($item->waiting_for);
         $this->assertNull($item->waiting_date);
         $this->assertNull($item->tickler_date);
+        $this->assertNull($item->project_id);
+        $this->assertNull($item->goal);
+        $this->assertFalse((bool) $item->flagged);
+        $this->assertNull($item->completed_at);
+        $this->assertNull($item->original_status);
+    }
+
+    public function test_move_project_to_inbox_unlinks_tasks(): void
+    {
+        $project = Item::create(['id' => Str::ulid(), 'title' => 'Big Project', 'status' => 'project']);
+        $task = Item::create(['id' => Str::ulid(), 'title' => 'Linked Task', 'status' => 'next-action', 'project_id' => $project->id]);
+
+        $this->post("/items/{$project->id}/move-to-inbox");
+
+        $project->refresh();
+        $task->refresh();
+        $this->assertEquals('inbox', $project->status);
+        $this->assertNull($task->project_id);
     }
 
     public function test_tickler_auto_promotes_to_inbox(): void

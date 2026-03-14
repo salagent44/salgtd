@@ -263,7 +263,7 @@ class ClarifyWorkflowTest extends TestCase
 
     // ===== Move to inbox =====
 
-    public function test_move_to_inbox_clears_context_and_project(): void
+    public function test_move_to_inbox_clears_all_attributes(): void
     {
         $project = Item::create(['id' => Str::ulid(), 'title' => 'Proj', 'status' => 'project']);
         $item = Item::create([
@@ -272,6 +272,7 @@ class ClarifyWorkflowTest extends TestCase
             'status' => 'next-action',
             'context' => '@work',
             'project_id' => $project->id,
+            'flagged' => true,
         ]);
 
         $this->post("/items/{$item->id}/move-to-inbox");
@@ -279,7 +280,8 @@ class ClarifyWorkflowTest extends TestCase
         $item->refresh();
         $this->assertEquals('inbox', $item->status);
         $this->assertNull($item->context);
-        // project_id is NOT cleared on move-to-inbox (per current behavior)
+        $this->assertNull($item->project_id);
+        $this->assertFalse((bool) $item->flagged);
     }
 
     // ===== Delete project cascades =====

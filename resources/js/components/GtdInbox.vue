@@ -1589,252 +1589,312 @@
 
         <div v-if="processing?.status !== 'checklist'" class="px-6 py-5 space-y-5">
 
-          <!-- Context sub-step -->
-          <div v-if="pickingContext" class="space-y-5" @keydown.enter="confirmNextAction">
-            <div class="flex items-center gap-3">
-              <button @click="pickingContext = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
-              <p class="text-sm font-semibold">Next Action</p>
-            </div>
+          <!-- ═══ INBOX ITEMS: show bucket picker ═══ -->
+          <template v-if="processing?.status === 'inbox'">
 
-            <!-- Context -->
-            <div class="space-y-2.5">
-              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Context</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  @click="selectedContext = null"
-                  class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                  :class="selectedContext === null ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent text-muted-foreground'"
-                >None</button>
-                <button
-                  v-for="ctx in allContexts"
-                  :key="ctx"
-                  @click="selectedContext = ctx"
-                  class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                  :class="selectedContext === ctx ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent'"
-                >{{ ctx }}</button>
+            <!-- Context sub-step -->
+            <div v-if="pickingContext" class="space-y-5" @keydown.enter="confirmNextAction">
+              <div class="flex items-center gap-3">
+                <button @click="pickingContext = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+                <p class="text-sm font-semibold">Next Action</p>
               </div>
-            </div>
-
-            <!-- Project -->
-            <div class="space-y-2.5">
-              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
-              <div class="flex flex-wrap gap-2">
-                <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
-                  📁 {{ projectName(processing.project_id) }}
-                  <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
-                </button>
-                <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Context</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    @click="selectedContext = null"
+                    class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    :class="selectedContext === null ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent text-muted-foreground'"
+                  >None</button>
+                  <button
+                    v-for="ctx in allContexts"
+                    :key="ctx"
+                    @click="selectedContext = ctx"
+                    class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    :class="selectedContext === ctx ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent'"
+                  >{{ ctx }}</button>
+                </div>
               </div>
-            </div>
-
-            <!-- Save -->
-            <button @click="confirmNextAction" class="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
-          </div>
-
-          <!-- Waiting For sub-step -->
-          <div v-else-if="pickingWaiting" class="space-y-4">
-            <div class="flex items-center gap-3">
-              <button @click="pickingWaiting = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
-              <div>
-                <p class="text-sm font-semibold">Who are you waiting for?</p>
-                <p class="text-xs text-muted-foreground">Person or team blocking this</p>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
+                <div class="flex flex-wrap gap-2">
+                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
+                    📁 {{ projectName(processing.project_id) }}
+                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
+                  </button>
+                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
+                </div>
               </div>
+              <button @click="confirmNextAction" class="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
-            <input
-              ref="waitingInput"
-              v-model="waitingFor"
-              type="text"
-              placeholder="e.g. John, Design team…"
-              @keydown.enter="clarifyWaiting"
-              class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
-            />
-            <div>
-              <label class="text-xs text-muted-foreground block mb-1">Date</label>
+
+            <!-- Waiting For sub-step -->
+            <div v-else-if="pickingWaiting" class="space-y-4">
+              <div class="flex items-center gap-3">
+                <button @click="pickingWaiting = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+                <div>
+                  <p class="text-sm font-semibold">Who are you waiting for?</p>
+                  <p class="text-xs text-muted-foreground">Person or team blocking this</p>
+                </div>
+              </div>
               <input
-                v-model="waitingDateInput"
-                type="date"
-                class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
-                data-testid="waiting-date"
+                ref="waitingInput"
+                v-model="waitingFor"
+                type="text"
+                placeholder="e.g. John, Design team…"
+                @keydown.enter="clarifyWaiting"
+                class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
               />
-            </div>
-            <div class="flex gap-2 justify-end">
-              <button @click="clarify('waiting')" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Skip</button>
-              <button @click="clarifyWaiting" class="rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 text-sm font-semibold transition-colors">Save</button>
-            </div>
-          </div>
-
-          <!-- Tickler sub-step -->
-          <div v-else-if="pickingTickler" class="space-y-4">
-            <div class="flex items-center gap-3">
-              <button @click="pickingTickler = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
               <div>
-                <p class="text-sm font-semibold">Tickler — defer to when?</p>
-                <p class="text-xs text-muted-foreground">Task reappears on this date</p>
+                <label class="text-xs text-muted-foreground block mb-1">Date</label>
+                <input
+                  v-model="waitingDateInput"
+                  type="date"
+                  class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
+                  data-testid="waiting-date"
+                />
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button @click="clarify('waiting')" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Skip</button>
+                <button @click="clarifyWaiting" class="rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 text-sm font-semibold transition-colors">Save</button>
               </div>
             </div>
-            <div class="flex justify-center">
-              <Calendar v-model="ticklerDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-violet-500/20 bg-violet-500/5" />
-            </div>
-            <div class="flex gap-2 justify-end">
-              <button @click="pickingTickler = false" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Cancel</button>
-              <button @click="clarifyTickler" :disabled="!ticklerDate" class="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2 text-sm font-semibold transition-colors">Defer</button>
-            </div>
-          </div>
 
-          <!-- Event sub-step -->
-          <div v-else-if="pickingEvent" class="space-y-4">
-            <div class="flex items-center gap-3">
-              <button @click="pickingEvent = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+            <!-- Tickler sub-step -->
+            <div v-else-if="pickingTickler" class="space-y-4">
+              <div class="flex items-center gap-3">
+                <button @click="pickingTickler = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+                <div>
+                  <p class="text-sm font-semibold">Tickler — defer to when?</p>
+                  <p class="text-xs text-muted-foreground">Task reappears on this date</p>
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <Calendar v-model="ticklerDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-violet-500/20 bg-violet-500/5" />
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button @click="pickingTickler = false" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Cancel</button>
+                <button @click="clarifyTickler" :disabled="!ticklerDate" class="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2 text-sm font-semibold transition-colors">Defer</button>
+              </div>
+            </div>
+
+            <!-- Event sub-step -->
+            <div v-else-if="pickingEvent" class="space-y-4">
+              <div class="flex items-center gap-3">
+                <button @click="pickingEvent = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+                <div>
+                  <p class="text-sm font-semibold">Schedule as Event</p>
+                  <p class="text-xs text-muted-foreground">Pick a date and time for the calendar</p>
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <Calendar v-model="eventDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-teal-500/20 bg-teal-500/5" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-muted-foreground block mb-1">Start time</label>
+                  <TimePicker v-model="eventTime" />
+                </div>
+                <div>
+                  <label class="text-xs text-muted-foreground block mb-1">End time</label>
+                  <TimePicker v-model="eventEndTime" />
+                </div>
+              </div>
               <div>
-                <p class="text-sm font-semibold">Schedule as Event</p>
-                <p class="text-xs text-muted-foreground">Pick a date and time for the calendar</p>
-              </div>
-            </div>
-            <div class="flex justify-center">
-              <Calendar v-model="eventDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-teal-500/20 bg-teal-500/5" />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-xs text-muted-foreground block mb-1">Start time</label>
-                <TimePicker v-model="eventTime" />
+                <label class="text-xs text-muted-foreground block mb-1.5">Color</label>
+                <div class="flex gap-2">
+                  <button v-for="c in ['blue', 'red', 'green', 'yellow', 'purple']" :key="c" @click="eventColor = c" class="w-7 h-7 rounded-full border-2 transition-all" :class="[eventColor === c ? 'scale-110 ring-2 ring-offset-2 ring-offset-background' : 'hover:scale-105', { 'bg-blue-500 border-blue-500 ring-blue-500': c === 'blue', 'bg-red-500 border-red-500 ring-red-500': c === 'red', 'bg-green-500 border-green-500 ring-green-500': c === 'green', 'bg-yellow-500 border-yellow-500 ring-yellow-500': c === 'yellow', 'bg-purple-500 border-purple-500 ring-purple-500': c === 'purple' }]"></button>
+                </div>
               </div>
               <div>
-                <label class="text-xs text-muted-foreground block mb-1">End time</label>
-                <TimePicker v-model="eventEndTime" />
+                <label class="text-xs text-muted-foreground block mb-1">Recurrence</label>
+                <select v-model="eventRecurrence" class="w-full rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500/40 font-medium">
+                  <option value="">None</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
               </div>
-            </div>
-            <div>
-              <label class="text-xs text-muted-foreground block mb-1.5">Color</label>
-              <div class="flex gap-2">
-                <button v-for="c in ['blue', 'red', 'green', 'yellow', 'purple']" :key="c" @click="eventColor = c" class="w-7 h-7 rounded-full border-2 transition-all" :class="[eventColor === c ? 'scale-110 ring-2 ring-offset-2 ring-offset-background' : 'hover:scale-105', { 'bg-blue-500 border-blue-500 ring-blue-500': c === 'blue', 'bg-red-500 border-red-500 ring-red-500': c === 'red', 'bg-green-500 border-green-500 ring-green-500': c === 'green', 'bg-yellow-500 border-yellow-500 ring-yellow-500': c === 'yellow', 'bg-purple-500 border-purple-500 ring-purple-500': c === 'purple' }]"></button>
-              </div>
-            </div>
-            <div>
-              <label class="text-xs text-muted-foreground block mb-1">Recurrence</label>
-              <select v-model="eventRecurrence" class="w-full rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500/40 font-medium">
-                <option value="">None</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-            <div class="flex gap-2 justify-end">
-              <button @click="pickingEvent = false" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Cancel</button>
-              <button @click="clarifyAsEvent" :disabled="!eventDate" class="rounded-xl bg-teal-600 hover:bg-teal-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2 text-sm font-semibold transition-colors">Schedule</button>
-            </div>
-          </div>
-
-          <!-- Project sub-step -->
-          <div v-else-if="pickingProjectGoal" class="space-y-4">
-            <div class="flex items-center gap-3">
-              <button @click="pickingProjectGoal = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
-              <p class="text-sm font-semibold">Set up project</p>
-            </div>
-
-            <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
-
-            <!-- Show linked tasks (read-only) -->
-            <div v-if="processing && (projectTasksMap.get(processing.id) || []).length > 0" class="space-y-1.5">
-              <p class="text-xs font-semibold text-muted-foreground">Linked actions</p>
-              <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30">
-                <span class="w-2 h-2 rounded-full shrink-0" :class="{
-                  'bg-primary': task.status === 'next-action',
-                  'bg-amber-500': task.status === 'waiting',
-                  'bg-violet-500': task.status === 'tickler',
-                  'bg-green-500': task.status === 'done',
-                  'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
-                }"></span>
-                <span class="text-[13px] font-medium flex-1 truncate">{{ task.title }}</span>
-                <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
+              <div class="flex gap-2 justify-end">
+                <button @click="pickingEvent = false" class="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Cancel</button>
+                <button @click="clarifyAsEvent" :disabled="!eventDate" class="rounded-xl bg-teal-600 hover:bg-teal-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2 text-sm font-semibold transition-colors">Schedule</button>
               </div>
             </div>
 
-            <div class="flex gap-2 justify-end">
-              <button @click="clarifyAsProject" class="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
-            </div>
-          </div>
-
-          <!-- Main bucket picker -->
-          <div v-else class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where does this belong?</p>
-
-            <!-- Action required -->
-            <div class="space-y-2">
-              <button @click="pickingContext = true; selectedContext = processing?.context || null" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'next-action' ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary/50'">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="text-xl">{{ themeIcons.nextAction }}</span>
-                    <div>
-                      <p class="text-sm font-bold text-primary">Next Action <span v-if="processing?.status === 'next-action'" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
-                      <p class="text-xs text-muted-foreground">Single physical step</p>
-                    </div>
-                  </div>
-                  <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
-              <button @click="openWaiting" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'waiting' ? 'border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/40' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/50'">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="text-xl">⏳</span>
-                    <div>
-                      <p class="text-sm font-bold text-amber-400">Waiting For <span v-if="processing?.status === 'waiting'" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
-                      <p class="text-xs text-muted-foreground">Delegated to someone</p>
-                    </div>
-                  </div>
-                  <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
-              <button @click="openTickler" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'tickler' ? 'border-violet-500 bg-violet-500/15 ring-2 ring-violet-500/40' : 'border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50'">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="text-xl">🗓️</span>
-                    <div>
-                      <p class="text-sm font-bold text-violet-400">Tickler <span v-if="processing?.status === 'tickler'" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
-                      <p class="text-xs text-muted-foreground">Defer to a specific date</p>
-                    </div>
-                  </div>
-                  <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
-              <button @click="openEvent" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 hover:border-teal-500/50">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="text-xl">{{ themeIcons.calendar }}</span>
-                    <div>
-                      <p class="text-sm font-bold text-teal-400">Event</p>
-                      <p class="text-xs text-muted-foreground">Schedule on the calendar</p>
-                    </div>
-                  </div>
-                  <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
+            <!-- Project sub-step -->
+            <div v-else-if="pickingProjectGoal" class="space-y-4">
+              <div class="flex items-center gap-3">
+                <button @click="pickingProjectGoal = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
+                <p class="text-sm font-semibold">Set up project</p>
+              </div>
+              <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
+              <div class="flex gap-2 justify-end">
+                <button @click="clarifyAsProject" class="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
+              </div>
             </div>
 
-            <!-- No action needed -->
-            <div class="space-y-2">
-              <button
-                v-for="b in smallBuckets"
-                :key="b.key"
-                @click="b.key === 'project' ? openProjectGoal() : clarify(b.key)"
-                class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all"
-                :class="processing?.status === b.key
-                  ? (b.key === 'done' ? 'border-green-500 bg-green-500/15 ring-2 ring-green-500/40' : 'border-primary bg-primary/10 ring-2 ring-primary/40')
-                  : (b.key === 'done'
-                    ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/15 hover:border-green-500/50'
-                    : 'border-border/60 bg-card hover:bg-accent hover:border-border')"
-              >
-                <div class="flex items-center justify-between">
+            <!-- Main bucket picker (inbox items only) -->
+            <div v-else class="space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where does this belong?</p>
+              <div class="space-y-2">
+                <button @click="pickingContext = true; selectedContext = processing?.context || null" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary/50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-xl">{{ themeIcons.nextAction }}</span>
+                      <div>
+                        <p class="text-sm font-bold text-primary">Next Action</p>
+                        <p class="text-xs text-muted-foreground">Single physical step</p>
+                      </div>
+                    </div>
+                    <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                </button>
+                <button @click="openWaiting" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-xl">⏳</span>
+                      <div>
+                        <p class="text-sm font-bold text-amber-400">Waiting For</p>
+                        <p class="text-xs text-muted-foreground">Delegated to someone</p>
+                      </div>
+                    </div>
+                    <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                </button>
+                <button @click="openTickler" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-xl">🗓️</span>
+                      <div>
+                        <p class="text-sm font-bold text-violet-400">Tickler</p>
+                        <p class="text-xs text-muted-foreground">Defer to a specific date</p>
+                      </div>
+                    </div>
+                    <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                </button>
+                <button @click="openEvent" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-teal-500/30 bg-teal-500/5 hover:bg-teal-500/15 hover:border-teal-500/50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-xl">{{ themeIcons.calendar }}</span>
+                      <div>
+                        <p class="text-sm font-bold text-teal-400">Event</p>
+                        <p class="text-xs text-muted-foreground">Schedule on the calendar</p>
+                      </div>
+                    </div>
+                    <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                </button>
+              </div>
+              <div class="space-y-2">
+                <button
+                  v-for="b in smallBuckets"
+                  :key="b.key"
+                  @click="b.key === 'project' ? openProjectGoal() : clarify(b.key)"
+                  class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all border-border/60 bg-card hover:bg-accent hover:border-border"
+                  :class="b.key === 'done' ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/15 hover:border-green-500/50' : ''"
+                >
                   <div class="flex items-center gap-3">
                     <span class="text-xl">{{ bucketIcon(b.key) }}</span>
                     <div>
-                      <p class="text-sm font-bold" :class="b.key === 'done' ? 'text-green-400' : ''">{{ b.label }} <span v-if="processing?.status === b.key" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
+                      <p class="text-sm font-bold" :class="b.key === 'done' ? 'text-green-400' : ''">{{ b.label }}</p>
                       <p v-if="b.key !== 'done'" class="text-xs text-muted-foreground">{{ b.description }}</p>
                     </div>
                   </div>
-                </div>
-              </button>
+                </button>
+              </div>
             </div>
-          </div>
+          </template>
+
+          <!-- ═══ CLARIFIED ITEMS: show status-specific view only ═══ -->
+          <template v-else>
+
+            <!-- Next Action: context + project -->
+            <div v-if="processing?.status === 'next-action'" class="space-y-5" @keydown.enter="confirmNextAction">
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Context</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    @click="selectedContext = null"
+                    class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    :class="selectedContext === null ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent text-muted-foreground'"
+                  >None</button>
+                  <button
+                    v-for="ctx in allContexts"
+                    :key="ctx"
+                    @click="selectedContext = ctx"
+                    class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    :class="selectedContext === ctx ? 'bg-primary text-primary-foreground' : 'border border-border/60 bg-card hover:bg-accent'"
+                  >{{ ctx }}</button>
+                </div>
+              </div>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
+                <div class="flex flex-wrap gap-2">
+                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
+                    📁 {{ projectName(processing.project_id) }}
+                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
+                  </button>
+                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
+                </div>
+              </div>
+              <button @click="confirmNextAction" class="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
+            </div>
+
+            <!-- Waiting: who + date -->
+            <div v-else-if="processing?.status === 'waiting'" class="space-y-4">
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Waiting for</p>
+                <input
+                  v-model="waitingFor"
+                  type="text"
+                  placeholder="e.g. John, Design team…"
+                  @keydown.enter="clarifyWaiting"
+                  class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
+                />
+              </div>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Date</p>
+                <input
+                  v-model="waitingDateInput"
+                  type="date"
+                  class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
+                />
+              </div>
+              <button @click="clarifyWaiting" class="w-full rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
+            </div>
+
+            <!-- Tickler: date -->
+            <div v-else-if="processing?.status === 'tickler'" class="space-y-4">
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Deferred until</p>
+              <div class="flex justify-center">
+                <Calendar v-model="ticklerDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-violet-500/20 bg-violet-500/5" />
+              </div>
+              <button @click="clarifyTickler" :disabled="!ticklerDate" class="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
+            </div>
+
+            <!-- Project: read-only linked actions -->
+            <div v-else-if="processing?.status === 'project'" class="space-y-4">
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Linked actions</p>
+              <div v-if="(projectTasksMap.get(processing.id) || []).length > 0" class="space-y-1.5">
+                <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30">
+                  <span class="w-2 h-2 rounded-full shrink-0" :class="{
+                    'bg-primary': task.status === 'next-action',
+                    'bg-amber-500': task.status === 'waiting',
+                    'bg-violet-500': task.status === 'tickler',
+                    'bg-green-500': task.status === 'done',
+                    'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
+                  }"></span>
+                  <span class="text-[13px] font-medium flex-1 truncate">{{ task.title }}</span>
+                  <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
+                </div>
+              </div>
+              <p v-else class="text-sm text-muted-foreground">No linked actions — assign from the Next Actions view.</p>
+            </div>
+
+            <!-- Someday / Done: just title + tags (no extra fields) -->
+
+          </template>
         </div>
 
         <!-- Move to Inbox / Delete (not for checklists — they have their own actions) -->
@@ -3211,9 +3271,16 @@ function openItem(item: Item) {
   confirmingChecklistDelete.value = false
   confirmingStepDelete.value = null
   addingContext.value = false
-  waitingFor.value = ''
-  waitingDateInput.value = ''
-  ticklerDate.value = undefined
+  // Pre-populate fields for clarified items
+  selectedContext.value = item.context || null
+  waitingFor.value = item.waiting_for || ''
+  waitingDateInput.value = item.waiting_date || ''
+  if (item.tickler_date) {
+    const [y, m, d] = item.tickler_date.split('-').map(Number)
+    ticklerDate.value = new CalendarDate(y, m, d)
+  } else {
+    ticklerDate.value = undefined
+  }
   eventDate.value = undefined
   eventEndDate.value = undefined
   eventTime.value = ''
@@ -3461,7 +3528,18 @@ function remove(id: string) {
 function moveToInbox() {
   if (!processing.value) return
   const id = processing.value.id
-  optimisticUpdate(id, { status: 'inbox' as Status })
+  optimisticUpdate(id, {
+    status: 'inbox' as Status,
+    context: undefined,
+    waiting_for: undefined,
+    waiting_date: undefined,
+    tickler_date: undefined,
+    project_id: undefined,
+    goal: undefined,
+    flagged: false,
+    completed_at: undefined,
+    original_status: undefined,
+  })
   processing.value = null; editItem.value = null
   guardedRouter.post(`/items/${id}/move-to-inbox`, {}, itemOnly)
 }

@@ -117,12 +117,22 @@ class ItemController extends Controller
 
     public function moveToInbox(Item $item)
     {
+        // If reclassifying from project, unlink all tasks
+        if ($item->status === 'project') {
+            Item::where('project_id', $item->id)->update(['project_id' => null]);
+        }
+
         $item->update([
             'status' => 'inbox',
             'context' => null,
             'waiting_for' => null,
             'waiting_date' => null,
             'tickler_date' => null,
+            'project_id' => null,
+            'goal' => null,
+            'flagged' => false,
+            'completed_at' => null,
+            'original_status' => null,
         ]);
 
         return back();
