@@ -1475,6 +1475,42 @@
           </div>
         </div>
 
+        <!-- Checklist steps (only for checklist-type items) -->
+        <div v-if="processing?.status === 'checklist' && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
+          <div class="flex items-center gap-2 mb-2">
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Steps</p>
+            <span v-if="checklistProgress(processing)" class="text-[11px] font-medium text-muted-foreground">{{ checklistProgress(processing)!.done }}/{{ checklistProgress(processing)!.total }}</span>
+          </div>
+          <div v-if="processing.checklist_items && processing.checklist_items.length > 0" class="space-y-1 mb-2">
+            <div
+              v-for="ci in processing.checklist_items"
+              :key="ci.id"
+              class="flex items-center gap-2 group rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors"
+            >
+              <button
+                @click="toggleChecklistItem(ci)"
+                class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all"
+                :class="ci.completed ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'"
+              ><svg v-if="ci.completed" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+              <span class="text-sm flex-1 min-w-0 truncate" :class="ci.completed ? 'line-through text-muted-foreground/50' : 'text-foreground'">{{ ci.title }}</span>
+              <button @click="removeChecklistItem(ci)" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-xs">&times;</button>
+            </div>
+          </div>
+          <div v-if="addingChecklistStep" class="flex items-center gap-2">
+            <input
+              ref="checklistStepInput"
+              v-model="newChecklistStepTitle"
+              type="text"
+              placeholder="Add a step…"
+              @keydown.enter.prevent="addChecklistStep"
+              @keydown.esc="addingChecklistStep = false; newChecklistStepTitle = ''"
+              class="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            />
+            <button @click="addChecklistStep" class="text-xs text-primary font-medium hover:underline shrink-0">Add</button>
+          </div>
+          <button v-else @click="startAddingStep" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5">+ step</button>
+        </div>
+
         <!-- View Email button -->
         <div v-if="processing?.email && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
           <button
@@ -3069,11 +3105,46 @@ function openItem(item: Item) {
   eventRecurrence.value = ''
 }
 
-// Checklist progress (for card badges)
+// Checklist step management
+const newChecklistStepTitle = ref('')
+const addingChecklistStep = ref(false)
+const checklistStepInput = ref<HTMLInputElement | null>(null)
+
 function checklistProgress(item: Item): { done: number; total: number } | null {
   const cl = item.checklist_items
   if (!cl || cl.length === 0) return null
   return { done: cl.filter(c => c.completed).length, total: cl.length }
+}
+
+function toggleChecklistItem(ci: ChecklistItemRecord) {
+  guardedRouter.post(`/checklist-items/${ci.id}/toggle`, {}, itemOnly)
+  ci.completed = !ci.completed
+}
+
+function addChecklistStep() {
+  const title = newChecklistStepTitle.value.trim()
+  if (!title || !processing.value) return
+  const tempId = Date.now().toString()
+  const maxOrder = (processing.value.checklist_items || []).reduce((m, c) => Math.max(m, c.sort_order), -1)
+  if (!processing.value.checklist_items) processing.value.checklist_items = []
+  processing.value.checklist_items.push({ id: tempId, item_id: processing.value.id, title, completed: false, sort_order: maxOrder + 1 })
+  guardedRouter.post(`/items/${processing.value.id}/checklist`, { title }, itemOnly)
+  newChecklistStepTitle.value = ''
+  nextTick(() => checklistStepInput.value?.focus())
+}
+
+function removeChecklistItem(ci: ChecklistItemRecord) {
+  if (!processing.value) return
+  guardedRouter.delete(`/checklist-items/${ci.id}`, itemOnly)
+  if (processing.value.checklist_items) {
+    processing.value.checklist_items = processing.value.checklist_items.filter(c => c.id !== ci.id)
+  }
+}
+
+function startAddingStep() {
+  addingChecklistStep.value = true
+  newChecklistStepTitle.value = ''
+  nextTick(() => checklistStepInput.value?.focus())
 }
 
 // Tag management
