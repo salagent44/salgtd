@@ -157,13 +157,12 @@
           <span v-if="stuckProjects.size > 0">🧴</span> Projects <span class="ml-1 opacity-70">{{ projects.length }}</span>
         </button>
         <button
-          v-if="checklistItems.length > 0 || activePill === 'checklists'"
           @click="setActivePill('checklists')"
           class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'checklists' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="checklists-btn"
         >
-          Checklists <span class="ml-1 opacity-70">{{ checklistItems.length }}</span>
+          ☑ Checklists <span v-if="checklistItems.length > 0" class="ml-1 opacity-70">{{ checklistItems.length }}</span>
         </button>
         <button
           v-if="inbox.length > 0 || activePill === 'inbox'"
@@ -358,18 +357,49 @@
 
       <!-- Checklists -->
       <div v-else-if="activePill === 'checklists'">
-        <div v-if="checklistItems.length === 0" class="text-center py-12 text-muted-foreground">
+        <!-- New checklist inline creator -->
+        <div class="mb-4">
+          <div v-if="inlineChecklistOpen" class="flex gap-2">
+            <input
+              ref="inlineChecklistInput"
+              v-model="inlineChecklistTitle"
+              @keydown.enter="submitInlineChecklist"
+              @keydown.esc="inlineChecklistOpen = false; inlineChecklistTitle = ''"
+              type="text"
+              placeholder="What's the checklist for?"
+              class="flex-1 rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            />
+            <button @click="submitInlineChecklist" :disabled="!inlineChecklistTitle.trim()" class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0">Create</button>
+          </div>
+          <button v-else @click="openInlineChecklist" class="w-full rounded-xl border-2 border-dashed border-border/60 hover:border-primary/40 bg-muted/20 hover:bg-primary/5 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-primary transition-all flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Checklist
+          </button>
+        </div>
+
+        <div v-if="checklistItems.length === 0 && !inlineChecklistOpen" class="text-center py-8 text-muted-foreground">
           <p class="text-3xl mb-2">☑</p>
-          <p class="text-sm">No checklists</p>
+          <p class="text-sm">No checklists yet</p>
+          <p class="text-xs mt-1">Press <kbd class="px-1.5 py-0.5 rounded bg-muted text-foreground text-[10px] font-mono">C</kbd> to create one</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
-              <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
-              <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
-              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
-              <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
+          <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex flex-col gap-2">
+              <div class="flex items-center gap-2.5 md:gap-3">
+                <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
+                <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+                <span v-if="checklistProgress(item)" class="text-[11px] font-bold tabular-nums shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'text-green-500' : 'text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
+                <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
+              </div>
+              <!-- Progress bar -->
+              <div v-if="checklistProgress(item) && checklistProgress(item)!.total > 0" class="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-300"
+                  :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500' : 'bg-primary'"
+                  :style="{ width: (checklistProgress(item)!.done / checklistProgress(item)!.total * 100) + '%' }"
+                ></div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -1476,27 +1506,35 @@
         </div>
 
         <!-- Checklist steps (only for checklist-type items) -->
-        <div v-if="processing?.status === 'checklist' && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-2">
-          <div class="flex items-center gap-2 mb-2">
+        <div v-if="processing?.status === 'checklist' && !pickingContext && !pickingWaiting && !pickingTickler && !pickingEvent && !pickingProjectGoal" class="px-6 pb-3">
+          <div class="flex items-center justify-between mb-2">
             <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Steps</p>
-            <span v-if="checklistProgress(processing)" class="text-[11px] font-medium text-muted-foreground">{{ checklistProgress(processing)!.done }}/{{ checklistProgress(processing)!.total }}</span>
+            <span v-if="checklistProgress(processing)" class="text-[12px] font-bold tabular-nums" :class="checklistProgress(processing)!.done === checklistProgress(processing)!.total && checklistProgress(processing)!.total > 0 ? 'text-green-500' : 'text-muted-foreground'">{{ checklistProgress(processing)!.done }}/{{ checklistProgress(processing)!.total }}</span>
           </div>
-          <div v-if="processing.checklist_items && processing.checklist_items.length > 0" class="space-y-1 mb-2">
+          <!-- Progress bar -->
+          <div v-if="checklistProgress(processing) && checklistProgress(processing)!.total > 0" class="w-full h-2 rounded-full bg-muted overflow-hidden mb-3">
+            <div
+              class="h-full rounded-full transition-all duration-300"
+              :class="checklistProgress(processing)!.done === checklistProgress(processing)!.total ? 'bg-green-500' : 'bg-primary'"
+              :style="{ width: (checklistProgress(processing)!.done / checklistProgress(processing)!.total * 100) + '%' }"
+            ></div>
+          </div>
+          <div v-if="processing.checklist_items && processing.checklist_items.length > 0" class="space-y-0.5 mb-2">
             <div
               v-for="ci in processing.checklist_items"
               :key="ci.id"
-              class="flex items-center gap-2 group rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors"
+              class="flex items-center gap-2.5 group rounded-lg px-2.5 py-2 hover:bg-muted/50 transition-colors"
             >
               <button
                 @click="toggleChecklistItem(ci)"
-                class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all"
-                :class="ci.completed ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'"
-              ><svg v-if="ci.completed" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-              <span class="text-sm flex-1 min-w-0 truncate" :class="ci.completed ? 'line-through text-muted-foreground/50' : 'text-foreground'">{{ ci.title }}</span>
+                class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all"
+                :class="ci.completed ? 'bg-green-500 border-green-500 text-white' : 'border-muted-foreground/40 hover:border-primary'"
+              ><svg v-if="ci.completed" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+              <span class="text-sm flex-1 min-w-0" :class="ci.completed ? 'line-through text-muted-foreground/40' : 'text-foreground'">{{ ci.title }}</span>
               <button @click="removeChecklistItem(ci)" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-xs">&times;</button>
             </div>
           </div>
-          <div v-if="addingChecklistStep" class="flex items-center gap-2">
+          <div v-if="addingChecklistStep" class="flex items-center gap-2 mt-1">
             <input
               ref="checklistStepInput"
               v-model="newChecklistStepTitle"
@@ -1504,11 +1542,14 @@
               placeholder="Add a step…"
               @keydown.enter.prevent="addChecklistStep"
               @keydown.esc="addingChecklistStep = false; newChecklistStepTitle = ''"
-              class="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              class="flex-1 rounded-lg border border-border bg-background px-2.5 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             />
             <button @click="addChecklistStep" class="text-xs text-primary font-medium hover:underline shrink-0">Add</button>
           </div>
-          <button v-else @click="startAddingStep" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5">+ step</button>
+          <button v-else @click="startAddingStep" class="mt-1 text-xs text-muted-foreground hover:text-primary transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted/50 flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add step
+          </button>
         </div>
 
         <!-- View Email button -->
@@ -1735,17 +1776,6 @@
                     </div>
                   </div>
                   <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
-              <button @click="clarify('checklist')" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'checklist' ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary/50'">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="text-xl">☑</span>
-                    <div>
-                      <p class="text-sm font-bold text-primary">Checklist <span v-if="processing?.status === 'checklist'" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
-                      <p class="text-xs text-muted-foreground">Multi-step task to check off</p>
-                    </div>
-                  </div>
                 </div>
               </button>
               <button @click="openWaiting" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'waiting' ? 'border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/40' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/50'">
@@ -2012,14 +2042,13 @@ watch(currentView, (v) => {
 const buckets: { key: Status; label: string; description: string }[] = [
   { key: 'next-action', label: 'Next Action',   description: 'Single physical step' },
   { key: 'project',     label: 'Project',        description: 'Multiple steps needed' },
-  { key: 'checklist',   label: 'Checklist',      description: 'Multi-step task to check off' },
   { key: 'waiting',     label: 'Waiting For',    description: 'Delegated to someone' },
   { key: 'someday',     label: 'Someday/Maybe',  description: 'Not now, keep it' },
   { key: 'tickler',     label: 'Tickler',        description: 'Defer to a date' },
   { key: 'done',        label: 'Done',           description: '2-min rule applied' },
   { key: 'trash',       label: 'Trash',          description: 'Delete it' },
 ]
-const smallBuckets = buckets.filter(b => !['next-action', 'checklist', 'waiting', 'trash', 'tickler'].includes(b.key))
+const smallBuckets = buckets.filter(b => !['next-action', 'waiting', 'trash', 'tickler'].includes(b.key))
 
 // Themes
 const themes = [
@@ -2421,6 +2450,10 @@ const quickChecklist = ref(false)
 const quickChecklistTitle = ref('')
 const quickChecklistInput = ref<HTMLInputElement | null>(null)
 
+const inlineChecklistOpen = ref(false)
+const inlineChecklistTitle = ref('')
+const inlineChecklistInput = ref<HTMLInputElement | null>(null)
+
 // Process inbox
 const processingInbox = ref(false)
 const processIndex = ref(0)
@@ -2701,6 +2734,17 @@ function openQuickChecklist() {
 function quickChecklistSubmit() {
   if (!quickChecklistTitle.value.trim()) return
   guardedRouter.post('/items', { title: quickChecklistTitle.value.trim(), status: 'checklist' }, { ...itemOnly, onSuccess: () => { quickChecklist.value = false } })
+}
+
+function openInlineChecklist() {
+  inlineChecklistOpen.value = true
+  inlineChecklistTitle.value = ''
+  nextTick(() => inlineChecklistInput.value?.focus())
+}
+
+function submitInlineChecklist() {
+  if (!inlineChecklistTitle.value.trim()) return
+  guardedRouter.post('/items', { title: inlineChecklistTitle.value.trim(), status: 'checklist' }, { ...itemOnly, onSuccess: () => { inlineChecklistOpen.value = false; inlineChecklistTitle.value = '' } })
 }
 
 function onKeydown(e: KeyboardEvent) {
