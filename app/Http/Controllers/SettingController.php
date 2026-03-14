@@ -20,7 +20,7 @@ class SettingController extends Controller
 
         // Validate theme values against allowlist
         if ($key === 'theme') {
-            $allowedThemes = ['default', 'dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gw2'];
+            $allowedThemes = ['default', 'dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest'];
             if (!in_array($validated['value'], $allowedThemes)) {
                 abort(403);
             }
