@@ -22,6 +22,8 @@ services:
       - S3_REGION=${S3_REGION:-us-east-1}
       - TIMEZONE=${TIMEZONE:-UTC}
     restart: unless-stopped
+    ports:
+      - "0.0.0.0:25:25"
     expose:
       - "80"
 

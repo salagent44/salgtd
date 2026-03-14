@@ -69,10 +69,11 @@ fi
 echo "==> Configuring firewall..."
 if command -v ufw &>/dev/null; then
     ufw allow 22/tcp
+    ufw allow 25/tcp
     ufw allow 80/tcp
     ufw allow 443/tcp
     ufw --force enable
-    echo "    Firewall: SSH, HTTP, HTTPS allowed."
+    echo "    Firewall: SSH, SMTP, HTTP, HTTPS allowed."
 else
     echo "    ufw not found, skipping firewall config."
 fi
