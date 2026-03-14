@@ -3,35 +3,18 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# System deps
+# System deps (no Node.js, no Composer — all dependencies vendored in git)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     php8.3-fpm php8.3-sqlite3 php8.3-xml php8.3-mbstring php8.3-curl \
     php8.3-tokenizer php8.3-bcmath php8.3-ctype php8.3-fileinfo \
-    nginx supervisor sqlite3 curl unzip ca-certificates tzdata \
+    nginx supervisor sqlite3 curl ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22 (Ubuntu 24.04 apt only has Node 18, but Vite 7 requires 20+)
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
-
-# PHP deps
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-# Node deps + build
-COPY package.json package-lock.json ./
-RUN npm ci
 COPY . .
+
 ARG COMMIT_HASH=unknown
 RUN echo "$COMMIT_HASH" > /var/www/COMMIT_HASH
-RUN npm run build
-RUN composer dump-autoload --optimize
 
 # Config
 COPY docker/nginx.conf /etc/nginx/sites-available/default
