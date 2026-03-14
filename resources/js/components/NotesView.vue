@@ -167,15 +167,6 @@
           >Delete Forever</button>
           <button
             v-if="!selectedNote.trashed"
-            @click="toggleVimMode"
-            class="bear-toolbar-btn"
-            :class="vimMode ? 'bear-accent' : ''"
-            title="Toggle Vim mode"
-          >
-            <span style="font-size: 11px; font-weight: 700; font-family: monospace;">VI</span>
-          </button>
-          <button
-            v-if="!selectedNote.trashed"
             @click="trashNote"
             class="bear-toolbar-btn bear-muted-dim hover:bear-destructive"
             title="Move to trash"
@@ -249,9 +240,7 @@
 
       <!-- Editor (edit mode) -->
       <div v-if="viewMode === 'edit'" class="flex-1 flex flex-col min-h-0">
-        <div v-if="vimMode" ref="cmContainerEl" class="flex-1 min-h-0 cm-wrapper"></div>
         <textarea
-          v-else
           ref="editorEl"
           v-model="selectedNote.content"
           @input="onNoteInput"
@@ -267,7 +256,6 @@
             <span>{{ charCount }} characters</span>
           </div>
           <div class="flex items-center gap-2">
-            <span v-if="vimMode" class="text-[10px] bear-muted-dim font-mono">VIM</span>
             <span class="text-[10px]" :class="saveStatus === 'saved' ? 'bear-muted-dim' : 'text-primary'">
               {{ saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved' }}
             </span>
@@ -494,15 +482,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, watch, shallowRef } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
-import { markdown } from '@codemirror/lang-markdown'
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { vim } from '@replit/codemirror-vim'
 
 const props = defineProps<{ isOnline: boolean }>()
 
@@ -549,9 +532,6 @@ const tagInput = ref<HTMLInputElement | null>(null)
 const titleInputEl = ref<HTMLInputElement | null>(null)
 const searchModalInput = ref<HTMLInputElement | null>(null)
 const editorEl = ref<HTMLTextAreaElement | null>(null)
-const cmContainerEl = ref<HTMLDivElement | null>(null)
-const cmView = shallowRef<EditorView | null>(null)
-const vimMode = ref(false)
 const searchOpen = ref(false)
 const searchSelectedIdx = ref(0)
 const sidebarFilter = ref<string>('all')
@@ -1005,78 +985,6 @@ function onNoteInput() {
   }
 }
 
-// --- Vim mode (CodeMirror) ---
-function initVimMode() {
-  const stored = localStorage.getItem('gtd-vim-mode')
-  vimMode.value = stored === 'true'
-}
-
-function toggleVimMode() {
-  vimMode.value = !vimMode.value
-  localStorage.setItem('gtd-vim-mode', String(vimMode.value))
-  if (vimMode.value) {
-    nextTick(() => mountCodeMirror())
-  } else {
-    destroyCodeMirror()
-    nextTick(() => editorEl.value?.focus())
-  }
-}
-
-function mountCodeMirror() {
-  if (cmView.value || !cmContainerEl.value || !selectedNote.value) return
-  const note = selectedNote.value
-  const state = EditorState.create({
-    doc: note.content || '',
-    extensions: [
-      vim(),
-      markdown(),
-      history(),
-      keymap.of([...defaultKeymap, ...historyKeymap]),
-      cmPlaceholder('Start writing...'),
-      EditorView.lineWrapping,
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged && selectedNote.value) {
-          selectedNote.value.content = update.state.doc.toString()
-          onNoteInput()
-        }
-      }),
-      EditorView.theme({
-        '&': { height: '100%', fontSize: '14px' },
-        '.cm-editor': { height: '100%' },
-        '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--note-font, inherit)' },
-        '.cm-content': { padding: '12px 20px', caretColor: 'var(--foreground)' },
-        '.cm-line': { padding: '0' },
-        '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--foreground)' },
-        '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { background: 'oklch(0.7 0.05 250 / 25%)' },
-        '.cm-gutters': { display: 'none' },
-        '&.cm-focused': { outline: 'none' },
-        '.cm-vim-panel': { padding: '2px 8px', fontSize: '12px', background: 'var(--muted)', color: 'var(--foreground)' },
-        '.cm-fat-cursor': { background: 'oklch(0.6 0.15 250 / 40%) !important' },
-      }, { dark: false }),
-    ],
-  })
-  cmView.value = new EditorView({ state, parent: cmContainerEl.value })
-  cmView.value.focus()
-}
-
-function destroyCodeMirror() {
-  if (cmView.value) {
-    cmView.value.destroy()
-    cmView.value = null
-  }
-}
-
-function syncCodeMirrorContent() {
-  if (!cmView.value || !selectedNote.value) return
-  const current = cmView.value.state.doc.toString()
-  const expected = selectedNote.value.content || ''
-  if (current !== expected) {
-    cmView.value.dispatch({
-      changes: { from: 0, to: current.length, insert: expected }
-    })
-  }
-}
-
 function trashNote() {
   if (!selectedNote.value) return
   const noteId = selectedNote.value.id
@@ -1281,33 +1189,13 @@ onMounted(() => {
   document.addEventListener('keydown', onKeydown)
   window.addEventListener('notes-open-search', onNotesOpenSearch)
   startVersionTimer()
-  initVimMode()
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   window.removeEventListener('notes-open-search', onNotesOpenSearch)
   stopVersionTimer()
-  destroyCodeMirror()
 })
 
-// When selected note changes, sync or rebuild CodeMirror
-watch(selectedNoteId, () => {
-  if (vimMode.value) {
-    destroyCodeMirror()
-    if (selectedNote.value && viewMode.value === 'edit') {
-      nextTick(() => mountCodeMirror())
-    }
-  }
-})
-
-// When switching to edit mode with vim on, mount CM
-watch(viewMode, (mode) => {
-  if (mode === 'edit' && vimMode.value && selectedNote.value) {
-    nextTick(() => mountCodeMirror())
-  } else if (mode !== 'edit') {
-    destroyCodeMirror()
-  }
-})
 </script>
 
 <style scoped>
@@ -1664,19 +1552,6 @@ watch(viewMode, (mode) => {
   border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
 }
 
-.cm-wrapper {
-  overflow: hidden;
-}
-.cm-wrapper :deep(.cm-editor) {
-  height: 100%;
-  background: transparent;
-}
-.cm-wrapper :deep(.cm-scroller) {
-  font-family: var(--note-font, inherit);
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--foreground);
-}
 
 .bear-textarea {
   resize: none;

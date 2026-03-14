@@ -1,6 +1,12 @@
 #!/bin/sh
 set -e
 
+# Set system timezone from TIMEZONE env var
+if [ -n "$TIMEZONE" ]; then
+    ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+    echo "$TIMEZONE" > /etc/timezone
+fi
+
 # Ensure SQLite database exists
 if [ ! -f /data/gtd.sqlite ]; then
     touch /data/gtd.sqlite

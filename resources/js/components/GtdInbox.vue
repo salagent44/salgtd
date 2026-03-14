@@ -36,6 +36,7 @@
             <button
               @click="openReview()"
               class="hidden sm:inline-flex rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              :class="{ 'review-pulse': reviewOverdue }"
               data-testid="review-btn"
             >{{ themeIcons.review }} {{ hasReviewProgress ? 'Review (in progress)' : 'Review' }}</button>
           </template>
@@ -118,31 +119,6 @@
 
       <!-- Sticky task header -->
       <div class="shrink-0 space-y-4 md:space-y-6 pb-2">
-
-      <!-- Weekly review reminder -->
-      <div
-        v-if="reviewOverdue"
-        class="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3"
-      >
-        <span class="text-lg">{{ themeIcons.nextAction }}</span>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-foreground">Time for a weekly review</p>
-          <p class="text-[12px] text-muted-foreground">
-            {{ daysSinceReview === null ? "You haven't done a review yet." : 'Last review was ' + daysSinceReview + ' days ago.' }}
-          </p>
-        </div>
-        <button
-          @click="openReview()"
-          class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
-        >Start Review</button>
-        <button
-          @click="reviewDismissed = true"
-          class="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
-          title="Dismiss"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
 
       <!-- Task pills — only shown when count > 0 -->
       <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
@@ -2759,16 +2735,13 @@ function commitReview() {
   // Clear saved progress and stamp the review date
   guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
   guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true })
-  reviewDismissed.value = true
 }
 
 // Weekly review reminder
 const REVIEW_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
-const reviewDismissed = ref(false)
 const lastReviewDate = ref<string | null>(null)
 
 const reviewOverdue = computed(() => {
-  if (reviewDismissed.value) return false
   if (!lastReviewDate.value) return true
   const last = new Date(lastReviewDate.value).getTime()
   return Date.now() - last >= REVIEW_INTERVAL_MS
@@ -3464,6 +3437,15 @@ function bucketVariant(status: Status): 'default' | 'secondary' | 'outline' | 'd
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Subtle pulse for overdue review button */
+.review-pulse {
+  animation: review-glow 2s ease-in-out infinite;
+}
+@keyframes review-glow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 8px 2px oklch(0.65 0.15 250 / 40%); }
 }
 
 /* Safe area for bottom nav on notched phones */
