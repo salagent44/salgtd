@@ -1897,8 +1897,13 @@
           </template>
         </div>
 
-        <!-- Move to Inbox / Delete (not for checklists — they have their own actions) -->
+        <!-- Move to Inbox / Done / Delete (not for checklists — they have their own actions) -->
         <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5 space-y-1">
+          <button
+            v-if="processing && processing.status !== 'inbox' && processing.status !== 'done'"
+            @click="clarify('done')"
+            class="w-full rounded-xl bg-green-600 hover:bg-green-500 text-white py-2.5 text-sm font-semibold transition-colors"
+          >Mark Done</button>
           <button
             v-if="processing && processing.status !== 'inbox'"
             @click="moveToInbox()"
