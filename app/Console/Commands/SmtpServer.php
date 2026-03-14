@@ -214,12 +214,12 @@ class SmtpServer extends Command
 
         // Extract plain text from MIME if needed
         $contentType = $headers['content-type'] ?? '';
-        $body = $this->extractPlainText($bodyPart, $contentType);
+        $body = $this->extractPlainText($bodyPart, $contentType, $headerPart);
 
         return [$headers, $body];
     }
 
-    private function extractPlainText(string $body, string $contentType): string
+    private function extractPlainText(string $body, string $contentType, string $headers = ''): string
     {
         if ($contentType === '') {
             return trim($body);
@@ -230,7 +230,7 @@ class SmtpServer extends Command
         $mediaType = strtolower(trim($parts[0]));
 
         if ($mediaType === 'text/plain') {
-            return trim($body);
+            return $this->decodeTransferEncoding(trim($body), $headers);
         }
 
         if (str_starts_with($mediaType, 'multipart/')) {
@@ -268,12 +268,12 @@ class SmtpServer extends Command
                 $sectionMedia = strtolower(trim(explode(';', $sectionCT, 2)[0]));
 
                 if ($sectionMedia === 'text/plain' || $sectionCT === '') {
-                    $result = trim($sectionBody);
+                    $result = $this->decodeTransferEncoding(trim($sectionBody), $sectionHeaders);
                     if ($result !== '') return $result;
                 }
 
                 if (str_starts_with($sectionMedia, 'multipart/')) {
-                    $result = $this->extractPlainText($sectionBody, $sectionCT);
+                    $result = $this->extractPlainText($sectionBody, $sectionCT, $sectionHeaders);
                     if ($result !== '') return $result;
                 }
             }
@@ -282,6 +282,25 @@ class SmtpServer extends Command
         }
 
         return trim($body);
+    }
+
+    private function decodeTransferEncoding(string $body, string $headers): string
+    {
+        $encoding = '';
+        if (preg_match('/^content-transfer-encoding:\s*(.+)$/mi', $headers, $m)) {
+            $encoding = strtolower(trim($m[1]));
+        }
+
+        if ($encoding === 'base64') {
+            $decoded = base64_decode($body, true);
+            return $decoded !== false ? $decoded : $body;
+        }
+
+        if ($encoding === 'quoted-printable') {
+            return quoted_printable_decode($body);
+        }
+
+        return $body;
     }
 
     private function parseFromHeader(string $from): array
