@@ -1304,7 +1304,7 @@
 
     <!-- Clarify dialog -->
     <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
+      <DialogContent class="sm:max-w-xl p-0 gap-0 max-h-[85vh] overflow-y-auto" :show-close-button="false" :trap-focus="!pickingProject && !emailViewerOpen" @escape-key-down="guardDialogDismiss" @interact-outside="guardDialogDismiss">
 
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
@@ -1734,15 +1734,16 @@
     </Teleport>
 
     <!-- Email Viewer Modal -->
+    <Teleport to="body">
     <div
       v-if="emailViewerOpen && processing?.email"
-      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[60]"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[100]"
       @click.self="emailViewerOpen = false"
       @keydown.esc.stop="emailViewerOpen = false"
     >
-      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl overflow-hidden">
+      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl overflow-hidden" @mousedown.stop @click.stop>
         <div class="flex items-center justify-between px-5 pt-5 pb-3">
-          <p class="text-sm font-semibold text-foreground truncate flex-1 mr-3">{{ processing.email.subject }}</p>
+          <p class="text-sm font-semibold text-foreground truncate flex-1 mr-3 select-text cursor-text">{{ processing.email.subject }}</p>
           <button @click="emailViewerOpen = false" class="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -1768,6 +1769,7 @@
         </div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 
