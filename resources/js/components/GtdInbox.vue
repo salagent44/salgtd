@@ -2350,7 +2350,9 @@ function selectSearchResult() {
 
 // Review
 const reviewOpen = ref(false)
-const hasReviewProgress = computed(() => !!(page.props.review_progress as string | null))
+const reviewJustCompleted = ref(false)
+const hasReviewProgress = computed(() => !reviewJustCompleted.value && !!(page.props.review_progress as string | null))
+watch(reviewOpen, (v) => { if (v) reviewJustCompleted.value = false })
 
 // Weekly review reminder
 const REVIEW_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -2374,6 +2376,7 @@ const nextReviewLabel = computed(() => {
 
 function onReviewComplete() {
   reviewOpen.value = false
+  reviewJustCompleted.value = true
   lastReviewDate.value = new Date().toISOString()
 }
 
