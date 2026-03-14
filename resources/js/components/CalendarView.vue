@@ -13,7 +13,7 @@
         <div class="flex rounded-lg bg-muted p-0.5 gap-0.5">
           <button
             @click="calendarMode = 'grid'"
-            class="rounded-md px-2 md:px-3 py-1 md:py-1.5 text-xs font-medium transition-colors"
+            class="hidden md:inline-flex rounded-md px-2 md:px-3 py-1 md:py-1.5 text-xs font-medium transition-colors"
             :class="calendarMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
             data-testid="calendar-grid-btn"
           >
@@ -161,10 +161,14 @@
             :key="event.id"
             class="cal-list-event group/item"
             :class="draggingId === event.id ? 'opacity-40' : ''"
+            :style="calSwipeStyle(event.id)"
             draggable="true"
             @dragstart="onDragStart(event, $event)"
             @dragend="onDragEnd"
             @click="editEvent(event)"
+            @touchstart="onCalTouchStart(event.id, $event)"
+            @touchmove="onCalTouchMove($event)"
+            @touchend="onCalTouchEnd(event.id)"
           >
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="eventDotClass(event.color)"></div>
@@ -209,7 +213,11 @@
             v-for="item in group.events"
             :key="item.event.id"
             class="cal-upcoming-item"
+            :style="calSwipeStyle(item.event.id)"
             @click="editEvent(item.event)"
+            @touchstart="onCalTouchStart(item.event.id, $event)"
+            @touchmove="onCalTouchMove($event)"
+            @touchend="onCalTouchEnd(item.event.id)"
           >
             <p class="text-sm" :class="item.daysAway === 0 ? 'text-red-500' : item.daysAway <= 3 ? 'text-yellow-500' : 'text-foreground'">
               <span class="font-medium">{{ item.event.title }}</span>
@@ -821,6 +829,44 @@ function onDrop(targetDate: string) {
   dragOverDate.value = null
 }
 
+// ===== Swipe to delete (mobile) =====
+const calSwipeState = ref<{ id: string; startX: number; currentX: number; startY: number; swiping: boolean } | null>(null)
+
+function onCalTouchStart(eventId: string, e: TouchEvent) {
+  if (window.innerWidth >= 768) return
+  const touch = e.touches[0]
+  calSwipeState.value = { id: eventId, startX: touch.clientX, currentX: touch.clientX, startY: touch.clientY, swiping: false }
+}
+
+function onCalTouchMove(e: TouchEvent) {
+  if (!calSwipeState.value) return
+  const touch = e.touches[0]
+  const dx = touch.clientX - calSwipeState.value.startX
+  const dy = Math.abs(touch.clientY - calSwipeState.value.startY)
+  if (!calSwipeState.value.swiping && dy > 10) { calSwipeState.value = null; return }
+  if (Math.abs(dx) > 10) calSwipeState.value.swiping = true
+  if (calSwipeState.value.swiping) {
+    e.preventDefault()
+    calSwipeState.value.currentX = touch.clientX
+  }
+}
+
+function onCalTouchEnd(eventId: string) {
+  if (!calSwipeState.value || !calSwipeState.value.swiping) { calSwipeState.value = null; return }
+  const dx = calSwipeState.value.currentX - calSwipeState.value.startX
+  if (dx < -80) {
+    deleteEvent(eventId)
+  }
+  calSwipeState.value = null
+}
+
+function calSwipeStyle(eventId: string): Record<string, string> {
+  if (!calSwipeState.value || calSwipeState.value.id !== eventId || !calSwipeState.value.swiping) return {}
+  const dx = calSwipeState.value.currentX - calSwipeState.value.startX
+  if (dx >= 0) return {}
+  return { transform: `translateX(${dx}px)`, transition: 'none', position: 'relative', zIndex: '1' }
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     if (editingEvent.value) { e.preventDefault(); editingEvent.value = null; return }
@@ -831,7 +877,7 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
   if (window.innerWidth < 768) {
-    calendarMode.value = 'list'
+    calendarMode.value = 'upcoming'
   }
 })
 onUnmounted(() => {

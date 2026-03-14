@@ -97,7 +97,7 @@
           </div>
           <button
             @click="hotkeysOpen = true"
-            class="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            class="hidden md:block rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title="Keyboard shortcuts (?)"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
@@ -259,7 +259,7 @@
             <button @click="activeContextFilter = null; activeTagFilter = null" class="text-xs text-primary hover:underline mt-2">Clear filters</button>
           </div>
           <div class="space-y-2">
-            <Card v-for="(item, idx) in filteredNextActions.slice(0, renderLimits['next-actions'])" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+            <Card v-for="(item, idx) in filteredNextActions.slice(0, renderLimits['next-actions'])" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
               <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -285,7 +285,7 @@
           <p class="text-sm">Nothing waiting</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in waitingItems.slice(0, renderLimits.waiting)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : isWaitingStale(item) ? 'border-l-red-400' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in waitingItems.slice(0, renderLimits.waiting)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : isWaitingStale(item) ? 'border-l-red-400' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -389,7 +389,7 @@
           </div>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex flex-col gap-2">
               <div class="flex items-center gap-2.5 md:gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -421,7 +421,7 @@
           <p class="text-sm">Inbox zero</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in inbox.slice(0, renderLimits.inbox)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in inbox.slice(0, renderLimits.inbox)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -445,7 +445,7 @@
           <p class="text-sm">No someday/maybe items</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in somedayItems.slice(0, renderLimits.someday)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in somedayItems.slice(0, renderLimits.someday)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -469,7 +469,7 @@
           <p class="text-sm">No tickler items</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in ticklerItems.slice(0, renderLimits.tickler)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in ticklerItems.slice(0, renderLimits.tickler)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -503,7 +503,7 @@
           </div>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in doneItems.slice(0, renderLimits.done)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in doneItems.slice(0, renderLimits.done)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -526,7 +526,7 @@
           <p class="text-sm">No flagged items</p>
         </div>
         <div class="space-y-2">
-          <Card v-for="(item, idx) in flaggedItems.slice(0, renderLimits.flagged)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2 border-l-red-500" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30']" @click="onCardClick(item, $event)">
+          <Card v-for="(item, idx) in flaggedItems.slice(0, renderLimits.flagged)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2 border-l-red-500" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
             <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -617,8 +617,16 @@
     </div><!-- end max-w wrapper -->
 
     <!-- ===== Mobile Bottom Nav ===== -->
+    <!-- Mobile swipe indicator -->
+    <Transition name="fade">
+      <div v-if="swipeState?.swiping" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] md:hidden px-4 py-2 rounded-full text-white text-sm font-semibold shadow-lg" :class="swipeOffset(swipeState.id) > 40 ? 'bg-green-500' : swipeOffset(swipeState.id) < -40 ? 'bg-red-500' : 'bg-muted-foreground'">
+        {{ swipeOffset(swipeState.id) > 40 ? '✓ Done' : swipeOffset(swipeState.id) < -40 ? 'Delete' : 'Swipe...' }}
+      </div>
+    </Transition>
+
     <!-- Mobile FAB: Add to inbox -->
     <button
+      v-if="currentView === 'tasks'"
       @click="openQuickCapture"
       class="fixed bottom-20 right-4 z-50 md:hidden w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all"
     >
@@ -2113,11 +2121,14 @@ interface Item { id: string; title: string; status: Status; context?: string; wa
 // View navigation
 type ViewKey = 'tasks' | 'notes' | 'calendar'
 const currentView = ref<ViewKey>('tasks')
-const views = computed(() => [
-  { key: 'tasks' as ViewKey, label: 'Tasks', icon: '✓' },
-  { key: 'notes' as ViewKey, label: 'Notes', icon: themeIcons.value.notes },
-  { key: 'calendar' as ViewKey, label: 'Calendar', icon: themeIcons.value.calendar },
-])
+const views = computed(() => {
+  const all = [
+    { key: 'tasks' as ViewKey, label: 'Tasks', icon: '✓' },
+    { key: 'notes' as ViewKey, label: 'Notes', icon: themeIcons.value.notes },
+    { key: 'calendar' as ViewKey, label: 'Calendar', icon: themeIcons.value.calendar },
+  ]
+  return isMobile.value ? all.filter(v => v.key !== 'notes') : all
+})
 
 // Reload lazy props when switching views
 watch(currentView, (v) => {
@@ -2156,6 +2167,52 @@ const currentTheme = ref('default')
 const settingsOpen = ref(false)
 const hotkeysOpen = ref(false)
 const isMac = computed(() => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent))
+const isMobile = ref(window.innerWidth < 768)
+function updateIsMobile() { isMobile.value = window.innerWidth < 768 }
+
+// Swipe actions (mobile)
+const swipeState = ref<{ id: string; startX: number; currentX: number; startY: number; swiping: boolean } | null>(null)
+
+function onTouchStart(itemId: string, e: TouchEvent) {
+  if (!isMobile.value) return
+  const touch = e.touches[0]
+  swipeState.value = { id: itemId, startX: touch.clientX, currentX: touch.clientX, startY: touch.clientY, swiping: false }
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!swipeState.value) return
+  const touch = e.touches[0]
+  const dx = touch.clientX - swipeState.value.startX
+  const dy = Math.abs(touch.clientY - swipeState.value.startY)
+  if (!swipeState.value.swiping && dy > 10) { swipeState.value = null; return }
+  if (Math.abs(dx) > 10) swipeState.value.swiping = true
+  if (swipeState.value.swiping) {
+    e.preventDefault()
+    swipeState.value.currentX = touch.clientX
+  }
+}
+
+function onTouchEnd(item: Item) {
+  if (!swipeState.value || !swipeState.value.swiping) { swipeState.value = null; return }
+  const dx = swipeState.value.currentX - swipeState.value.startX
+  if (dx > 80) {
+    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)
+  } else if (dx < -80) {
+    guardedRouter.delete(`/items/${item.id}`, itemOnly)
+  }
+  swipeState.value = null
+}
+
+function swipeOffset(itemId: string): number {
+  if (!swipeState.value || swipeState.value.id !== itemId || !swipeState.value.swiping) return 0
+  return swipeState.value.currentX - swipeState.value.startX
+}
+
+function swipeStyle(itemId: string): Record<string, string> {
+  const offset = swipeOffset(itemId)
+  if (offset === 0) return {}
+  return { transform: `translateX(${offset}px)`, transition: 'none', position: 'relative', zIndex: '1' }
+}
 
 const themeIcons = computed(() => {
   return { nextAction: '⚡', flag: '🚩', inbox: '📥', done: '✅', calendar: '📅', project: '📋', notes: '📝', review: '⚡',
@@ -2918,6 +2975,7 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', updateIsMobile)
   lastReviewDate.value = (page.props.last_review as string) || null
   const savedFont = page.props.note_font as string
   if (savedFont) setNoteFont(savedFont)
@@ -2936,6 +2994,7 @@ onMounted(() => {
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', updateIsMobile)
   if (smtpPollInterval) clearInterval(smtpPollInterval)
   if (healthPollInterval) clearInterval(healthPollInterval)
   if (itemsPollInterval) clearInterval(itemsPollInterval)
