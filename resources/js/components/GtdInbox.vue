@@ -1901,7 +1901,7 @@ function setNoteFont(key: string) {
   if (font) {
     document.documentElement.style.setProperty('--note-font', font.family)
   }
-  guardedRouter.put('/settings/note_font', { value: key }, { preserveScroll: true, preserveState: true })
+  guardedRouter.put('/settings/note_font', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 function setTheme(key: string) {
@@ -1909,7 +1909,7 @@ function setTheme(key: string) {
   html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
   if (key !== 'default') html.classList.add(key)
   currentTheme.value = key
-  guardedRouter.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true })
+  guardedRouter.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 // User-creatable contexts
@@ -1941,7 +1941,7 @@ checkSmtpStatus()
 
 function saveEmailAddress() {
   const val = emailAddressSetting.value.trim()
-  guardedRouter.put('/settings/email_address', { value: val || null }, { preserveScroll: true, preserveState: true })
+  guardedRouter.put('/settings/email_address', { value: val || null }, { preserveScroll: true, preserveState: true, only: [] })
   savedEmailAddress.value = val
 }
 

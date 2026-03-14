@@ -153,7 +153,7 @@ function saveProgress() {
   if (saveTimeout) clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
     const progress = JSON.stringify({ checked: checked.value })
-    guardedRouter.put('/settings/review_progress', { value: progress }, { preserveScroll: true, preserveState: true })
+    guardedRouter.put('/settings/review_progress', { value: progress }, { preserveScroll: true, preserveState: true, only: [] })
   }, 500)
 }
 
@@ -166,14 +166,14 @@ const progressPercent = computed(() => {
 
 function resetReview() {
   checked.value = {}
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
+  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 function completeReview() {
   checked.value = {}
   justCompleted.value = true
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
-  guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true })
+  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
+  guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true, only: [] })
   emit('review-complete')
   emit('close')
 }
