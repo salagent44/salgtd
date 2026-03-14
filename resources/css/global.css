@@ -1175,9 +1175,13 @@
   --success-text: var(--foreground) !important;
   --success-border: var(--border) !important;
   font-family: inherit !important;
+  --width: auto !important;
 }
 [data-sonner-toast] {
-  opacity: 0.92 !important;
   font-size: 13px !important;
-  box-shadow: 0 2px 8px oklch(0 0 0 / 10%) !important;
+  border-radius: 12px !important;
+  padding: 12px 20px !important;
+  box-shadow: 0 4px 16px oklch(0 0 0 / 15%) !important;
+  border: 1px solid var(--border) !important;
 }
+
