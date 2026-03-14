@@ -117,11 +117,16 @@ const reviewSteps = [
 ]
 
 const checked = ref<Record<string, boolean>>({})
+const justCompleted = ref(false)
 
 // Load saved progress
 const reviewProgressRaw = computed(() => page.props.review_progress as string | null)
 
 function loadProgress() {
+  if (justCompleted.value) {
+    checked.value = {}
+    return
+  }
   if (!reviewProgressRaw.value) {
     checked.value = {}
     return
@@ -138,6 +143,7 @@ onMounted(loadProgress)
 watch(() => props.open, (v) => { if (v) loadProgress() })
 
 function toggleCheck(key: string) {
+  justCompleted.value = false
   checked.value[key] = !checked.value[key]
   saveProgress()
 }
@@ -165,6 +171,7 @@ function resetReview() {
 
 function completeReview() {
   checked.value = {}
+  justCompleted.value = true
   guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true })
   guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true })
   emit('review-complete')
