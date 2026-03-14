@@ -22,8 +22,8 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'items' => fn () => Item::with(['tags', 'email', 'checklistItems'])->orderBy('sort_order')->get(),
             'contexts' => fn () => Context::orderBy('sort_order')->get(),
-            'notes' => Inertia::lazy(fn () => Note::with('tags')->orderByDesc('updated_at')->get()),
-            'events' => Inertia::lazy(fn () => CalendarEvent::orderBy('event_date')->get()),
+            'notes' => fn () => Note::with('tags')->orderByDesc('updated_at')->get(),
+            'events' => fn () => CalendarEvent::orderBy('event_date')->get(),
             'theme' => Setting::get('theme', 'default'),
             'note_font' => Setting::get('note_font', 'system'),
             'note_font_css' => Setting::getNoteFontCss(),
