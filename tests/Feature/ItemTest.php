@@ -343,7 +343,7 @@ class ItemTest extends TestCase
 
         $response->assertRedirect();
         foreach ($ids as $id) {
-            $this->assertDatabaseMissing('items', ['id' => $id]);
+            $this->assertSoftDeleted('items', ['id' => $id]);
         }
     }
 
@@ -358,7 +358,7 @@ class ItemTest extends TestCase
         $response = $this->delete("/items/{$item->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('items', ['id' => $item->id]);
+        $this->assertSoftDeleted('items', ['id' => $item->id]);
     }
 
     public function test_can_flag_item_via_update(): void
@@ -512,6 +512,8 @@ class ItemTest extends TestCase
 
         $this->delete("/items/{$item->id}");
 
-        $this->assertDatabaseMissing('item_tags', ['item_id' => $item->id]);
+        // Tags remain because item is soft-deleted, not hard-deleted
+        $this->assertSoftDeleted('items', ['id' => $item->id]);
+        $this->assertDatabaseHas('item_tags', ['item_id' => $item->id]);
     }
 }

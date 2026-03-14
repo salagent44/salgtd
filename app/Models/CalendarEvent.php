@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSyncVersion;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalendarEvent extends Model
 {
+    use SoftDeletes, HasSyncVersion;
     public $incrementing = false;
     protected $keyType = 'string';
 

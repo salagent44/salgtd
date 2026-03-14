@@ -291,7 +291,7 @@ class ClarifyWorkflowTest extends TestCase
 
         $this->delete("/items/{$project->id}");
 
-        $this->assertDatabaseMissing('items', ['id' => $project->id]);
+        $this->assertSoftDeleted('items', ['id' => $project->id]);
         $task->refresh();
         $this->assertNull($task->project_id);
     }

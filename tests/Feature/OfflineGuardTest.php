@@ -88,7 +88,7 @@ class OfflineGuardTest extends TestCase
         $response = $this->actingAs($user)->delete("/items/{$item->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('items', ['id' => $item->id]);
+        $this->assertSoftDeleted('items', ['id' => $item->id]);
     }
 
     /**

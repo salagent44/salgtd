@@ -54,6 +54,6 @@ class ContextTest extends TestCase
         $response = $this->delete("/contexts/{$context->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('contexts', ['id' => $context->id]);
+        $this->assertSoftDeleted('contexts', ['id' => $context->id]);
     }
 }

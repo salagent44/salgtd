@@ -134,6 +134,6 @@ class EventTest extends TestCase
         $response = $this->delete("/events/{$event->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('calendar_events', ['id' => $event->id]);
+        $this->assertSoftDeleted('calendar_events', ['id' => $event->id]);
     }
 }

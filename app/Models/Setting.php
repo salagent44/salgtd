@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasSyncVersion;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
+    use HasSyncVersion;
+
     public $incrementing = false;
-    public $timestamps = false;
     protected $primaryKey = 'key';
     protected $keyType = 'string';
 

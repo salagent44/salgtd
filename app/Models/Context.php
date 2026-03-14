@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasSyncVersion;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Context extends Model
 {
+    use SoftDeletes, HasSyncVersion;
+
     public $timestamps = false;
 
     protected $fillable = [

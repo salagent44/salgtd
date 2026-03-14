@@ -100,9 +100,9 @@ class EmailTest extends TestCase
 
         $this->delete("/items/{$item->id}");
 
-        $this->assertDatabaseMissing('items', ['id' => $item->id]);
-        $email->refresh();
-        $this->assertNull($email->item_id);
+        $this->assertSoftDeleted('items', ['id' => $item->id]);
+        // Email record still exists since item is soft-deleted
+        $this->assertDatabaseHas('emails', ['id' => $email->id]);
     }
 
     public function test_non_email_items_have_null_email(): void

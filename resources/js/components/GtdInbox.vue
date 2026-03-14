@@ -1828,6 +1828,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { CalendarDate, getLocalTimeZone, today as getToday } from '@internationalized/date'
 import NotesView from './NotesView.vue'
 import CalendarView from './CalendarView.vue'
+import { getEcho } from '@/echo'
 import ReviewView from './ReviewView.vue'
 import TimePicker from './TimePicker.vue'
 
@@ -2528,17 +2529,50 @@ onMounted(() => {
   smtpPollInterval = setInterval(checkSmtpStatus, 30000)
   checkHealth()
   healthPollInterval = setInterval(checkHealth, 15000)
-  itemsPollInterval = setInterval(pollForNewItems, 30000)
+  setupEcho()
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   if (smtpPollInterval) clearInterval(smtpPollInterval)
   if (healthPollInterval) clearInterval(healthPollInterval)
   if (itemsPollInterval) clearInterval(itemsPollInterval)
+  teardownEcho()
 })
 
-// Poll for new items (e.g. inbound emails) every 30 seconds
+// Real-time sync via Echo (WebSocket) with polling fallback
 let itemsPollInterval: ReturnType<typeof setInterval> | null = null
+let echoChannel: any = null
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function setupEcho() {
+  const echo = getEcho()
+  if (!echo) {
+    // Fallback to polling if Echo not configured
+    itemsPollInterval = setInterval(pollForNewItems, 30000)
+    return
+  }
+
+  echoChannel = echo.private('sync').listen('.SyncUpdated', () => {
+    // Debounce rapid-fire events (500ms)
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
+    syncDebounceTimer = setTimeout(() => {
+      pollForNewItems()
+    }, 500)
+  })
+
+  // Keep a slower fallback poll for resilience
+  itemsPollInterval = setInterval(pollForNewItems, 60000)
+}
+
+function teardownEcho() {
+  if (echoChannel) {
+    const echo = getEcho()
+    echo?.leave('sync')
+    echoChannel = null
+  }
+  if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
+}
+
 function pollForNewItems() {
   if (!isOnline.value) return
   if (processing.value) return // don't refresh while clarifying

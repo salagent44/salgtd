@@ -158,6 +158,6 @@ class NoteTest extends TestCase
         $response = $this->delete("/notes/{$note->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('notes', ['id' => $note->id]);
+        $this->assertSoftDeleted('notes', ['id' => $note->id]);
     }
 }

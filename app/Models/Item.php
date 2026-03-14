@@ -2,17 +2,29 @@
 
 namespace App\Models;
 
+use App\Traits\HasSyncVersion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, HasSyncVersion;
     public $incrementing = false;
     protected $keyType = 'string';
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Item $item) {
+            // When a project is deleted, unlink its tasks
+            if ($item->status === 'project') {
+                Item::where('project_id', $item->id)->update(['project_id' => null]);
+            }
+        });
+    }
 
     protected $fillable = [
         'id',
