@@ -750,25 +750,36 @@
                   </p>
                 </div>
                 <button
-                  v-if="updateAvailable && !updateTriggered"
+                  v-if="updateAvailable && !updateInProgress"
                   @click="triggerUpdate"
                   class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                 >Update Now</button>
-                <span v-else-if="updateTriggered" class="text-xs text-muted-foreground flex items-center gap-1.5">
+                <span v-else-if="updateStatus === 'triggered'" class="text-xs text-amber-500 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  Waiting to start...
+                </span>
+                <span v-else-if="updateStatus === 'updating'" class="text-xs text-primary flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full bg-primary"></span>
                   Updating...
                 </span>
+                <span v-else-if="updateStatus === 'error'" class="text-xs text-red-500">Update failed</span>
                 <span v-else-if="updateChecking" class="text-xs text-muted-foreground">Checking...</span>
                 <span v-else class="text-xs text-green-500">Up to date</span>
               </div>
-              <p v-if="updateAvailable && !updateTriggered" class="text-[11px] text-primary">
+              <p v-if="updateAvailable && !updateInProgress" class="text-[11px] text-primary">
                 A new version is available.
               </p>
-              <p v-if="updateTriggered" class="text-[11px] text-muted-foreground">
-                The app will restart automatically. This page will reload when ready.
+              <p v-if="updateStatus === 'triggered'" class="text-[11px] text-muted-foreground">
+                Update queued. The cron job will pick it up shortly.
+              </p>
+              <p v-if="updateStatus === 'updating'" class="text-[11px] text-muted-foreground">
+                Building and restarting. This page will reload when ready.
+              </p>
+              <p v-if="updateStatus === 'error'" class="text-[11px] text-red-400">
+                Something went wrong. Check server logs.
               </p>
               <button
-                v-if="!updateTriggered"
+                v-if="!updateInProgress"
                 @click="checkForUpdate"
                 class="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >Check for updates</button>
@@ -1941,8 +1952,10 @@ function saveEmailAddress() {
 const deployedCommit = computed(() => (page.props.commit_hash as string) || 'unknown')
 const updateAvailable = ref(false)
 const updateChecking = ref(false)
-const updateTriggered = ref(false)
+const updateStatus = ref<'idle' | 'triggered' | 'updating' | 'done' | 'error'>('idle')
 let updatePollTimer: ReturnType<typeof setInterval> | null = null
+
+const updateInProgress = computed(() => updateStatus.value === 'triggered' || updateStatus.value === 'updating')
 
 async function checkForUpdate() {
   updateChecking.value = true
@@ -1962,23 +1975,36 @@ async function checkForUpdate() {
 }
 
 async function triggerUpdate() {
-  updateTriggered.value = true
   try {
-    await fetch('/api/update-trigger', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
-  } catch {}
-  // Poll for completion — the container will restart, so we watch for the page to come back
+    const res = await fetch('/api/update-trigger', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
+    if (res.ok) {
+      const data = await res.json()
+      if (!data.triggered) return // already in progress
+    }
+  } catch { return }
+  updateStatus.value = 'triggered'
+  startUpdatePolling()
+}
+
+function startUpdatePolling() {
+  if (updatePollTimer) clearInterval(updatePollTimer)
   updatePollTimer = setInterval(async () => {
     try {
       const res = await fetch('/api/update-status')
       if (res.ok) {
         const data = await res.json()
-        if (data.last_status?.startsWith('done:') && !data.updating) {
+        updateStatus.value = data.status || 'idle'
+        if (data.status === 'done') {
           clearInterval(updatePollTimer!)
+          updatePollTimer = null
           window.location.reload()
+        } else if (data.status === 'error') {
+          clearInterval(updatePollTimer!)
+          updatePollTimer = null
         }
       }
     } catch {
-      // server is down during rebuild — that's expected
+      // server is down during rebuild — expected
     }
   }, 5000)
 }
@@ -1988,8 +2014,21 @@ function getCsrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-// Check for updates on load and every 30 minutes
-checkForUpdate()
+// On load: check current update status and check for new versions
+async function initUpdateStatus() {
+  try {
+    const res = await fetch('/api/update-status')
+    if (res.ok) {
+      const data = await res.json()
+      updateStatus.value = data.status || 'idle'
+      if (data.status === 'triggered' || data.status === 'updating') {
+        startUpdatePolling()
+      }
+    }
+  } catch {}
+  checkForUpdate()
+}
+initUpdateStatus()
 setInterval(checkForUpdate, 30 * 60 * 1000)
 
 function copyText(text: string, field = 'url') {

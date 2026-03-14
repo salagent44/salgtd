@@ -280,14 +280,16 @@ VOLUME_PATH=$(docker volume inspect gtd-app_gtd-data --format '{{ .Mountpoint }}
 [ -z "$VOLUME_PATH" ] && exit 0
 
 TRIGGER="$VOLUME_PATH/update-trigger"
-STATUS="$VOLUME_PATH/update-status"
 
 [ ! -f "$TRIGGER" ] && exit 0
 
 rm -f "$TRIGGER"
-echo "updating:$(date -Iseconds)" > "$STATUS"
 
 cd /opt/gtd-app || exit 1
+
+# Set status to "updating" in the database
+docker compose exec -T gtd php artisan update:status updating 2>/dev/null || true
+
 git fetch origin main
 git reset --hard origin/main
 
@@ -296,7 +298,8 @@ sed -i "s|^COMMIT_HASH=.*|COMMIT_HASH=${COMMIT_HASH}|" .env 2>/dev/null || echo 
 
 docker compose up -d --build
 
-echo "done:$(date -Iseconds)" > "$STATUS"
+# Set status to "done" — new container has the command
+docker compose exec -T gtd php artisan update:status done 2>/dev/null || true
 UPDATEEOF
 chmod +x /opt/gtd-app/scripts/auto-update.sh
 

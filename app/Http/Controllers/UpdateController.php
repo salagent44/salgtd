@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 
 class UpdateController extends Controller
@@ -9,27 +10,31 @@ class UpdateController extends Controller
     public function status(): JsonResponse
     {
         $hash = trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown');
-
-        // Check if an update is in progress
-        $updating = file_exists('/data/update-trigger');
-
-        // Check last update result
-        $statusFile = '/data/update-status';
-        $lastStatus = null;
-        if (file_exists($statusFile)) {
-            $lastStatus = trim(file_get_contents($statusFile));
-        }
+        $status = Setting::get('update_status', 'idle');
+        $triggeredAt = Setting::get('update_triggered_at');
 
         return response()->json([
             'commit' => $hash,
-            'updating' => $updating,
-            'last_status' => $lastStatus,
+            'status' => $status,
+            'triggered_at' => $triggeredAt,
         ]);
     }
 
     public function trigger(): JsonResponse
     {
-        file_put_contents('/data/update-trigger', date('c'));
+        $current = Setting::get('update_status', 'idle');
+        if ($current === 'triggered' || $current === 'updating') {
+            return response()->json(['triggered' => false, 'reason' => 'Update already in progress']);
+        }
+
+        $now = date('c');
+        Setting::set('update_status', 'triggered');
+        Setting::set('update_triggered_at', $now);
+
+        // Write file-based trigger for the host cron job
+        if (is_dir('/data')) {
+            file_put_contents('/data/update-trigger', $now);
+        }
 
         return response()->json(['triggered' => true]);
     }

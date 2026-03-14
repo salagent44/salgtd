@@ -9,6 +9,7 @@ fi
 
 # Clear stale update artifacts
 rm -f /data/update-trigger
+rm -f /data/update-status
 
 # Ensure SQLite database exists
 if [ ! -f /data/gtd.sqlite ]; then
