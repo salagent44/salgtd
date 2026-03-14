@@ -7,9 +7,6 @@ if [ -n "$TIMEZONE" ]; then
     echo "$TIMEZONE" > /etc/timezone
 fi
 
-# Clear stale update artifacts
-rm -f /data/update-apply
-
 # Ensure SQLite database exists
 if [ ! -f /data/gtd.sqlite ]; then
     touch /data/gtd.sqlite

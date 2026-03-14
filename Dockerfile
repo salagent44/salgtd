@@ -13,9 +13,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /var/www
 COPY . .
 
-ARG COMMIT_HASH=unknown
-RUN echo "$COMMIT_HASH" > /var/www/COMMIT_HASH
-
 # Config
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 COPY docker/supervisord.conf /etc/supervisord.conf

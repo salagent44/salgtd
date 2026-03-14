@@ -13,7 +13,6 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\ChecklistTemplateController;
 use App\Http\Controllers\TwoFactorController;
-use App\Http\Controllers\UpdateController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -75,10 +74,6 @@ Route::middleware('auth')->group(function () {
 
     // Settings API
     Route::put('/settings/{key}', [SettingController::class, 'update']);
-
-    // App updates
-    Route::get('/api/update-status', [UpdateController::class, 'status']);
-    Route::post('/api/update-apply', [UpdateController::class, 'apply']);
 
     // Two-factor authentication management
     Route::post('/api/2fa/setup', [TwoFactorController::class, 'setup']);

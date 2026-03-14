@@ -2,8 +2,6 @@ services:
   gtd:
     build:
       context: .
-      args:
-        COMMIT_HASH: ${COMMIT_HASH:-unknown}
     volumes:
       - gtd-data:/data
     environment:

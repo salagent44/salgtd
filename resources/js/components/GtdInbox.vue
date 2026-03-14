@@ -6,18 +6,6 @@
       <span class="mr-1">🔌</span> No connection — changes are disabled until reconnected
     </div>
 
-    <!-- Update notification banner -->
-    <div v-if="buildReady && !updateApplying" class="bg-primary text-primary-foreground text-center py-2 px-4 text-sm font-medium shrink-0 flex items-center justify-center gap-3">
-      <span>A new version is ready to install</span>
-      <button
-        @click="applyUpdate"
-        class="rounded-full bg-primary-foreground text-primary px-4 py-1 text-xs font-semibold hover:opacity-90 transition-opacity"
-      >Apply Update</button>
-    </div>
-    <div v-if="updateApplying" class="bg-amber-500 text-white text-center py-2 px-4 text-sm font-medium shrink-0">
-      Applying update... page will reload momentarily
-    </div>
-
     <div class="max-w-[1800px] w-full mx-auto flex flex-col flex-1 min-h-0 px-3 md:px-6 pt-3 md:pt-6">
 
       <!-- Top nav bar -->
@@ -893,19 +881,6 @@
             </div>
           </div>
 
-          <!-- App Version -->
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">App</p>
-            <div class="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-              <p class="text-[12px] text-muted-foreground">
-                Running version <code class="bg-background border border-border rounded px-1 py-0.5 text-[11px] font-mono text-foreground">{{ deployedCommit }}</code>
-              </p>
-              <p v-if="buildReady" class="text-[11px] text-primary">
-                New version ready — use the banner above to apply.
-              </p>
-              <p v-else class="text-[11px] text-green-500">Up to date</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -2372,73 +2347,6 @@ async function disableTwoFactor() {
 
 checkTwoFactorStatus()
 
-// --- App Updates (silent background build) ---
-const deployedCommit = computed(() => (page.props.commit_hash as string) || 'unknown')
-const buildReady = ref(false)
-const pendingCommit = ref<string | null>(null)
-const updateApplying = ref(false)
-
-function getCsrfToken(): string {
-  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
-  return match ? decodeURIComponent(match[1]) : ''
-}
-
-async function checkBuildStatus() {
-  if (!isOnline.value) return
-  try {
-    const res = await fetch('/api/update-status')
-    if (res.ok) {
-      const data = await res.json()
-      buildReady.value = data.build_ready || false
-      pendingCommit.value = data.pending_commit || null
-      if (data.applying) {
-        updateApplying.value = true
-        startApplyPolling()
-      }
-    }
-  } catch {}
-}
-
-async function applyUpdate() {
-  try {
-    const res = await fetch('/api/update-apply', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
-    if (res.ok) {
-      const data = await res.json()
-      if (data.applied) {
-        updateApplying.value = true
-        buildReady.value = false
-        startApplyPolling()
-      }
-    }
-  } catch {}
-}
-
-let applyPollTimer: ReturnType<typeof setInterval> | null = null
-function startApplyPolling() {
-  if (applyPollTimer) clearInterval(applyPollTimer)
-  applyPollTimer = setInterval(async () => {
-    try {
-      const res = await fetch('/health')
-      if (res.ok) {
-        // Server is back — check if commit changed
-        const statusRes = await fetch('/api/update-status')
-        if (statusRes.ok) {
-          const data = await statusRes.json()
-          if (!data.applying && data.commit !== deployedCommit.value) {
-            clearInterval(applyPollTimer!)
-            applyPollTimer = null
-            window.location.reload()
-          }
-        }
-      }
-    } catch {
-      // Server down during restart — expected
-    }
-  }, 3000)
-}
-
-checkBuildStatus()
-setInterval(checkBuildStatus, 30000)
 
 function copyText(text: string, field = 'url') {
   navigator.clipboard.writeText(text)

@@ -32,7 +32,6 @@ class DashboardController extends Controller
             'review_progress' => fn () => Setting::get('review_progress'),
             'checklist_templates' => fn () => ChecklistTemplate::with('steps')->orderBy('name')->get(),
             'email_address' => Setting::get('email_address'),
-            'commit_hash' => trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown'),
         ]);
     }
 }
