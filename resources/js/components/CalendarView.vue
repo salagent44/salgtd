@@ -2,49 +2,50 @@
   <div class="flex flex-col h-[calc(100vh-7rem)] rounded-xl border border-border overflow-hidden" data-testid="calendar-view">
 
     <!-- Month navigation + view toggle -->
-    <div class="flex items-center justify-between px-5 py-3 border-b border-border bg-card/50">
-      <button @click="prevMonth" class="rounded-lg px-4 py-2 text-[15px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">&larr;</button>
-      <div class="text-center">
-        <h2 class="text-lg font-semibold text-foreground">{{ monthName }} {{ currentYear }}</h2>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between px-3 md:px-5 py-2 md:py-3 gap-2 md:gap-0 border-b border-border bg-card/50">
+      <div class="flex items-center justify-between">
+        <button @click="prevMonth" class="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-[15px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">&larr;</button>
+        <h2 class="text-base md:text-lg font-semibold text-foreground">{{ monthName }} {{ currentYear }}</h2>
+        <button @click="nextMonth" class="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-[15px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden">&rarr;</button>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between md:justify-end gap-1.5 md:gap-2">
         <!-- View toggle -->
         <div class="flex rounded-lg bg-muted p-0.5 gap-0.5">
           <button
             @click="calendarMode = 'grid'"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            class="rounded-md px-2 md:px-3 py-1 md:py-1.5 text-xs font-medium transition-colors"
             :class="calendarMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
             data-testid="calendar-grid-btn"
           >
-            <svg class="inline -mt-0.5 mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            Grid
+            <svg class="inline -mt-0.5 md:mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span class="hidden md:inline">Grid</span>
           </button>
           <button
             @click="calendarMode = 'list'"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            class="rounded-md px-2 md:px-3 py-1 md:py-1.5 text-xs font-medium transition-colors"
             :class="calendarMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
             data-testid="calendar-list-btn"
           >
-            <svg class="inline -mt-0.5 mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            List
+            <svg class="inline -mt-0.5 md:mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="hidden md:inline">List</span>
           </button>
           <button
             @click="calendarMode = 'upcoming'"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            class="rounded-md px-2 md:px-3 py-1 md:py-1.5 text-xs font-medium transition-colors"
             :class="calendarMode === 'upcoming' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
             data-testid="calendar-upcoming-btn"
           >
-            <svg class="inline -mt-0.5 mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Upcoming
+            <svg class="inline -mt-0.5 md:mr-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="hidden md:inline">Upcoming</span>
           </button>
         </div>
-        <button @click="goToToday" class="rounded-lg px-4 py-2 text-sm font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">Today</button>
+        <button @click="goToToday" class="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">Today</button>
         <button
           @click="openAddModal(selectedDate)"
-          class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          class="rounded-lg bg-primary px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           data-testid="calendar-add-btn"
         >+ Event</button>
-        <button @click="nextMonth" class="rounded-lg px-4 py-2 text-[15px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">&rarr;</button>
+        <button @click="nextMonth" class="hidden md:block rounded-lg px-4 py-2 text-[15px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">&rarr;</button>
       </div>
     </div>
 
@@ -52,8 +53,8 @@
     <template v-if="calendarMode === 'grid'">
       <!-- Day headers -->
       <div class="grid grid-cols-7 border-b border-border bg-card/30">
-        <div v-for="day in dayNames" :key="day" class="px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {{ day }}
+        <div v-for="(day, i) in dayNames" :key="day" class="px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span class="md:hidden">{{ dayNamesShort[i] }}</span><span class="hidden md:inline">{{ day }}</span>
         </div>
       </div>
 
@@ -120,7 +121,7 @@
     </template>
 
     <!-- ===== LIST VIEW ===== -->
-    <div v-else-if="calendarMode === 'list'" class="flex-1 overflow-y-auto cal-list-view" data-testid="calendar-list-view">
+    <div v-else-if="calendarMode === 'list'" class="flex-1 overflow-y-auto cal-list-view pb-20 md:pb-0" data-testid="calendar-list-view">
       <div v-if="listViewDays.length === 0" class="p-12 text-center">
         <p class="text-sm text-muted-foreground">No events this month</p>
         <button
@@ -138,7 +139,7 @@
         >
           <div class="flex items-center gap-3">
             <span
-              class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+              class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shrink-0"
               :class="dayGroup.isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'"
             >{{ dayGroup.dayNum }}</span>
             <div>
@@ -184,13 +185,13 @@
       </div>
 
       <!-- Days without events (collapsed) -->
-      <div v-if="emptyDaysCount > 0" class="px-5 py-3 text-center">
+      <div v-if="emptyDaysCount > 0" class="px-3 md:px-5 py-3 text-center">
         <p class="text-[11px] text-muted-foreground">{{ emptyDaysCount }} days with no events</p>
       </div>
     </div>
 
     <!-- ===== UPCOMING VIEW (Things 3 style) ===== -->
-    <div v-else class="flex-1 overflow-y-auto cal-list-view" data-testid="calendar-upcoming-view">
+    <div v-else class="flex-1 overflow-y-auto cal-list-view pb-20 md:pb-0" data-testid="calendar-upcoming-view">
       <div v-if="upcomingEvents.length === 0" class="p-12 text-center">
         <p class="text-sm text-muted-foreground">No upcoming events</p>
         <button
@@ -222,8 +223,8 @@
     </div>
 
     <!-- ===== Add Event Modal ===== -->
-    <div v-if="addingEvent" class="fixed inset-0 bg-black/40 flex items-start justify-center pt-[10vh] p-4 z-50" @click.self="addingEvent = false">
-      <div class="bg-card rounded-xl border border-border shadow-xl w-full max-w-md overflow-hidden" role="dialog">
+    <div v-if="addingEvent" class="fixed inset-0 bg-black/40 flex items-end md:items-start justify-center md:pt-[10vh] p-0 md:p-4 z-50" @click.self="addingEvent = false">
+      <div class="bg-card rounded-t-xl md:rounded-xl border border-border shadow-xl w-full md:max-w-md overflow-hidden" role="dialog">
         <div class="px-5 pt-5 pb-3">
           <p class="text-sm font-semibold text-foreground">New Event</p>
         </div>
@@ -233,7 +234,7 @@
             v-model="newEvent.title"
             type="text"
             placeholder="Event title"
-            class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            class="w-full rounded-lg border border-input bg-background px-3 py-2.5 md:py-2 text-base md:text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             @keydown.enter="saveNewEvent"
             @keydown.esc="addingEvent = false"
             data-testid="calendar-event-title"
@@ -307,8 +308,8 @@
     </div>
 
     <!-- ===== Edit Event Modal ===== -->
-    <div v-if="editingEvent" class="fixed inset-0 bg-black/40 flex items-start justify-center pt-[10vh] p-4 z-50" @click.self="editingEvent = null">
-      <div class="bg-card rounded-xl border border-border shadow-xl w-full max-w-md overflow-hidden" role="dialog">
+    <div v-if="editingEvent" class="fixed inset-0 bg-black/40 flex items-end md:items-start justify-center md:pt-[10vh] p-0 md:p-4 z-50" @click.self="editingEvent = null">
+      <div class="bg-card rounded-t-xl md:rounded-xl border border-border shadow-xl w-full md:max-w-md overflow-hidden" role="dialog">
         <div class="px-5 pt-5 pb-3 flex items-center justify-between">
           <p class="text-sm font-semibold text-foreground">Edit Event</p>
           <button
@@ -437,6 +438,7 @@ interface CalendarCell {
 }
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const dayNamesShort = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
 function formatDateStr(date: Date): string {
   const y = date.getFullYear()
@@ -828,6 +830,9 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  if (window.innerWidth < 768) {
+    calendarMode.value = 'list'
+  }
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
@@ -848,10 +853,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 12px 12px;
   background: color-mix(in oklch, var(--card), var(--background) 50%);
   border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 50%);
   z-index: 5;
+}
+@media (min-width: 768px) {
+  .cal-list-day-header {
+    padding: 12px 20px;
+  }
 }
 
 .cal-list-today .cal-list-day-header {
@@ -862,9 +872,16 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px 10px 36px;
+  padding: 12px 12px 12px 24px;
   cursor: pointer;
   transition: background 100ms;
+  min-height: 44px;
+}
+@media (min-width: 768px) {
+  .cal-list-event {
+    padding: 10px 20px 10px 36px;
+    min-height: auto;
+  }
 }
 .cal-list-event:hover {
   background: color-mix(in oklch, var(--accent), transparent 50%);
@@ -878,17 +895,29 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 10px 12px;
   background: color-mix(in oklch, var(--card), var(--background) 50%);
   border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 50%);
+}
+@media (min-width: 768px) {
+  .cal-upcoming-group-header {
+    padding: 10px 20px;
+  }
 }
 .cal-upcoming-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 20px;
+  padding: 12px 12px;
   cursor: pointer;
   transition: background 100ms;
+  min-height: 44px;
+}
+@media (min-width: 768px) {
+  .cal-upcoming-item {
+    padding: 12px 20px;
+    min-height: auto;
+  }
 }
 .cal-upcoming-item:hover {
   background: color-mix(in oklch, var(--accent), transparent 50%);

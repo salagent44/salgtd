@@ -1,8 +1,8 @@
 <template>
   <div class="bear-notes flex h-[calc(100vh-7rem)] rounded-xl overflow-hidden" :class="{ 'bear-fullscreen': fullscreen }" data-testid="notes-view">
 
-    <!-- ===== Notes Sidebar ===== -->
-    <div v-if="!fullscreen && !sidebarCollapsed" class="bear-sidebar w-80 shrink-0 flex flex-col border-r border-border">
+    <!-- ===== Notes Sidebar (desktop only) ===== -->
+    <div v-if="!fullscreen && !sidebarCollapsed && !isMobile" class="bear-sidebar w-80 shrink-0 flex flex-col border-r border-border">
       <!-- Sidebar header -->
       <div class="px-3 py-2.5 flex items-center justify-between border-b border-border/50">
         <p class="text-[11px] font-semibold uppercase tracking-wider bear-muted-dim">Notes <span class="opacity-50">{{ displayedSidebarNotes.length }}</span></p>
@@ -78,14 +78,98 @@
       </div>
     </div>
 
+    <!-- ===== Mobile Note List (shown when no note selected on mobile) ===== -->
+    <div v-if="isMobile && !selectedNote && !fullscreen" class="flex-1 flex flex-col min-w-0 min-h-0 bear-editor-area">
+      <!-- Mobile list header -->
+      <div class="px-4 py-3 flex items-center justify-between border-b border-border/50">
+        <p class="text-sm font-semibold uppercase tracking-wider bear-muted-dim">Notes <span class="opacity-50">{{ displayedSidebarNotes.length }}</span></p>
+        <div class="flex items-center gap-2">
+          <button
+            @click="openSearch"
+            class="bear-toolbar-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title="Search"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <button
+            @click="createNote"
+            class="bear-toolbar-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title="New note"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile filter tabs -->
+      <div class="px-3 py-2 flex items-center gap-1 border-b border-border/30 overflow-x-auto">
+        <button
+          @click="sidebarFilter = 'all'"
+          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap"
+          :class="sidebarFilter === 'all' ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
+        >All</button>
+        <button
+          v-for="tag in allTags.slice(0, 4)"
+          :key="tag"
+          @click="sidebarFilter = sidebarFilter === tag ? 'all' : tag"
+          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors truncate max-w-[6rem] whitespace-nowrap"
+          :class="sidebarFilter === tag ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
+        >#{{ tag }}</button>
+        <button
+          v-if="trashedNotes.length > 0"
+          @click="sidebarFilter = sidebarFilter === 'trash' ? 'all' : 'trash'"
+          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap"
+          :class="sidebarFilter === 'trash' ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
+        >Trash</button>
+      </div>
+
+      <!-- Mobile note list -->
+      <div class="flex-1 overflow-y-auto pb-20">
+        <div v-if="displayedSidebarNotes.length === 0" class="p-6 text-center">
+          <p class="text-sm bear-muted-dim">No notes</p>
+        </div>
+        <button
+          v-for="note in displayedSidebarNotes"
+          :key="note.id"
+          @click="selectNote(note.id)"
+          class="bear-sidebar-item w-full text-left py-3 px-4"
+        >
+          <div class="flex items-center gap-1.5 mb-0.5">
+            <span v-if="note.pinned" class="text-xs">📌</span>
+            <svg v-if="note.locked" class="shrink-0 bear-muted-dim" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <p class="text-base font-medium truncate text-foreground/80">{{ noteDisplayTitle(note) }}</p>
+          </div>
+          <p class="text-xs bear-muted-dim truncate">{{ notePreview(note) || 'No content' }}</p>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="text-[10px] bear-muted-dim">{{ formatDate(note.updated_at) }}</span>
+            <span v-for="tag in getTagNames(note).slice(0, 2)" :key="tag" class="text-[10px] bear-muted-dim">#{{ tag }}</span>
+          </div>
+        </button>
+        <button
+          v-if="allSidebarNotes.length > sidebarRenderLimit"
+          @click="showMoreNotes"
+          class="w-full py-3 text-xs font-medium bear-muted-dim hover:text-foreground transition-colors"
+        >Show more ({{ allSidebarNotes.length - sidebarRenderLimit }} remaining)</button>
+      </div>
+    </div>
+
     <!-- ===== Editor Area ===== -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-0">
+    <div v-if="!isMobile || selectedNote || fullscreen" class="flex-1 flex flex-col min-w-0 min-h-0">
 
     <!-- Editor area (note selected) -->
     <div v-if="selectedNote" class="flex-1 flex flex-col min-w-0 min-h-0 bear-editor-area">
 
       <!-- Title bar -->
       <div class="bear-title-bar px-5 py-3 flex items-center gap-3">
+        <!-- Mobile back button -->
+        <button
+          v-if="isMobile"
+          @click="mobileBackToList"
+          class="shrink-0 flex items-center gap-1 text-primary font-medium text-sm min-w-[44px] min-h-[44px] -ml-2 px-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Notes
+        </button>
         <div class="flex-1 min-w-0 flex items-center gap-2">
           <input
             ref="titleInputEl"
@@ -104,10 +188,11 @@
             Locked
           </span>
         </div>
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center gap-1 shrink-0" :class="{ 'gap-0': isMobile }">
           <button
             @click="createNote"
             class="bear-toolbar-btn"
+            :class="{ 'min-w-[44px] min-h-[44px] flex items-center justify-center': isMobile }"
             title="New note (N)"
             data-testid="notes-new-btn"
           >
@@ -239,7 +324,7 @@
       </div>
 
       <!-- Editor (edit mode) -->
-      <div v-if="viewMode === 'edit'" class="flex-1 flex flex-col min-h-0">
+      <div v-if="viewMode === 'edit'" class="flex-1 flex flex-col min-h-0" :class="{ 'pb-20': isMobile }">
         <textarea
           ref="editorEl"
           v-model="selectedNote.content"
@@ -264,7 +349,7 @@
       </div>
 
       <!-- Preview (preview mode) -->
-      <div v-else class="flex-1 flex flex-col min-h-0">
+      <div v-else class="flex-1 flex flex-col min-h-0" :class="{ 'pb-20': isMobile }">
         <div
           class="flex-1 overflow-y-auto px-6 py-4 bear-preview-content"
           v-html="renderedContent"
@@ -302,10 +387,11 @@
     <!-- ===== Search Modal ===== -->
     <div
       v-if="searchOpen"
-      class="fixed inset-0 bg-black/40 flex items-start justify-center pt-[12vh] p-4 z-50"
+      class="fixed inset-0 bg-black/40 flex items-start justify-center z-50"
+      :class="isMobile ? 'p-0' : 'pt-[12vh] p-4'"
       @click.self="closeSearch"
     >
-      <div class="notes-search-modal" data-testid="notes-search-modal">
+      <div class="notes-search-modal" :class="isMobile ? 'notes-search-modal-mobile' : ''" data-testid="notes-search-modal">
         <!-- Search input -->
         <div class="notes-search-header">
           <svg class="notes-search-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -422,23 +508,24 @@
     <!-- ===== Version History Modal ===== -->
     <div
       v-if="showingVersions"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      :class="isMobile ? 'p-0' : 'p-4'"
       @click.self="closeVersionHistory"
     >
-      <div class="bg-card border border-border rounded-xl w-full max-w-3xl shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div class="bg-card border border-border shadow-xl overflow-hidden flex flex-col" :class="isMobile ? 'w-full h-full' : 'rounded-xl w-full max-w-3xl max-h-[80vh]'">
         <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
           <div class="flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <p class="text-sm font-semibold text-foreground">Version History</p>
-            <span class="text-[11px] text-muted-foreground">{{ selectedNote?.title || 'Untitled' }}</span>
+            <span class="text-[11px] text-muted-foreground hidden md:inline">{{ selectedNote?.title || 'Untitled' }}</span>
           </div>
-          <button @click="closeVersionHistory" class="text-muted-foreground hover:text-foreground transition-colors p-1">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button @click="closeVersionHistory" class="text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div class="flex flex-1 min-h-0">
+        <div class="flex-1 min-h-0" :class="isMobile ? 'flex flex-col overflow-y-auto' : 'flex'">
           <!-- Version list -->
-          <div class="w-56 shrink-0 border-r border-border overflow-y-auto">
+          <div :class="isMobile ? 'shrink-0 border-b border-border max-h-[40vh] overflow-y-auto' : 'w-56 shrink-0 border-r border-border overflow-y-auto'">
             <div v-if="noteVersions.length === 0" class="p-4 text-center">
               <p class="text-[12px] bear-muted-dim">No versions yet</p>
               <p class="text-[11px] bear-muted-dim mt-1">Versions are saved automatically every 30 seconds while editing</p>
@@ -456,7 +543,7 @@
             </button>
           </div>
           <!-- Version preview -->
-          <div class="flex-1 overflow-y-auto p-5">
+          <div class="flex-1 overflow-y-auto p-5" :class="{ 'pb-20': isMobile }">
             <div v-if="!previewingVersion" class="h-full flex items-center justify-center">
               <p class="text-[13px] bear-muted-dim">Select a version to preview</p>
             </div>
@@ -536,6 +623,16 @@ const searchOpen = ref(false)
 const searchSelectedIdx = ref(0)
 const sidebarFilter = ref<string>('all')
 const sidebarCollapsed = ref(false)
+
+// Mobile detection
+const isMobile = ref(false)
+function checkMobile() {
+  isMobile.value = window.innerWidth < 768
+}
+
+function mobileBackToList() {
+  selectedNoteId.value = null
+}
 
 // Persistence + auto-save
 const saveStatus = ref<'saved' | 'saving' | 'unsaved'>('saved')
@@ -1188,11 +1285,14 @@ watch(selectedNoteId, (newId, oldId) => {
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
   window.addEventListener('notes-open-search', onNotesOpenSearch)
+  window.addEventListener('resize', checkMobile)
+  checkMobile()
   startVersionTimer()
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   window.removeEventListener('notes-open-search', onNotesOpenSearch)
+  window.removeEventListener('resize', checkMobile)
   stopVersionTimer()
 })
 
@@ -1247,6 +1347,29 @@ onUnmounted(() => {
 @keyframes searchModalIn {
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Mobile search modal - full screen */
+.notes-search-modal-mobile {
+  max-width: 100%;
+  max-height: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+  animation: none;
+}
+.notes-search-modal-mobile .notes-search-header {
+  padding: 16px;
+}
+.notes-search-modal-mobile .notes-search-field {
+  font-size: 17px;
+}
+.notes-search-modal-mobile .notes-search-result {
+  padding: 14px 16px;
+}
+.notes-search-modal-mobile .notes-search-tag-btn {
+  padding: 6px 14px;
+  font-size: 14px;
 }
 
 .notes-search-header {

@@ -116,11 +116,11 @@
       <div class="shrink-0 space-y-4 md:space-y-6 pb-2">
 
       <!-- Task pills — only shown when count > 0 -->
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1 md:gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
         <button
           v-if="nextActions.length > 0 || activePill === 'next-actions'"
           @click="setActivePill('next-actions')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'next-actions' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="next-actions-btn"
         >
@@ -129,7 +129,7 @@
         <button
           v-if="waitingItems.length > 0 || activePill === 'waiting'"
           @click="setActivePill('waiting')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'waiting' ? 'bg-amber-600 text-white border-amber-400' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="waiting-btn"
         >
@@ -138,7 +138,7 @@
         <button
           v-if="projects.length > 0 || activePill === 'projects'"
           @click="setActivePill('projects')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'projects' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="projects-btn"
         >
@@ -147,7 +147,7 @@
         <button
           v-if="inbox.length > 0 || activePill === 'inbox'"
           @click="setActivePill('inbox')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'inbox' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="inbox-btn"
         >
@@ -156,7 +156,7 @@
         <button
           v-if="somedayItems.length > 0 || activePill === 'someday'"
           @click="setActivePill('someday')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'someday' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="someday-btn"
         >
@@ -165,7 +165,7 @@
         <button
           v-if="ticklerItems.length > 0 || activePill === 'tickler'"
           @click="setActivePill('tickler')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'tickler' ? 'bg-violet-600 text-white border-violet-400' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="tickler-btn"
         >
@@ -174,7 +174,7 @@
         <button
           v-if="doneItems.length > 0 || activePill === 'done'"
           @click="setActivePill('done')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'done' ? 'bg-green-600 text-white border-green-400' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="done-btn"
         >
@@ -183,7 +183,7 @@
         <button
           v-if="flaggedItems.length > 0 || activePill === 'flagged'"
           @click="setActivePill('flagged')"
-          class="rounded-lg px-4 py-2 text-xs font-semibold transition-all border-b-2 shrink-0"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
           :class="activePill === 'flagged' ? 'bg-red-600 text-white border-red-400' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
           data-testid="flagged-btn"
         >
@@ -213,14 +213,14 @@
             <button
               @click="activeContextFilter = null; activeTagFilter = null"
               :class="activeContextFilter === null && activeTagFilter === null ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'"
-              class="rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors"
+              class="rounded-full px-3 md:px-3.5 py-2 md:py-1.5 text-[13px] font-medium transition-colors"
             >All</button>
             <button
               v-for="ctx in usedContexts"
               :key="ctx"
               @click="toggleContextFilter(ctx)"
               :class="activeContextFilter === ctx ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'"
-              class="rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors"
+              class="rounded-full px-3 md:px-3.5 py-2 md:py-1.5 text-[13px] font-medium transition-colors"
               data-testid="context-filter"
             >{{ ctx }}</button>
             <span v-if="usedTags.length > 0 && usedContexts.length > 0" class="text-muted-foreground/30 self-center">|</span>
@@ -229,7 +229,7 @@
               :key="tag"
               @click="activeTagFilter = activeTagFilter === tag ? null : tag"
               :class="activeTagFilter === tag ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'"
-              class="rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors"
+              class="rounded-full px-3 md:px-3.5 py-2 md:py-1.5 text-[13px] font-medium transition-colors"
               data-testid="tag-filter"
             >#{{ tag }}</button>
           </div>
@@ -240,7 +240,7 @@
           </div>
           <div class="space-y-2">
             <Card v-for="(item, idx) in filteredNextActions.slice(0, renderLimits['next-actions'])" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-              <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+              <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
                 <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -265,7 +265,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in waitingItems.slice(0, renderLimits.waiting)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : isWaitingStale(item) ? 'border-l-red-400' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -340,7 +340,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in inbox.slice(0, renderLimits.inbox)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -363,7 +363,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in somedayItems.slice(0, renderLimits.someday)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -386,7 +386,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in ticklerItems.slice(0, renderLimits.tickler)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -419,7 +419,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in doneItems.slice(0, renderLimits.done)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -442,7 +442,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in flaggedItems.slice(0, renderLimits.flagged)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2 border-l-red-500" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30']" @click="onCardClick(item, $event)">
-            <CardContent class="!px-4 py-2.5 flex items-center gap-3">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
