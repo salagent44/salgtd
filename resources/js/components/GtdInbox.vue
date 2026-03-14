@@ -1897,29 +1897,33 @@
           </template>
         </div>
 
-        <!-- Move to Inbox / Done / Delete (not for checklists — they have their own actions) -->
-        <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5 space-y-1">
+        <!-- Actions footer (not for checklists — they have their own actions) -->
+        <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5 space-y-3">
+          <!-- Primary action: Mark Done -->
           <button
             v-if="processing && processing.status !== 'inbox' && processing.status !== 'done'"
             @click="clarify('done')"
-            class="w-full rounded-xl bg-green-600 hover:bg-green-500 text-white py-2.5 text-sm font-semibold transition-colors"
-          >Mark Done</button>
-          <button
-            v-if="processing && processing.status !== 'inbox'"
-            @click="moveToInbox()"
-            class="w-full rounded-xl py-1.5 text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
-            data-testid="move-to-inbox-btn"
-          >Move to Inbox</button>
-          <div v-if="confirmingDelete" class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 flex items-center justify-between gap-3">
-            <p class="text-sm text-destructive font-medium">Delete permanently?</p>
-            <div class="flex gap-2">
-              <button @click="confirmingDelete = false" class="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors">Cancel</button>
-              <button @click="deleteItem" class="rounded-lg bg-destructive hover:bg-destructive/90 text-white px-4 py-2 text-sm font-semibold transition-colors">Delete</button>
-            </div>
-          </div>
-          <button v-else @click="confirmingDelete = true" class="w-full rounded-xl py-2.5 text-sm font-medium text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors">
-            Delete task
+            class="w-full rounded-xl bg-green-600 hover:bg-green-500 text-white py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Done
           </button>
+          <!-- Secondary actions row -->
+          <div class="flex items-center justify-between border-t border-border/40 pt-3">
+            <button
+              v-if="processing && processing.status !== 'inbox'"
+              @click="moveToInbox()"
+              class="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              data-testid="move-to-inbox-btn"
+            >Move to Inbox</button>
+            <span v-else></span>
+            <div v-if="confirmingDelete" class="flex items-center gap-2">
+              <span class="text-xs text-destructive font-medium">Delete?</span>
+              <button @click="confirmingDelete = false" class="text-xs text-muted-foreground hover:text-foreground px-2 py-1 transition-colors">No</button>
+              <button @click="deleteItem" class="rounded-lg bg-destructive hover:bg-destructive/90 text-white px-3 py-1 text-xs font-semibold transition-colors">Yes</button>
+            </div>
+            <button v-else @click="confirmingDelete = true" class="text-xs text-destructive/40 hover:text-destructive transition-colors">Delete</button>
+          </div>
         </div>
 
       </template>
