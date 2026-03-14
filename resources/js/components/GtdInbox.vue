@@ -1492,7 +1492,13 @@
                 :class="ci.completed ? 'bg-green-500 border-green-500 text-white' : 'border-muted-foreground/40 hover:border-primary'"
               ><svg v-if="ci.completed" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
               <span class="text-sm flex-1 min-w-0" :class="ci.completed ? 'line-through text-muted-foreground/40' : 'text-foreground'">{{ ci.title }}</span>
-              <button @click="removeChecklistItem(ci)" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-xs">&times;</button>
+              <template v-if="confirmingStepDelete === ci.id">
+                <button @click="removeChecklistItem(ci); confirmingStepDelete = null" class="rounded bg-destructive hover:bg-destructive/90 text-white px-2 py-0.5 text-[11px] font-semibold transition-colors shrink-0">Delete</button>
+                <button @click="confirmingStepDelete = null" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0">Cancel</button>
+              </template>
+              <button v-else @click="confirmingStepDelete = ci.id" class="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0" title="Delete step">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
             </div>
           </div>
           <div class="flex items-center gap-2 mt-2">
@@ -2864,6 +2870,7 @@ const processEventColor = ref('blue')
 const processEventRecurrence = ref('')
 const confirmingDelete = ref(false)
 const confirmingChecklistDelete = ref(false)
+const confirmingStepDelete = ref<string | null>(null)
 const pickingProject = ref(false)
 const pickingProjectGoal = ref(false)
 const editGoal = ref('')
@@ -3113,6 +3120,7 @@ function openItem(item: Item) {
   pickingProjectGoal.value = false
   confirmingDelete.value = false
   confirmingChecklistDelete.value = false
+  confirmingStepDelete.value = null
   addingContext.value = false
   waitingFor.value = ''
   waitingDateInput.value = ''

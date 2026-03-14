@@ -1961,12 +1961,12 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bz7wJrEZ.js",
+    "file": "assets/app-BCp9wuwj.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-K85rwZh3.css",
+      "assets/app-CZK505SM.css",
       "assets/app-CpKoeSGK.css"
     ],
     "assets": [
