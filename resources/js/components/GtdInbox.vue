@@ -34,7 +34,7 @@
               data-testid="process-btn"
             ><svg class="inline -mt-0.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="hidden sm:inline">Clarify </span>({{ inbox.length }})</button>
             <button
-              @click="currentView = 'review'"
+              @click="reviewOpen = true"
               class="hidden sm:inline-flex rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group relative"
               :class="{ 'review-pulse': reviewOverdue }"
               data-testid="review-btn"
@@ -520,16 +520,13 @@
         <CalendarView :is-online="isOnline" />
       </div>
 
-      <!-- ===== REVIEW VIEW ===== -->
-      <div v-if="currentView === 'review'" class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6">
-        <ReviewView
-          :is-online="isOnline"
-          :icons="themeIcons"
-          @open-item="openItem"
-          @open-process="openProcess"
-          @review-complete="onReviewComplete"
-        />
-      </div>
+      <!-- Review modal -->
+      <ReviewView
+        :open="reviewOpen"
+        :is-online="isOnline"
+        @close="reviewOpen = false"
+        @review-complete="onReviewComplete"
+      />
 
     </div><!-- end max-w wrapper -->
 
@@ -817,8 +814,6 @@
             <div class="space-y-1 mb-4">
               <div class="hotkey-row"><span>New next action</span><kbd>N</kbd></div>
               <div class="hotkey-row"><span>New waiting for</span><kbd>W</kbd></div>
-              <div class="hotkey-row"><span>Next review step</span><kbd>→</kbd></div>
-              <div class="hotkey-row"><span>Previous review step</span><kbd>←</kbd></div>
             </div>
           </template>
 
@@ -1827,7 +1822,7 @@ interface Email { id: string; item_id: string; from_address: string; from_name?:
 interface Item { id: string; title: string; status: Status; context?: string; waiting_for?: string; waiting_date?: string; tickler_date?: string; notes?: string; sort_order?: number; flagged?: boolean; completed_at?: string; original_status?: string; tags?: ItemTagRecord[]; email?: Email | null; goal?: string | null; project_id?: string | null; updated_at?: string }
 
 // View navigation
-type ViewKey = 'tasks' | 'notes' | 'calendar' | 'review'
+type ViewKey = 'tasks' | 'notes' | 'calendar'
 const currentView = ref<ViewKey>('tasks')
 const views = computed(() => [
   { key: 'tasks' as ViewKey, label: 'Tasks', icon: '✓' },
@@ -1841,8 +1836,6 @@ watch(currentView, (v) => {
     router.reload({ only: ['notes'] })
   } else if (v === 'calendar') {
     router.reload({ only: ['events'] })
-  } else if (v === 'review') {
-    router.reload({ only: ['items'] })
   }
 })
 
@@ -2356,6 +2349,7 @@ function selectSearchResult() {
 }
 
 // Review
+const reviewOpen = ref(false)
 const hasReviewProgress = computed(() => !!(page.props.review_progress as string | null))
 
 // Weekly review reminder
@@ -2379,7 +2373,8 @@ const nextReviewLabel = computed(() => {
 })
 
 function onReviewComplete() {
-  currentView.value = 'tasks'
+  reviewOpen.value = false
+  lastReviewDate.value = new Date().toISOString()
 }
 
 function openQuickCapture() {
