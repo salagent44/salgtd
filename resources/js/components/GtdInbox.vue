@@ -56,16 +56,6 @@
                 {{ nextReviewLabel }}
               </span>
             </button>
-            <button
-              @click="openQuickChecklist"
-              class="rounded-lg bg-muted px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group relative"
-              data-testid="new-checklist-btn"
-            >
-              ☑ <span class="hidden sm:inline ml-0.5">Checklist</span>
-              <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground text-background text-[10px] px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                New checklist (C)
-              </span>
-            </button>
           </template>
           <div class="hidden sm:flex items-center gap-2">
             <!-- App status -->
@@ -367,10 +357,20 @@
 
       <!-- Checklists -->
       <div v-else-if="activePill === 'checklists'">
-        <div v-if="checklistItems.length === 0" class="text-center py-8 text-muted-foreground">
-          <p class="text-3xl mb-2">☑</p>
-          <p class="text-sm">No checklists yet</p>
-          <p class="text-xs mt-1">Press <kbd class="px-1.5 py-0.5 rounded bg-muted text-foreground text-[10px] font-mono">C</kbd> to create one</p>
+        <div v-if="checklistItems.length === 0" class="text-center py-10 text-muted-foreground">
+          <p class="text-4xl mb-3">☑</p>
+          <p class="text-sm font-medium">No checklists yet</p>
+          <button @click="createAndOpenChecklist" class="mt-4 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors inline-flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Checklist
+          </button>
+          <p class="text-xs mt-3 text-muted-foreground/60">or press <kbd class="px-1.5 py-0.5 rounded bg-muted text-foreground text-[10px] font-mono">C</kbd></p>
+        </div>
+        <div v-if="checklistItems.length > 0" class="mb-3 flex justify-end">
+          <button @click="createAndOpenChecklist" class="rounded-lg bg-muted hover:bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New
+          </button>
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
@@ -1072,35 +1072,6 @@
       </div>
     </div>
 
-    <!-- Quick Checklist modal -->
-    <div
-      v-if="quickChecklist"
-      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
-      @click.self="quickChecklist = false"
-      @keydown.enter="quickChecklistSubmit"
-      @keydown.esc="quickChecklist = false"
-    >
-      <div class="bg-card border border-border rounded-xl p-5 w-full max-w-lg shadow-xl">
-        <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">New Checklist <span class="ml-1 opacity-50">— press C</span></p>
-        <div class="flex gap-2">
-          <input
-            ref="quickChecklistInput"
-            v-model="quickChecklistTitle"
-            @keydown.enter="quickChecklistSubmit"
-            @keydown.esc="quickChecklist = false"
-            type="text"
-            placeholder="What's the checklist for?"
-            class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-          />
-          <button
-            @click="quickChecklistSubmit"
-            :disabled="!quickChecklistTitle.trim()"
-            class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-          >Add</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Process modal -->
     <div
       v-if="processingInbox"
@@ -1457,7 +1428,7 @@
             type="text"
             @keydown.enter="saveEdits"
             @keydown.esc="!emailViewerOpen && (dialogOpen = false)"
-            class="w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2"
+            class="dialog-title-input w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2"
           />
         </div>
 
@@ -2453,9 +2424,6 @@ const quickWaitingFor = ref('')
 const quickWaitingDate = ref('')
 const quickWaitingInput = ref<HTMLInputElement | null>(null)
 
-const quickChecklist = ref(false)
-const quickChecklistTitle = ref('')
-const quickChecklistInput = ref<HTMLInputElement | null>(null)
 
 // Process inbox
 const processingInbox = ref(false)
@@ -2728,15 +2696,25 @@ function quickWaitingSubmit() {
   guardedRouter.post('/items', { title: quickWaitingTitle.value.trim(), status: 'waiting', waiting_for: quickWaitingFor.value.trim(), waiting_date: quickWaitingDate.value || undefined }, { ...itemOnly, onSuccess: () => { quickWaiting.value = false } })
 }
 
-function openQuickChecklist() {
-  quickChecklist.value = true
-  quickChecklistTitle.value = ''
-  nextTick(() => quickChecklistInput.value?.focus())
-}
-
-function quickChecklistSubmit() {
-  if (!quickChecklistTitle.value.trim()) return
-  guardedRouter.post('/items', { title: quickChecklistTitle.value.trim(), status: 'checklist' }, { ...itemOnly, onSuccess: () => { quickChecklist.value = false } })
+function createAndOpenChecklist() {
+  const existingIds = new Set(items.value.map(i => i.id))
+  guardedRouter.post('/items', { title: 'Untitled Checklist', status: 'checklist' }, {
+    ...itemOnly,
+    onSuccess: () => {
+      activePill.value = 'checklists'
+      nextTick(() => {
+        const newItem = items.value.find(i => i.status === 'checklist' && !existingIds.has(i.id))
+        if (newItem) {
+          openItem(newItem)
+          // Auto-select the title text for immediate renaming
+          nextTick(() => {
+            const titleInput = document.querySelector<HTMLInputElement>('.dialog-title-input')
+            titleInput?.select()
+          })
+        }
+      })
+    },
+  })
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -2749,7 +2727,6 @@ function onKeydown(e: KeyboardEvent) {
     if (quickCapture.value) { e.preventDefault(); quickCapture.value = false; return }
     if (quickNextAction.value) { e.preventDefault(); quickNextAction.value = false; return }
     if (quickWaiting.value) { e.preventDefault(); quickWaiting.value = false; return }
-    if (quickChecklist.value) { e.preventDefault(); quickChecklist.value = false; return }
     if (searchOpen.value) { e.preventDefault(); searchOpen.value = false; return
     }
     if (settingsOpen.value) { e.preventDefault(); settingsOpen.value = false; return }
@@ -2790,7 +2767,7 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'i') { e.preventDefault(); openQuickCapture() }
   if (e.key === 'n' && currentView.value === 'tasks') { e.preventDefault(); openQuickNextAction() }
   if (e.key === 'w' && currentView.value === 'tasks') { e.preventDefault(); openQuickWaiting() }
-  if (e.key === 'c' && currentView.value === 'tasks') { e.preventDefault(); openQuickChecklist() }
+  if (e.key === 'c' && currentView.value === 'tasks') { e.preventDefault(); createAndOpenChecklist() }
 }
 
 onMounted(() => {
