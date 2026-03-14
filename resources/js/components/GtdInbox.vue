@@ -1434,7 +1434,17 @@
         <!-- Title editor -->
         <div class="px-6 pt-6 pb-4">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{{ processing?.status === 'checklist' ? 'Checklist' : 'Task' }}</p>
+            <div class="flex items-center gap-2.5">
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{{ processing?.status === 'checklist' ? 'Checklist' : 'Task' }}</p>
+              <button
+                v-if="processing && processing.status !== 'inbox' && processing.status !== 'done' && processing.status !== 'checklist'"
+                @click="clarify('done')"
+                class="inline-flex items-center gap-1 rounded-full bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-500/25 px-2 py-0.5 text-[11px] font-semibold transition-colors"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Done
+              </button>
+            </div>
             <button
               v-if="processing"
               @click="toggleFlag"
@@ -1861,6 +1871,16 @@
                   class="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 text-amber-300 font-medium"
                 />
               </div>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
+                <div class="flex flex-wrap gap-2">
+                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
+                    📁 {{ projectName(processing.project_id) }}
+                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
+                  </button>
+                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
+                </div>
+              </div>
               <button @click="clarifyWaiting" class="w-full rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
 
@@ -1869,6 +1889,16 @@
               <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Deferred until</p>
               <div class="flex justify-center">
                 <Calendar v-model="ticklerDate" :min-value="getToday(getLocalTimeZone())" class="rounded-xl border border-violet-500/20 bg-violet-500/5" />
+              </div>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Project</p>
+                <div class="flex flex-wrap gap-2">
+                  <button v-if="processing?.project_id" @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg bg-primary/10 text-primary border border-primary/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20 flex items-center gap-2">
+                    📁 {{ projectName(processing.project_id) }}
+                    <span @click.stop="assignProjectToItem(null)" class="hover:text-destructive transition-colors text-primary/60 ml-0.5">&times;</span>
+                  </button>
+                  <button v-else @click="pickingProject = true; projectSearchQuery = ''" class="rounded-lg border border-border/60 bg-card hover:bg-accent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">None</button>
+                </div>
               </div>
               <button @click="clarifyTickler" :disabled="!ticklerDate" class="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
@@ -1901,14 +1931,6 @@
         <div v-if="processing?.status !== 'checklist'" class="px-6 pb-5">
           <div class="flex items-center justify-between border-t border-border/40 pt-3">
             <div class="flex items-center gap-3">
-              <button
-                v-if="processing && processing.status !== 'inbox' && processing.status !== 'done'"
-                @click="clarify('done')"
-                class="inline-flex items-center gap-1.5 rounded-lg bg-green-500/15 text-green-500 hover:bg-green-500/25 px-3 py-1.5 text-xs font-semibold transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Done
-              </button>
               <button
                 v-if="processing && processing.status !== 'inbox'"
                 @click="moveToInbox()"
