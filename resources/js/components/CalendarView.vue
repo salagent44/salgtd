@@ -438,10 +438,17 @@ interface CalendarCell {
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+function formatDateStr(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 const events = computed(() => (page.props.events || []) as CalendarEvent[])
 const currentMonth = ref(new Date().getMonth())
 const currentYear = ref(new Date().getFullYear())
-const selectedDate = ref(new Date().toISOString().split('T')[0])
+const selectedDate = ref(formatDateStr(new Date()))
 const editingEvent = ref<CalendarEvent | null>(null)
 const addingEvent = ref(false)
 const addTitleInput = ref<HTMLInputElement | null>(null)
@@ -472,7 +479,7 @@ const calendarCells = computed((): CalendarCell[] => {
   const firstDay = new Date(currentYear.value, currentMonth.value, 1)
   const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
   const startDow = firstDay.getDay()
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatDateStr(new Date())
 
   // Previous month padding
   const prevLast = new Date(currentYear.value, currentMonth.value, 0)
@@ -542,7 +549,7 @@ interface ListViewDay {
 
 const listViewDays = computed((): ListViewDay[] => {
   const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatDateStr(new Date())
   const days: ListViewDay[] = []
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
@@ -624,13 +631,6 @@ const upcomingGroups = computed((): UpcomingGroup[] => {
   }
   return groups
 })
-
-function formatDateStr(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
 
 function eventOccursOnDate(event: CalendarEvent, dateStr: string): boolean {
   // Check direct match
