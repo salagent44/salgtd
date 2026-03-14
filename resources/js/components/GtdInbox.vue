@@ -2691,7 +2691,7 @@ function resumeReview() {
 }
 
 function reviewNext() {
-  if (reviewStep.value < reviewSteps.length - 1) {
+  if (reviewStep.value < reviewSteps.value.length - 1) {
     reviewStep.value++
     saveReviewProgress()
   }
@@ -2761,8 +2761,8 @@ function reviewItemsByStatus(status: Status) {
   return items.value.filter(i => i.status === status)
 }
 
-const currentReviewStep = computed(() => reviewSteps[reviewStep.value])
-const reviewProgress = computed(() => Math.round((reviewStep.value / (reviewSteps.length - 1)) * 100))
+const currentReviewStep = computed(() => reviewSteps.value[reviewStep.value])
+const reviewProgress = computed(() => Math.round((reviewStep.value / (reviewSteps.value.length - 1)) * 100))
 
 function openQuickCapture() {
   quickCapture.value = true
