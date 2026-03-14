@@ -54,10 +54,6 @@
             >
               <span class="relative flex h-2 w-2">
                 <span
-                  v-if="isOnline"
-                  class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"
-                ></span>
-                <span
                   class="relative inline-flex h-2 w-2 rounded-full"
                   :class="isOnline ? 'bg-green-500' : 'bg-red-500'"
                 ></span>
@@ -692,7 +688,7 @@
             <!-- Setup info -->
             <div class="rounded-lg border border-border bg-muted/30 p-3 space-y-2.5">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
                 <p class="text-[11px] font-semibold text-muted-foreground">SMTP server running on this host</p>
               </div>
 
@@ -759,7 +755,7 @@
                   class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                 >Update Now</button>
                 <span v-else-if="updateTriggered" class="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  <span class="w-2 h-2 rounded-full bg-primary"></span>
                   Updating...
                 </span>
                 <span v-else-if="updateChecking" class="text-xs text-muted-foreground">Checking...</span>
