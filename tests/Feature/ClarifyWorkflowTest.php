@@ -477,4 +477,43 @@ class ClarifyWorkflowTest extends TestCase
         $this->assertEquals('next-action', $item->status);
         $this->assertNull($item->goal);
     }
+
+    public function test_remove_context_from_next_action(): void
+    {
+        $item = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Task with context',
+            'status' => 'next-action',
+            'context' => '@phone',
+        ]);
+
+        $response = $this->post("/items/{$item->id}/process", [
+            'status' => 'next-action',
+            'context' => null,
+        ]);
+
+        $response->assertRedirect();
+        $item->refresh();
+        $this->assertEquals('next-action', $item->status);
+        $this->assertNull($item->context);
+    }
+
+    public function test_change_context_on_next_action(): void
+    {
+        $item = Item::create([
+            'id' => Str::ulid(),
+            'title' => 'Task with context',
+            'status' => 'next-action',
+            'context' => '@phone',
+        ]);
+
+        $response = $this->post("/items/{$item->id}/process", [
+            'status' => 'next-action',
+            'context' => '@home',
+        ]);
+
+        $response->assertRedirect();
+        $item->refresh();
+        $this->assertEquals('@home', $item->context);
+    }
 }
