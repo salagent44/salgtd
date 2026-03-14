@@ -6,7 +6,7 @@ ENV TZ=UTC
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     php8.3-fpm php8.3-sqlite3 php8.3-xml php8.3-mbstring php8.3-curl \
-    php8.3-tokenizer php8.3-bcmath php8.3-ctype php8.3-fileinfo php8.3-pcntl \
+    php8.3-tokenizer php8.3-bcmath php8.3-ctype php8.3-fileinfo \
     nginx supervisor sqlite3 curl unzip ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
 

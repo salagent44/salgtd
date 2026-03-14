@@ -10,6 +10,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteVersionController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UpdateController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,7 +64,13 @@ Route::middleware('auth')->group(function () {
 
     // App updates
     Route::get('/api/update-status', [UpdateController::class, 'status']);
-    Route::post('/api/update-trigger', [UpdateController::class, 'trigger']);
+    Route::post('/api/update-apply', [UpdateController::class, 'apply']);
+
+    // Two-factor authentication management
+    Route::post('/api/2fa/setup', [TwoFactorController::class, 'setup']);
+    Route::post('/api/2fa/confirm', [TwoFactorController::class, 'confirm']);
+    Route::post('/api/2fa/disable', [TwoFactorController::class, 'disable']);
+    Route::get('/api/2fa/status', [TwoFactorController::class, 'status']);
 
     // SMTP status
     Route::get('/api/smtp-status', SmtpStatusController::class);

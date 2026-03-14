@@ -8,8 +8,7 @@ if [ -n "$TIMEZONE" ]; then
 fi
 
 # Clear stale update artifacts
-rm -f /data/update-trigger
-rm -f /data/update-status
+rm -f /data/update-apply
 
 # Ensure SQLite database exists
 if [ ! -f /data/gtd.sqlite ]; then

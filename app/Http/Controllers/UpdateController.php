@@ -2,40 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 
 class UpdateController extends Controller
 {
     public function status(): JsonResponse
     {
-        $hash = trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown');
-        $status = Setting::get('update_status', 'idle');
-        $triggeredAt = Setting::get('update_triggered_at');
+        $currentCommit = trim(@file_get_contents(base_path('COMMIT_HASH')) ?: 'unknown');
+        $buildReady = @file_get_contents('/data/build-ready');
+        $pendingCommit = $buildReady ? trim($buildReady) : null;
+        $applying = file_exists('/data/update-apply');
 
         return response()->json([
-            'commit' => $hash,
-            'status' => $status,
-            'triggered_at' => $triggeredAt,
+            'commit' => $currentCommit,
+            'build_ready' => $pendingCommit && $pendingCommit !== $currentCommit,
+            'pending_commit' => $pendingCommit,
+            'applying' => $applying,
         ]);
     }
 
-    public function trigger(): JsonResponse
+    public function apply(): JsonResponse
     {
-        $current = Setting::get('update_status', 'idle');
-        if ($current === 'triggered' || $current === 'updating') {
-            return response()->json(['triggered' => false, 'reason' => 'Update already in progress']);
+        if (! file_exists('/data/build-ready')) {
+            return response()->json(['applied' => false, 'reason' => 'No build ready']);
         }
 
-        $now = date('c');
-        Setting::set('update_status', 'triggered');
-        Setting::set('update_triggered_at', $now);
-
-        // Write file-based trigger for the host cron job
-        if (is_dir('/data')) {
-            file_put_contents('/data/update-trigger', $now);
+        if (file_exists('/data/update-apply')) {
+            return response()->json(['applied' => false, 'reason' => 'Already applying']);
         }
 
-        return response()->json(['triggered' => true]);
+        file_put_contents('/data/update-apply', date('c'));
+
+        return response()->json(['applied' => true]);
     }
 }

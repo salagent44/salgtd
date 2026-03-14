@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sal GTD - Login</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css'])
     <style>
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;

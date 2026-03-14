@@ -5,6 +5,18 @@
       <span class="mr-1">🔌</span> No connection — changes are disabled until reconnected
     </div>
 
+    <!-- Update notification banner -->
+    <div v-if="buildReady && !updateApplying" class="bg-primary text-primary-foreground text-center py-2 px-4 text-sm font-medium shrink-0 flex items-center justify-center gap-3">
+      <span>A new version is ready to install</span>
+      <button
+        @click="applyUpdate"
+        class="rounded-full bg-primary-foreground text-primary px-4 py-1 text-xs font-semibold hover:opacity-90 transition-opacity"
+      >Apply Update</button>
+    </div>
+    <div v-if="updateApplying" class="bg-amber-500 text-white text-center py-2 px-4 text-sm font-medium shrink-0">
+      Applying update... page will reload momentarily
+    </div>
+
     <div class="max-w-[1800px] w-full mx-auto flex flex-col flex-1 min-h-0 px-3 md:px-6 pt-3 md:pt-6">
 
       <!-- Top nav bar -->
@@ -747,50 +759,75 @@
             </button>
           </div>
 
-          <!-- App Updates -->
+          <!-- Two-Factor Authentication -->
           <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">App Updates</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Security</p>
             <div class="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-[12px] text-muted-foreground">
-                    Running version <code class="bg-background border border-border rounded px-1 py-0.5 text-[11px] font-mono text-foreground">{{ deployedCommit }}</code>
-                  </p>
-                </div>
-                <button
-                  v-if="updateAvailable && !updateInProgress"
-                  @click="triggerUpdate"
-                  class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-                >Update Now</button>
-                <span v-else-if="updateStatus === 'triggered'" class="text-xs text-amber-500 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                  Waiting to start...
-                </span>
-                <span v-else-if="updateStatus === 'updating'" class="text-xs text-primary flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-primary"></span>
-                  Updating...
-                </span>
-                <span v-else-if="updateStatus === 'error'" class="text-xs text-red-500">Update failed</span>
-                <span v-else-if="updateChecking" class="text-xs text-muted-foreground">Checking...</span>
-                <span v-else class="text-xs text-green-500">Up to date</span>
+              <div v-if="!twoFactorSetup && !twoFactorEnabled" class="space-y-2">
+                <p class="text-[12px] text-muted-foreground">Two-factor authentication is not enabled.</p>
+                <button @click="setupTwoFactor" class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                  Enable 2FA
+                </button>
               </div>
-              <p v-if="updateAvailable && !updateInProgress" class="text-[11px] text-primary">
-                A new version is available.
+              <div v-else-if="twoFactorSetup && !twoFactorEnabled" class="space-y-3">
+                <p class="text-[12px] text-muted-foreground">Scan this QR code with your authenticator app:</p>
+                <div class="flex justify-center">
+                  <img :src="twoFactorQrDataUrl" alt="2FA QR Code" class="w-48 h-48 rounded-lg border border-border" v-if="twoFactorQrDataUrl" />
+                </div>
+                <div class="text-center">
+                  <p class="text-[11px] text-muted-foreground mb-1">Or enter this key manually:</p>
+                  <code class="bg-background border border-border rounded px-2 py-1 text-xs font-mono text-foreground select-all">{{ twoFactorSecret }}</code>
+                </div>
+                <div class="flex gap-2">
+                  <input
+                    v-model="twoFactorCode"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    placeholder="6-digit code"
+                    class="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-center tracking-widest"
+                  />
+                  <button @click="confirmTwoFactor" :disabled="twoFactorCode.length !== 6" class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40">
+                    Verify
+                  </button>
+                </div>
+                <p v-if="twoFactorError" class="text-[11px] text-red-500">{{ twoFactorError }}</p>
+                <button @click="twoFactorSetup = false; twoFactorSecret = ''; twoFactorQrDataUrl = ''" class="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+                  Cancel
+                </button>
+              </div>
+              <div v-else class="space-y-2">
+                <p class="text-[12px] text-green-500 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                  Two-factor authentication is enabled.
+                </p>
+                <div class="flex gap-2 items-center">
+                  <input
+                    v-model="twoFactorDisablePassword"
+                    type="password"
+                    placeholder="Enter password to disable"
+                    class="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
+                  />
+                  <button @click="disableTwoFactor" :disabled="!twoFactorDisablePassword" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-40">
+                    Disable
+                  </button>
+                </div>
+                <p v-if="twoFactorError" class="text-[11px] text-red-500">{{ twoFactorError }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- App Version -->
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">App</p>
+            <div class="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+              <p class="text-[12px] text-muted-foreground">
+                Running version <code class="bg-background border border-border rounded px-1 py-0.5 text-[11px] font-mono text-foreground">{{ deployedCommit }}</code>
               </p>
-              <p v-if="updateStatus === 'triggered'" class="text-[11px] text-muted-foreground">
-                Update queued. The cron job will pick it up shortly.
+              <p v-if="buildReady" class="text-[11px] text-primary">
+                New version ready — use the banner above to apply.
               </p>
-              <p v-if="updateStatus === 'updating'" class="text-[11px] text-muted-foreground">
-                Building and restarting. This page will reload when ready.
-              </p>
-              <p v-if="updateStatus === 'error'" class="text-[11px] text-red-400">
-                Something went wrong. Check server logs.
-              </p>
-              <button
-                v-if="!updateInProgress"
-                @click="checkForUpdate"
-                class="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              >Check for updates</button>
+              <p v-else class="text-[11px] text-green-500">Up to date</p>
             </div>
           </div>
         </div>
@@ -1954,88 +1991,159 @@ function saveEmailAddress() {
   savedEmailAddress.value = val
 }
 
-// --- App Updates ---
-const deployedCommit = computed(() => (page.props.commit_hash as string) || 'unknown')
-const updateAvailable = ref(false)
-const updateChecking = ref(false)
-const updateStatus = ref<'idle' | 'triggered' | 'updating' | 'done' | 'error'>('idle')
-let updatePollTimer: ReturnType<typeof setInterval> | null = null
+// --- Two-Factor Authentication ---
+const twoFactorEnabled = ref(false)
+const twoFactorSetup = ref(false)
+const twoFactorSecret = ref('')
+const twoFactorQrDataUrl = ref('')
+const twoFactorCode = ref('')
+const twoFactorError = ref('')
+const twoFactorDisablePassword = ref('')
 
-const updateInProgress = computed(() => updateStatus.value === 'triggered' || updateStatus.value === 'updating')
-
-async function checkForUpdate() {
-  updateChecking.value = true
+async function checkTwoFactorStatus() {
   try {
-    const res = await fetch('https://api.github.com/repos/salagent44/salgtd/commits/main', {
-      headers: { 'Accept': 'application/vnd.github.v3.sha' },
-    })
-    if (res.ok) {
-      const latestFull = (await res.text()).trim()
-      const latestShort = latestFull.substring(0, 7)
-      updateAvailable.value = deployedCommit.value !== 'unknown' && latestShort !== deployedCommit.value
-    }
-  } catch {
-    // silently fail — network issue or rate limit
-  }
-  updateChecking.value = false
-}
-
-async function triggerUpdate() {
-  try {
-    const res = await fetch('/api/update-trigger', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
+    const res = await fetch('/api/2fa/status')
     if (res.ok) {
       const data = await res.json()
-      if (!data.triggered) return // already in progress
+      twoFactorEnabled.value = data.enabled
     }
-  } catch { return }
-  updateStatus.value = 'triggered'
-  startUpdatePolling()
+  } catch {}
 }
 
-function startUpdatePolling() {
-  if (updatePollTimer) clearInterval(updatePollTimer)
-  updatePollTimer = setInterval(async () => {
-    try {
-      const res = await fetch('/api/update-status')
-      if (res.ok) {
-        const data = await res.json()
-        updateStatus.value = data.status || 'idle'
-        if (data.status === 'done') {
-          clearInterval(updatePollTimer!)
-          updatePollTimer = null
-          window.location.reload()
-        } else if (data.status === 'error') {
-          clearInterval(updatePollTimer!)
-          updatePollTimer = null
-        }
-      }
-    } catch {
-      // server is down during rebuild — expected
+async function setupTwoFactor() {
+  twoFactorError.value = ''
+  try {
+    const res = await fetch('/api/2fa/setup', {
+      method: 'POST',
+      headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    })
+    if (res.ok) {
+      const data = await res.json()
+      twoFactorSecret.value = data.secret
+      twoFactorQrDataUrl.value = data.qr_svg
+      twoFactorSetup.value = true
     }
-  }, 5000)
+  } catch {}
 }
+
+async function confirmTwoFactor() {
+  twoFactorError.value = ''
+  try {
+    const res = await fetch('/api/2fa/confirm', {
+      method: 'POST',
+      headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: twoFactorCode.value }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.confirmed) {
+        twoFactorEnabled.value = true
+        twoFactorSetup.value = false
+        twoFactorSecret.value = ''
+        twoFactorQrDataUrl.value = ''
+        twoFactorCode.value = ''
+      }
+    } else {
+      const data = await res.json()
+      twoFactorError.value = data.error || 'Invalid code'
+    }
+  } catch {
+    twoFactorError.value = 'Failed to verify code'
+  }
+}
+
+async function disableTwoFactor() {
+  twoFactorError.value = ''
+  try {
+    const res = await fetch('/api/2fa/disable', {
+      method: 'POST',
+      headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: twoFactorDisablePassword.value }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.disabled) {
+        twoFactorEnabled.value = false
+        twoFactorDisablePassword.value = ''
+      }
+    } else {
+      const data = await res.json()
+      twoFactorError.value = data.error || 'Failed to disable'
+    }
+  } catch {
+    twoFactorError.value = 'Failed to disable 2FA'
+  }
+}
+
+checkTwoFactorStatus()
+
+// --- App Updates (silent background build) ---
+const deployedCommit = computed(() => (page.props.commit_hash as string) || 'unknown')
+const buildReady = ref(false)
+const pendingCommit = ref<string | null>(null)
+const updateApplying = ref(false)
 
 function getCsrfToken(): string {
   const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-// On load: check current update status and check for new versions
-async function initUpdateStatus() {
+async function checkBuildStatus() {
+  if (!isOnline.value) return
   try {
     const res = await fetch('/api/update-status')
     if (res.ok) {
       const data = await res.json()
-      updateStatus.value = data.status || 'idle'
-      if (data.status === 'triggered' || data.status === 'updating') {
-        startUpdatePolling()
+      buildReady.value = data.build_ready || false
+      pendingCommit.value = data.pending_commit || null
+      if (data.applying) {
+        updateApplying.value = true
+        startApplyPolling()
       }
     }
   } catch {}
-  checkForUpdate()
 }
-initUpdateStatus()
-setInterval(checkForUpdate, 30 * 60 * 1000)
+
+async function applyUpdate() {
+  try {
+    const res = await fetch('/api/update-apply', { method: 'POST', headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' } })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.applied) {
+        updateApplying.value = true
+        buildReady.value = false
+        startApplyPolling()
+      }
+    }
+  } catch {}
+}
+
+let applyPollTimer: ReturnType<typeof setInterval> | null = null
+function startApplyPolling() {
+  if (applyPollTimer) clearInterval(applyPollTimer)
+  applyPollTimer = setInterval(async () => {
+    try {
+      const res = await fetch('/health')
+      if (res.ok) {
+        // Server is back — check if commit changed
+        const statusRes = await fetch('/api/update-status')
+        if (statusRes.ok) {
+          const data = await statusRes.json()
+          if (!data.applying && data.commit !== deployedCommit.value) {
+            clearInterval(applyPollTimer!)
+            applyPollTimer = null
+            window.location.reload()
+          }
+        }
+      }
+    } catch {
+      // Server down during restart — expected
+    }
+  }, 3000)
+}
+
+checkBuildStatus()
+setInterval(checkBuildStatus, 30000)
 
 function copyText(text: string, field = 'url') {
   navigator.clipboard.writeText(text)
