@@ -22,8 +22,6 @@
               :data-testid="'nav-' + v.key"
             >{{ v.icon }} {{ v.label }}</button>
           </div>
-          <!-- Mobile view title -->
-          <p class="md:hidden text-lg font-bold text-foreground">{{ views.find(v => v.key === currentView)?.icon }} {{ views.find(v => v.key === currentView)?.label }}</p>
         </div>
         <div class="flex items-center gap-1.5 md:gap-2">
           <template v-if="currentView === 'tasks'">
@@ -627,7 +625,7 @@
         <button
           v-for="v in views"
           :key="'mobile-' + v.key"
-          @click="currentView = v.key"
+          @click="currentView = v.key; if (v.key === 'tasks') activePill = 'inbox'"
           class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors"
           :class="currentView === v.key ? 'text-primary' : 'text-muted-foreground'"
         >
