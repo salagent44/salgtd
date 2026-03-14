@@ -1,0 +1,41 @@
+services:
+  gtd:
+    build: .
+    volumes:
+      - gtd-data:/data
+    environment:
+      - APP_KEY=${APP_KEY}
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=https://${DOMAIN:-localhost}
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/data/gtd.sqlite
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@gtd.local}
+      - ADMIN_NAME=${ADMIN_NAME:-Admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - TIMEZONE=${TIMEZONE:-UTC}
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - gtd
+    restart: unless-stopped
+
+volumes:
+  gtd-data:
+  caddy-data:
+  caddy-config:

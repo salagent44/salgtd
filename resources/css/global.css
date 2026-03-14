@@ -1,0 +1,1021 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ============================================================
+   Default: Warm muted light theme
+   Inspired by Linear / Notion — airy, soft, refined
+   ============================================================ */
+:root {
+  --radius: 0.625rem;
+  --note-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Warm stone palette */
+  --background: oklch(0.98 0.004 80);
+  --foreground: oklch(0.22 0.01 60);
+
+  --card: oklch(1 0.002 80);
+  --card-foreground: oklch(0.22 0.01 60);
+
+  --popover: oklch(1 0.002 80);
+  --popover-foreground: oklch(0.22 0.01 60);
+
+  /* Muted indigo primary */
+  --primary: oklch(0.45 0.08 260);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.955 0.005 80);
+  --secondary-foreground: oklch(0.30 0.01 60);
+
+  --muted: oklch(0.955 0.005 80);
+  --muted-foreground: oklch(0.50 0.01 60);
+
+  --accent: oklch(0.94 0.008 80);
+  --accent-foreground: oklch(0.25 0.01 60);
+
+  --destructive: oklch(0.55 0.2 25);
+
+  --border: oklch(0.90 0.006 80);
+  --input: oklch(0.90 0.006 80);
+  --ring: oklch(0.55 0.08 260);
+
+  --chart-1: oklch(0.55 0.15 260);
+  --chart-2: oklch(0.60 0.12 170);
+  --chart-3: oklch(0.50 0.08 40);
+  --chart-4: oklch(0.65 0.16 85);
+  --chart-5: oklch(0.58 0.14 330);
+
+  --sidebar: oklch(0.965 0.004 80);
+  --sidebar-foreground: oklch(0.22 0.01 60);
+  --sidebar-primary: oklch(0.45 0.08 260);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.008 80);
+  --sidebar-accent-foreground: oklch(0.25 0.01 60);
+  --sidebar-border: oklch(0.90 0.006 80);
+  --sidebar-ring: oklch(0.55 0.08 260);
+}
+
+/* ============================================================
+   Dark mode (toggle-able)
+   ============================================================ */
+.dark {
+  --background: oklch(0.16 0.005 260);
+  --foreground: oklch(0.93 0.005 260);
+
+  --card: oklch(0.20 0.008 260);
+  --card-foreground: oklch(0.93 0.005 260);
+
+  --popover: oklch(0.20 0.008 260);
+  --popover-foreground: oklch(0.93 0.005 260);
+
+  --primary: oklch(0.72 0.10 260);
+  --primary-foreground: oklch(0.14 0.005 260);
+
+  --secondary: oklch(0.24 0.008 260);
+  --secondary-foreground: oklch(0.93 0.005 260);
+
+  --muted: oklch(0.24 0.008 260);
+  --muted-foreground: oklch(0.62 0.01 260);
+
+  --accent: oklch(0.26 0.01 260);
+  --accent-foreground: oklch(0.93 0.005 260);
+
+  --destructive: oklch(0.65 0.2 22);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.55 0.08 260);
+
+  --chart-1: oklch(0.65 0.18 260);
+  --chart-2: oklch(0.65 0.15 170);
+  --chart-3: oklch(0.70 0.16 75);
+  --chart-4: oklch(0.60 0.20 310);
+  --chart-5: oklch(0.62 0.20 20);
+
+  --sidebar: oklch(0.18 0.006 260);
+  --sidebar-foreground: oklch(0.93 0.005 260);
+  --sidebar-primary: oklch(0.72 0.10 260);
+  --sidebar-primary-foreground: oklch(0.14 0.005 260);
+  --sidebar-accent: oklch(0.24 0.008 260);
+  --sidebar-accent-foreground: oklch(0.93 0.005 260);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.55 0.08 260);
+}
+
+/* ============================================================
+   Theme: Ocean — nautical, crisp, geometric
+   Inspired by maritime dashboards. Sharper corners, monospace
+   accents, deep navy tones, frosted-glass card feel.
+   ============================================================ */
+.theme-ocean {
+  --background: oklch(0.96 0.012 230);
+  --foreground: oklch(0.15 0.03 240);
+
+  --card: oklch(0.98 0.008 230 / 85%);
+  --card-foreground: oklch(0.15 0.03 240);
+
+  --popover: oklch(0.98 0.008 230 / 92%);
+  --popover-foreground: oklch(0.15 0.03 240);
+
+  --primary: oklch(0.42 0.16 250);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.92 0.018 230);
+  --secondary-foreground: oklch(0.25 0.03 240);
+
+  --muted: oklch(0.92 0.018 230);
+  --muted-foreground: oklch(0.45 0.03 240);
+
+  --accent: oklch(0.89 0.025 230);
+  --accent-foreground: oklch(0.18 0.03 240);
+
+  --destructive: oklch(0.55 0.22 18);
+
+  --border: oklch(0.82 0.02 230);
+  --input: oklch(0.85 0.018 230);
+  --ring: oklch(0.50 0.14 250);
+
+  --radius: 0.375rem;
+}
+
+/* Ocean: font, shadows, texture */
+.theme-ocean body,
+.theme-ocean {
+  font-family: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle frosted noise background */
+.theme-ocean body {
+  background-image:
+    radial-gradient(ellipse at 20% 0%, oklch(0.70 0.10 230 / 8%) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, oklch(0.60 0.12 250 / 6%) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Sharper, glassy cards */
+.theme-ocean [class*="rounded-xl"] {
+  border-radius: 0.5rem !important;
+}
+.theme-ocean [class*="rounded-lg"] {
+  border-radius: 0.375rem !important;
+}
+.theme-ocean [class*="rounded-full"] {
+  border-radius: 0.375rem !important;
+}
+
+/* Stronger card borders + backdrop blur */
+.theme-ocean .bg-card,
+.theme-ocean [class*="bg-card"] {
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 1px 3px oklch(0.20 0.05 240 / 8%), 0 0 0 1px oklch(0.70 0.04 230 / 15%);
+}
+
+/* Buttons: bold, slightly elevated */
+.theme-ocean .bg-primary {
+  box-shadow: 0 2px 8px oklch(0.30 0.16 250 / 25%), inset 0 1px 0 oklch(1 0 0 / 10%);
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* Monospace accents on badges and kbd */
+.theme-ocean .bear-kbd,
+.theme-ocean [class*="text-\\[10px\\]"],
+.theme-ocean [class*="tracking-widest"],
+.theme-ocean [class*="uppercase"] {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.06em;
+}
+
+/* Input fields: inset shadow for depth */
+.theme-ocean input[type="text"],
+.theme-ocean input[type="date"],
+.theme-ocean input[type="time"],
+.theme-ocean textarea,
+.theme-ocean select {
+  box-shadow: inset 0 2px 4px oklch(0.20 0.04 240 / 8%);
+  border-color: oklch(0.78 0.025 230);
+}
+
+/* ============================================================
+   Theme: Forest — warm, organic, literary
+   Inspired by cabin journals & old libraries. Rounded shapes,
+   serif headings, warm parchment tones, soft paper texture.
+   ============================================================ */
+.theme-forest {
+  --background: oklch(0.95 0.015 75);
+  --foreground: oklch(0.18 0.025 50);
+
+  --card: oklch(0.97 0.012 70);
+  --card-foreground: oklch(0.18 0.025 50);
+
+  --popover: oklch(0.97 0.012 70);
+  --popover-foreground: oklch(0.18 0.025 50);
+
+  --primary: oklch(0.42 0.12 155);
+  --primary-foreground: oklch(0.99 0.005 80);
+
+  --secondary: oklch(0.91 0.02 75);
+  --secondary-foreground: oklch(0.25 0.025 50);
+
+  --muted: oklch(0.91 0.02 75);
+  --muted-foreground: oklch(0.45 0.02 60);
+
+  --accent: oklch(0.88 0.025 75);
+  --accent-foreground: oklch(0.20 0.025 50);
+
+  --destructive: oklch(0.52 0.18 25);
+
+  --border: oklch(0.84 0.025 70);
+  --input: oklch(0.87 0.02 70);
+  --ring: oklch(0.45 0.10 155);
+
+  --radius: 0.875rem;
+}
+
+/* Forest: warm serif headings, softer body font */
+.theme-forest body,
+.theme-forest {
+  font-family: 'Source Sans 3', 'Source Sans Pro', 'Georgia', -apple-system, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Warm parchment texture */
+.theme-forest body {
+  background-image:
+    radial-gradient(ellipse at 30% 20%, oklch(0.80 0.04 80 / 12%) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, oklch(0.65 0.08 145 / 6%) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Serif headings — targets common heading patterns */
+.theme-forest h1,
+.theme-forest h2,
+.theme-forest h3,
+.theme-forest [class*="text-lg"],
+.theme-forest [class*="text-xl"],
+.theme-forest [class*="text-2xl"],
+.theme-forest .bear-title-input {
+  font-family: 'Libre Baskerville', 'Georgia', 'Palatino', serif;
+  letter-spacing: -0.015em;
+}
+
+/* Extra rounded, pillowy shapes */
+.theme-forest [class*="rounded-xl"] {
+  border-radius: 1rem !important;
+}
+.theme-forest [class*="rounded-lg"] {
+  border-radius: 0.75rem !important;
+}
+
+/* Soft paper-like card shadows */
+.theme-forest .bg-card,
+.theme-forest [class*="bg-card"] {
+  box-shadow: 0 2px 12px oklch(0.40 0.03 60 / 8%), 0 0 0 1px oklch(0.80 0.02 70 / 20%);
+}
+
+/* Buttons: softer, rounded, organic feel */
+.theme-forest .bg-primary {
+  box-shadow: 0 2px 6px oklch(0.30 0.10 155 / 20%);
+  font-weight: 600;
+}
+.theme-forest .bg-primary:hover {
+  box-shadow: 0 3px 10px oklch(0.30 0.10 155 / 28%);
+}
+
+/* Warm-tinted inputs */
+.theme-forest input[type="text"],
+.theme-forest input[type="date"],
+.theme-forest input[type="time"],
+.theme-forest textarea,
+.theme-forest select {
+  background: oklch(0.96 0.01 70);
+  border-color: oklch(0.82 0.02 70);
+}
+
+/* Tag pills: leaf-like shapes */
+.theme-forest .bear-tag-pill,
+.theme-forest [class*="rounded-full"] {
+  border-radius: 1rem !important;
+}
+
+/* Subtle texture on muted elements */
+.theme-forest .bg-muted,
+.theme-forest [class*="bg-muted"] {
+  background: oklch(0.91 0.02 75);
+  box-shadow: inset 0 1px 2px oklch(0.40 0.02 60 / 5%);
+}
+
+/* ============================================================
+   Theme: Midnight — dark neon, cyberpunk terminal
+   Deep purples and blacks, electric violet accents, monospace
+   everything, hard edges, glowing borders.
+   ============================================================ */
+.theme-midnight {
+  --background: oklch(0.14 0.025 280);
+  --foreground: oklch(0.88 0.015 280);
+
+  --card: oklch(0.18 0.03 280);
+  --card-foreground: oklch(0.90 0.01 280);
+
+  --popover: oklch(0.18 0.03 280);
+  --popover-foreground: oklch(0.90 0.01 280);
+
+  --primary: oklch(0.65 0.28 300);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.22 0.03 280);
+  --secondary-foreground: oklch(0.82 0.015 280);
+
+  --muted: oklch(0.22 0.03 280);
+  --muted-foreground: oklch(0.58 0.02 280);
+
+  --accent: oklch(0.25 0.04 280);
+  --accent-foreground: oklch(0.90 0.01 280);
+
+  --destructive: oklch(0.60 0.25 15);
+
+  --border: oklch(0.30 0.04 280);
+  --input: oklch(0.25 0.035 280);
+  --ring: oklch(0.65 0.25 300);
+
+  --radius: 0.25rem;
+}
+
+/* Midnight: monospace everything, sharp edges */
+.theme-midnight body,
+.theme-midnight {
+  font-family: 'Space Grotesk', 'SF Mono', monospace;
+  letter-spacing: 0.01em;
+}
+
+/* Neon glow background */
+.theme-midnight body {
+  background-image:
+    radial-gradient(ellipse at 15% 5%, oklch(0.35 0.20 300 / 10%) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 95%, oklch(0.30 0.18 260 / 8%) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, oklch(0.12 0.02 280) 0%, oklch(0.10 0.015 280) 100%);
+  background-attachment: fixed;
+}
+
+/* Hard-cut square corners */
+.theme-midnight [class*="rounded-xl"] {
+  border-radius: 0.25rem !important;
+}
+.theme-midnight [class*="rounded-lg"] {
+  border-radius: 0.25rem !important;
+}
+.theme-midnight [class*="rounded-full"] {
+  border-radius: 0.25rem !important;
+}
+.theme-midnight [class*="rounded-md"] {
+  border-radius: 0.2rem !important;
+}
+
+/* Glowing card borders */
+.theme-midnight .bg-card,
+.theme-midnight [class*="bg-card"] {
+  box-shadow:
+    0 0 0 1px oklch(0.50 0.20 300 / 12%),
+    0 4px 20px oklch(0.10 0.02 280 / 40%);
+  border-color: oklch(0.35 0.08 300 / 30%);
+}
+
+/* Neon glow buttons */
+.theme-midnight .bg-primary {
+  box-shadow:
+    0 0 12px oklch(0.55 0.25 300 / 30%),
+    0 0 4px oklch(0.65 0.28 300 / 20%),
+    inset 0 1px 0 oklch(1 0 0 / 8%);
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.82em;
+  letter-spacing: 0.08em;
+}
+
+/* All text monospace-influenced */
+.theme-midnight [class*="tracking-widest"],
+.theme-midnight [class*="uppercase"],
+.theme-midnight .bear-kbd {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  letter-spacing: 0.1em;
+}
+
+/* Glowing inputs */
+.theme-midnight input[type="text"],
+.theme-midnight input[type="date"],
+.theme-midnight input[type="time"],
+.theme-midnight textarea,
+.theme-midnight select {
+  background: oklch(0.16 0.025 280);
+  border-color: oklch(0.35 0.06 300 / 40%);
+  color: oklch(0.90 0.01 280);
+  box-shadow: 0 0 6px oklch(0.50 0.20 300 / 8%);
+}
+.theme-midnight input[type="text"]:focus,
+.theme-midnight textarea:focus {
+  border-color: oklch(0.60 0.25 300 / 60%);
+  box-shadow: 0 0 12px oklch(0.55 0.25 300 / 15%);
+}
+
+/* Borders glow subtly */
+.theme-midnight [class*="border-border"] {
+  border-color: oklch(0.35 0.06 290 / 35%);
+}
+
+/* Muted elements: deeper */
+.theme-midnight .bg-muted,
+.theme-midnight [class*="bg-muted"] {
+  background: oklch(0.20 0.03 280);
+}
+
+/* ============================================================
+   Theme: Sunset — warm gradients, playful, hand-crafted
+   Peach-coral-amber palette, soft blobs, rounded everything,
+   handwriting accents, warm glow. Feels like a sticky-note board.
+   ============================================================ */
+.theme-sunset {
+  --background: oklch(0.96 0.025 60);
+  --foreground: oklch(0.20 0.03 40);
+
+  --card: oklch(0.98 0.018 55);
+  --card-foreground: oklch(0.20 0.03 40);
+
+  --popover: oklch(0.98 0.018 55);
+  --popover-foreground: oklch(0.20 0.03 40);
+
+  --primary: oklch(0.58 0.18 30);
+  --primary-foreground: oklch(0.99 0.005 60);
+
+  --secondary: oklch(0.92 0.03 55);
+  --secondary-foreground: oklch(0.28 0.03 40);
+
+  --muted: oklch(0.92 0.03 55);
+  --muted-foreground: oklch(0.48 0.025 45);
+
+  --accent: oklch(0.89 0.04 50);
+  --accent-foreground: oklch(0.22 0.03 40);
+
+  --destructive: oklch(0.50 0.22 15);
+
+  --border: oklch(0.85 0.03 55);
+  --input: oklch(0.88 0.025 55);
+  --ring: oklch(0.55 0.16 30);
+
+  --radius: 1.25rem;
+}
+
+/* Sunset: playful, rounded, warm */
+.theme-sunset body,
+.theme-sunset {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Warm blob gradients */
+.theme-sunset body {
+  background-image:
+    radial-gradient(ellipse at 0% 0%, oklch(0.82 0.10 50 / 18%) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 30%, oklch(0.78 0.12 25 / 12%) 0%, transparent 40%),
+    radial-gradient(ellipse at 40% 100%, oklch(0.80 0.08 80 / 10%) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Handwritten accents on labels */
+.theme-sunset [class*="tracking-widest"],
+.theme-sunset [class*="uppercase"] {
+  font-family: 'Caveat', cursive;
+  font-size: 1.15em;
+  font-weight: 600;
+  text-transform: none !important;
+  letter-spacing: 0.02em;
+}
+
+/* Very round everything */
+.theme-sunset [class*="rounded-xl"] {
+  border-radius: 1.25rem !important;
+}
+.theme-sunset [class*="rounded-lg"] {
+  border-radius: 1rem !important;
+}
+.theme-sunset [class*="rounded-md"] {
+  border-radius: 0.75rem !important;
+}
+.theme-sunset [class*="rounded-full"] {
+  border-radius: 2rem !important;
+}
+
+/* Soft, warm card shadows */
+.theme-sunset .bg-card,
+.theme-sunset [class*="bg-card"] {
+  box-shadow:
+    0 4px 16px oklch(0.55 0.08 40 / 10%),
+    0 1px 4px oklch(0.60 0.06 50 / 8%);
+}
+
+/* Big, friendly, pillowy buttons */
+.theme-sunset .bg-primary {
+  box-shadow:
+    0 3px 10px oklch(0.45 0.15 30 / 22%),
+    inset 0 2px 0 oklch(1 0 0 / 15%);
+  font-weight: 600;
+  border-radius: 2rem !important;
+}
+.theme-sunset .bg-primary:hover {
+  box-shadow:
+    0 4px 14px oklch(0.45 0.15 30 / 30%),
+    inset 0 2px 0 oklch(1 0 0 / 15%);
+  transform: translateY(-1px);
+}
+
+/* Warm, slightly tinted inputs */
+.theme-sunset input[type="text"],
+.theme-sunset input[type="date"],
+.theme-sunset input[type="time"],
+.theme-sunset textarea,
+.theme-sunset select {
+  background: oklch(0.97 0.015 60);
+  border-color: oklch(0.83 0.03 50);
+  border-radius: 0.75rem !important;
+  border-width: 2px;
+}
+.theme-sunset input[type="text"]:focus,
+.theme-sunset textarea:focus {
+  border-color: oklch(0.60 0.15 30);
+  box-shadow: 0 0 0 3px oklch(0.60 0.15 30 / 12%);
+}
+
+/* Muted elements: peachy warmth */
+.theme-sunset .bg-muted,
+.theme-sunset [class*="bg-muted"] {
+  background: oklch(0.92 0.03 55);
+}
+
+/* Tags/badges: colorful and rounded */
+.theme-sunset .bear-tag-pill {
+  background: oklch(0.88 0.06 35 / 50%);
+  color: oklch(0.40 0.12 30);
+  border-radius: 2rem !important;
+  font-weight: 600;
+}
+
+/* Separator gets warmer */
+.theme-sunset [class*="border-border"] {
+  border-color: oklch(0.85 0.035 50);
+}
+
+/* ============================================================
+   Theme: Slate — sharp, confident, industrial light
+   Steel-blue-grey palette, tight radius, strong lines.
+   Feels like a well-organized tool bench.
+   ============================================================ */
+.theme-slate {
+  --background: oklch(0.95 0.008 250);
+  --foreground: oklch(0.15 0.015 250);
+
+  --card: oklch(0.97 0.006 250);
+  --card-foreground: oklch(0.15 0.015 250);
+
+  --popover: oklch(0.97 0.006 250);
+  --popover-foreground: oklch(0.15 0.015 250);
+
+  --primary: oklch(0.45 0.12 250);
+  --primary-foreground: oklch(0.98 0.005 250);
+
+  --secondary: oklch(0.90 0.008 250);
+  --secondary-foreground: oklch(0.25 0.015 250);
+
+  --muted: oklch(0.91 0.008 250);
+  --muted-foreground: oklch(0.45 0.015 250);
+
+  --accent: oklch(0.88 0.012 250);
+  --accent-foreground: oklch(0.18 0.015 250);
+
+  --destructive: oklch(0.50 0.20 20);
+
+  --border: oklch(0.84 0.010 250);
+  --input: oklch(0.87 0.008 250);
+  --ring: oklch(0.50 0.10 250);
+
+  --radius: 0.5rem;
+}
+
+/* Slate: clean sans-serif, tight spacing */
+.theme-slate body,
+.theme-slate {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle cool gradient */
+.theme-slate body {
+  background-image:
+    radial-gradient(ellipse at 0% 0%, oklch(0.88 0.02 240 / 12%) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, oklch(0.85 0.015 260 / 8%) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Crisp card borders */
+.theme-slate .bg-card,
+.theme-slate [class*="bg-card"] {
+  box-shadow: 0 1px 3px oklch(0.20 0.01 250 / 8%);
+  border: 1px solid oklch(0.84 0.010 250);
+}
+
+/* Strong, flat buttons */
+.theme-slate .bg-primary {
+  box-shadow: 0 1px 4px oklch(0.30 0.10 250 / 20%);
+  font-weight: 600;
+}
+
+/* Tight radius everywhere */
+.theme-slate [class*="rounded-xl"] { border-radius: 0.5rem !important; }
+.theme-slate [class*="rounded-lg"] { border-radius: 0.375rem !important; }
+.theme-slate [class*="rounded-md"] { border-radius: 0.25rem !important; }
+.theme-slate [class*="rounded-full"] { border-radius: 0.375rem !important; }
+
+/* Uppercase labels stay uppercase, bold */
+.theme-slate [class*="tracking-widest"],
+.theme-slate [class*="uppercase"] {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* Inputs: clean borders */
+.theme-slate input[type="text"],
+.theme-slate input[type="date"],
+.theme-slate input[type="time"],
+.theme-slate textarea,
+.theme-slate select {
+  border-color: oklch(0.80 0.010 250);
+  border-width: 1.5px;
+}
+.theme-slate input[type="text"]:focus,
+.theme-slate textarea:focus {
+  border-color: oklch(0.50 0.12 250);
+  box-shadow: 0 0 0 2px oklch(0.50 0.12 250 / 10%);
+}
+
+/* ============================================================
+   Theme: Obsidian — dark, bold, no-nonsense
+   Deep charcoal with steel-blue accents. Sharp edges,
+   strong contrast, subtle metallic feel.
+   ============================================================ */
+.theme-obsidian {
+  --background: oklch(0.18 0.012 260);
+  --foreground: oklch(0.90 0.008 250);
+
+  --card: oklch(0.22 0.012 260);
+  --card-foreground: oklch(0.90 0.008 250);
+
+  --popover: oklch(0.22 0.012 260);
+  --popover-foreground: oklch(0.90 0.008 250);
+
+  --primary: oklch(0.60 0.14 240);
+  --primary-foreground: oklch(0.98 0.005 250);
+
+  --secondary: oklch(0.26 0.012 260);
+  --secondary-foreground: oklch(0.80 0.008 250);
+
+  --muted: oklch(0.25 0.010 260);
+  --muted-foreground: oklch(0.58 0.012 250);
+
+  --accent: oklch(0.28 0.015 260);
+  --accent-foreground: oklch(0.88 0.008 250);
+
+  --destructive: oklch(0.55 0.22 20);
+
+  --border: oklch(0.30 0.012 260);
+  --input: oklch(0.28 0.010 260);
+  --ring: oklch(0.55 0.12 240);
+
+  --radius: 0.5rem;
+}
+
+/* Obsidian: tight, modern sans */
+.theme-obsidian body,
+.theme-obsidian {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Dark subtle gradient */
+.theme-obsidian body {
+  background-image:
+    radial-gradient(ellipse at 20% 10%, oklch(0.22 0.025 240 / 30%) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, oklch(0.20 0.02 270 / 20%) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Cards: subtle elevation */
+.theme-obsidian .bg-card,
+.theme-obsidian [class*="bg-card"] {
+  box-shadow: 0 2px 8px oklch(0.05 0.01 260 / 30%);
+  border: 1px solid oklch(0.30 0.012 260);
+}
+
+/* Buttons: steel glow */
+.theme-obsidian .bg-primary {
+  box-shadow: 0 2px 8px oklch(0.40 0.12 240 / 25%);
+  font-weight: 600;
+}
+.theme-obsidian .bg-primary:hover {
+  box-shadow: 0 3px 12px oklch(0.40 0.12 240 / 35%);
+}
+
+/* Tight radius */
+.theme-obsidian [class*="rounded-xl"] { border-radius: 0.5rem !important; }
+.theme-obsidian [class*="rounded-lg"] { border-radius: 0.375rem !important; }
+.theme-obsidian [class*="rounded-md"] { border-radius: 0.25rem !important; }
+.theme-obsidian [class*="rounded-full"] { border-radius: 0.375rem !important; }
+
+/* Bold uppercase labels */
+.theme-obsidian [class*="tracking-widest"],
+.theme-obsidian [class*="uppercase"] {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* Inputs: dark inset */
+.theme-obsidian input[type="text"],
+.theme-obsidian input[type="date"],
+.theme-obsidian input[type="time"],
+.theme-obsidian textarea,
+.theme-obsidian select {
+  background: oklch(0.20 0.010 260);
+  border-color: oklch(0.32 0.012 260);
+  border-width: 1.5px;
+  color: oklch(0.90 0.008 250);
+}
+.theme-obsidian input[type="text"]:focus,
+.theme-obsidian textarea:focus {
+  border-color: oklch(0.55 0.12 240);
+  box-shadow: 0 0 0 2px oklch(0.55 0.12 240 / 15%);
+}
+
+/* Muted elements */
+.theme-obsidian .bg-muted,
+.theme-obsidian [class*="bg-muted"] {
+  background: oklch(0.25 0.010 260);
+}
+
+/* Borders: subtle steel */
+.theme-obsidian [class*="border-border"] {
+  border-color: oklch(0.30 0.012 260);
+}
+
+/* ============================================================
+   Theme: Guild Wars 2 — light gradient, warm gold accents
+   Inspired by GW2 UI panels. Light warm gradient background,
+   cream/tan tones, dark brown text, amber-gold primary.
+   ============================================================ */
+.theme-poe {
+  --background: oklch(0.18 0.015 30);
+  --foreground: oklch(0.82 0.02 55);
+
+  --card: oklch(0.22 0.018 28);
+  --card-foreground: oklch(0.82 0.02 55);
+
+  --popover: oklch(0.22 0.018 28);
+  --popover-foreground: oklch(0.82 0.02 55);
+
+  /* Blood red primary */
+  --primary: oklch(0.45 0.18 25);
+  --primary-foreground: oklch(0.95 0.01 55);
+
+  --secondary: oklch(0.25 0.015 30);
+  --secondary-foreground: oklch(0.75 0.02 55);
+
+  --muted: oklch(0.23 0.012 28);
+  --muted-foreground: oklch(0.55 0.02 40);
+
+  --accent: oklch(0.28 0.02 30);
+  --accent-foreground: oklch(0.80 0.02 55);
+
+  --destructive: oklch(0.50 0.22 22);
+
+  --border: oklch(0.30 0.025 30);
+  --input: oklch(0.25 0.015 28);
+  --ring: oklch(0.50 0.15 25);
+
+  --chart-1: oklch(0.45 0.18 25);
+  --chart-2: oklch(0.55 0.12 55);
+  --chart-3: oklch(0.50 0.10 150);
+  --chart-4: oklch(0.60 0.15 75);
+  --chart-5: oklch(0.45 0.12 280);
+
+  --sidebar: oklch(0.16 0.015 28);
+  --sidebar-foreground: oklch(0.82 0.02 55);
+  --sidebar-primary: oklch(0.45 0.18 25);
+  --sidebar-primary-foreground: oklch(0.95 0.01 55);
+  --sidebar-accent: oklch(0.28 0.02 30);
+  --sidebar-accent-foreground: oklch(0.80 0.02 55);
+  --sidebar-border: oklch(0.30 0.025 30);
+  --sidebar-ring: oklch(0.50 0.15 25);
+
+  --radius: 0.25rem;
+}
+
+/* POE: rugged sans-serif */
+.theme-poe body,
+.theme-poe {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* Dark grimy background */
+.theme-poe body {
+  background: linear-gradient(
+    160deg,
+    oklch(0.15 0.02 25) 0%,
+    oklch(0.18 0.015 30) 35%,
+    oklch(0.16 0.018 28) 65%,
+    oklch(0.14 0.02 22) 100%
+  );
+  background-attachment: fixed;
+}
+
+/* Cards: dark weathered panels */
+.theme-poe .bg-card,
+.theme-poe [class*="bg-card"] {
+  box-shadow:
+    inset 0 1px 0 oklch(0.30 0.01 35 / 30%),
+    0 2px 6px oklch(0.05 0.01 20 / 40%),
+    0 0 0 1px oklch(0.28 0.02 28 / 50%);
+  border-color: oklch(0.30 0.025 30 / 50%);
+}
+
+/* Sharp corners */
+.theme-poe [class*="rounded-xl"] { border-radius: 0.25rem !important; }
+.theme-poe [class*="rounded-lg"] { border-radius: 0.2rem !important; }
+.theme-poe [class*="rounded-md"] { border-radius: 0.15rem !important; }
+.theme-poe [class*="rounded-full"] { border-radius: 0.2rem !important; }
+
+/* Blood red buttons */
+.theme-poe .bg-primary {
+  background-image: linear-gradient(
+    to bottom,
+    oklch(0.48 0.18 25),
+    oklch(0.38 0.18 22)
+  );
+  box-shadow:
+    inset 0 1px 0 oklch(0.55 0.12 30 / 30%),
+    inset 0 -1px 0 oklch(0.20 0.08 20 / 30%),
+    0 2px 8px oklch(0.20 0.10 22 / 40%);
+  font-weight: 600;
+  border: 1px solid oklch(0.40 0.12 25 / 40%);
+}
+.theme-poe .bg-primary:hover {
+  background-image: linear-gradient(
+    to bottom,
+    oklch(0.52 0.18 25),
+    oklch(0.42 0.18 22)
+  );
+}
+
+/* Labels: aged gold */
+.theme-poe [class*="tracking-widest"],
+.theme-poe [class*="uppercase"] {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: oklch(0.65 0.08 55);
+}
+
+/* Inputs: dark recessed */
+.theme-poe input[type="text"],
+.theme-poe input[type="date"],
+.theme-poe input[type="time"],
+.theme-poe textarea,
+.theme-poe select {
+  background: oklch(0.16 0.01 28);
+  border: 1px solid oklch(0.30 0.025 30);
+  color: oklch(0.82 0.02 55);
+  box-shadow: inset 0 2px 4px oklch(0.08 0.01 20 / 30%);
+}
+.theme-poe input[type="text"]:focus,
+.theme-poe textarea:focus {
+  border-color: oklch(0.45 0.15 25 / 60%);
+  box-shadow:
+    inset 0 2px 4px oklch(0.08 0.01 20 / 30%),
+    0 0 8px oklch(0.45 0.15 25 / 15%);
+}
+
+/* Borders: dark iron */
+.theme-poe [class*="border-border"] {
+  border-color: oklch(0.30 0.025 30);
+}
+
+/* Muted elements */
+.theme-poe .bg-muted,
+.theme-poe [class*="bg-muted"] {
+  background: oklch(0.23 0.012 28);
+}
+
+/* Scrollbar */
+.theme-poe ::-webkit-scrollbar {
+  width: 8px;
+}
+.theme-poe ::-webkit-scrollbar-track {
+  background: oklch(0.16 0.01 28);
+}
+.theme-poe ::-webkit-scrollbar-thumb {
+  background: oklch(0.35 0.04 28);
+  border-radius: 2px;
+}
+.theme-poe ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.42 0.08 25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ============================================================
+   Markdown preview (used in GTD task notes)
+   ============================================================ */
+.markdown-body {
+  color: var(--foreground);
+  line-height: 1.6;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-weight: 700;
+  margin: 0.75em 0 0.25em;
+}
+.markdown-body h1 { font-size: 1.25em; }
+.markdown-body h2 { font-size: 1.1em; }
+.markdown-body h3 { font-size: 1em; }
+.markdown-body p { margin: 0.4em 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin: 0.4em 0; }
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body code {
+  background: var(--muted);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+}
+.markdown-body pre {
+  background: var(--accent);
+  padding: 0.75em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+  border: 1px solid var(--border);
+}
+.markdown-body pre code { background: none; padding: 0; }
+.markdown-body strong { font-weight: 700; }
+.markdown-body em { font-style: italic; }
+.markdown-body a { color: var(--primary); text-decoration: underline; }
+.markdown-body blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: var(--muted-foreground);
+}
