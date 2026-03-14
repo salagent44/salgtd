@@ -1179,8 +1179,8 @@
   pointer-events: none !important;
 }
 [data-sonner-toast] {
-  background: var(--foreground) !important;
-  color: var(--background) !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
   border: none !important;
   font-size: 13px !important;
   font-weight: 500 !important;
