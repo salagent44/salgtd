@@ -80,7 +80,8 @@ fi
 echo "==> Cloning repo..."
 if [ -d "$INSTALL_DIR" ]; then
     echo "    $INSTALL_DIR exists, pulling latest..."
-    git -C "$INSTALL_DIR" pull --ff-only
+    git -C "$INSTALL_DIR" fetch origin main
+    git -C "$INSTALL_DIR" reset --hard origin/main
 else
     apt-get install -y git
     git clone "$REPO_URL" "$INSTALL_DIR"
