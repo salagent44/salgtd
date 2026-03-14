@@ -3152,11 +3152,17 @@ function toggleChecklistItem(ci: ChecklistItemRecord) {
 function addChecklistStep() {
   const title = newChecklistStepTitle.value.trim()
   if (!title || !processing.value) return
-  const tempId = Date.now().toString()
-  const maxOrder = (processing.value.checklist_items || []).reduce((m, c) => Math.max(m, c.sort_order), -1)
-  if (!processing.value.checklist_items) processing.value.checklist_items = []
-  processing.value.checklist_items.push({ id: tempId, item_id: processing.value.id, title, completed: false, sort_order: maxOrder + 1 })
-  guardedRouter.post(`/items/${processing.value.id}/checklist`, { title }, itemOnly)
+  const itemId = processing.value.id
+  guardedRouter.post(`/items/${itemId}/checklist`, { title }, {
+    ...itemOnly,
+    onSuccess: () => {
+      // Refresh processing with server data so IDs are real
+      const updated = items.value.find(i => i.id === itemId)
+      if (updated && processing.value?.id === itemId) {
+        processing.value = updated
+      }
+    },
+  })
   newChecklistStepTitle.value = ''
   nextTick(() => checklistStepInput.value?.focus())
 }
