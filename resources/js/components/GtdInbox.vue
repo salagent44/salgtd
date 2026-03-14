@@ -157,6 +157,15 @@
           <span v-if="stuckProjects.size > 0">🧴</span> Projects <span class="ml-1 opacity-70">{{ projects.length }}</span>
         </button>
         <button
+          v-if="checklistItems.length > 0 || activePill === 'checklists'"
+          @click="setActivePill('checklists')"
+          class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
+          :class="activePill === 'checklists' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border-transparent'"
+          data-testid="checklists-btn"
+        >
+          Checklists <span class="ml-1 opacity-70">{{ checklistItems.length }}</span>
+        </button>
+        <button
           v-if="inbox.length > 0 || activePill === 'inbox'"
           @click="setActivePill('inbox')"
           class="rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-[13px] md:text-xs font-semibold transition-all border-b-2 shrink-0"
@@ -344,6 +353,28 @@
         </div>
         <button v-if="projects.length > renderLimits.projects" @click="showMore('projects')" class="w-full mt-3 rounded-lg bg-muted/50 hover:bg-muted py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
           Show more ({{ projects.length - renderLimits.projects }} remaining)
+        </button>
+      </div>
+
+      <!-- Checklists -->
+      <div v-else-if="activePill === 'checklists'">
+        <div v-if="checklistItems.length === 0" class="text-center py-12 text-muted-foreground">
+          <p class="text-3xl mb-2">☑</p>
+          <p class="text-sm">No checklists</p>
+        </div>
+        <div class="space-y-2">
+          <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+              <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
+              <p class="text-[15px] font-semibold flex-1 truncate min-w-0" :title="item.title">{{ item.title }}</p>
+              <span v-if="checklistProgress(item)" class="text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0" :class="checklistProgress(item)!.done === checklistProgress(item)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(item)!.done }}/{{ checklistProgress(item)!.total }}</span>
+              <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
+            </CardContent>
+          </Card>
+        </div>
+        <button v-if="checklistItems.length > renderLimits.checklists" @click="showMore('checklists')" class="w-full mt-3 rounded-lg bg-muted/50 hover:bg-muted py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+          Show more ({{ checklistItems.length - renderLimits.checklists }} remaining)
         </button>
       </div>
 
@@ -1676,6 +1707,17 @@
                   <span class="text-muted-foreground text-xs group-hover:translate-x-0.5 transition-transform">→</span>
                 </div>
               </button>
+              <button @click="clarify('checklist')" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'checklist' ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary/50'">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="text-xl">☑</span>
+                    <div>
+                      <p class="text-sm font-bold text-primary">Checklist <span v-if="processing?.status === 'checklist'" class="text-[10px] font-medium text-muted-foreground ml-1">(current)</span></p>
+                      <p class="text-xs text-muted-foreground">Multi-step task to check off</p>
+                    </div>
+                  </div>
+                </div>
+              </button>
               <button @click="openWaiting" class="w-full group text-left rounded-xl border-2 px-4 py-3.5 transition-all" :class="processing?.status === 'waiting' ? 'border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/40' : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/50'">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -1912,7 +1954,7 @@ import { getEcho } from '@/echo'
 import ReviewView from './ReviewView.vue'
 import TimePicker from './TimePicker.vue'
 
-type Status = 'inbox' | 'next-action' | 'project' | 'waiting' | 'someday' | 'tickler' | 'done' | 'trash'
+type Status = 'inbox' | 'next-action' | 'project' | 'checklist' | 'waiting' | 'someday' | 'tickler' | 'done' | 'trash'
 
 interface ItemTagRecord { id: number; item_id: string; tag: string }
 interface Email { id: string; item_id: string; from_address: string; from_name?: string | null; to_address: string; subject: string; body_text: string; received_at: string; message_id?: string | null }
@@ -1940,13 +1982,14 @@ watch(currentView, (v) => {
 const buckets: { key: Status; label: string; description: string }[] = [
   { key: 'next-action', label: 'Next Action',   description: 'Single physical step' },
   { key: 'project',     label: 'Project',        description: 'Multiple steps needed' },
+  { key: 'checklist',   label: 'Checklist',      description: 'Multi-step task to check off' },
   { key: 'waiting',     label: 'Waiting For',    description: 'Delegated to someone' },
   { key: 'someday',     label: 'Someday/Maybe',  description: 'Not now, keep it' },
   { key: 'tickler',     label: 'Tickler',        description: 'Defer to a date' },
   { key: 'done',        label: 'Done',           description: '2-min rule applied' },
   { key: 'trash',       label: 'Trash',          description: 'Delete it' },
 ]
-const smallBuckets = buckets.filter(b => !['next-action', 'waiting', 'trash', 'tickler'].includes(b.key))
+const smallBuckets = buckets.filter(b => !['next-action', 'checklist', 'waiting', 'trash', 'tickler'].includes(b.key))
 
 // Themes
 const themes = [
@@ -2240,7 +2283,7 @@ const activeTagFilter = ref<string | null>(null)
 function toggleContextFilter(ctx: string) {
   activeContextFilter.value = activeContextFilter.value === ctx ? null : ctx
 }
-type PillKey = 'next-actions' | 'waiting' | 'projects' | 'inbox' | 'someday' | 'tickler' | 'done' | 'flagged'
+type PillKey = 'next-actions' | 'waiting' | 'projects' | 'checklists' | 'inbox' | 'someday' | 'tickler' | 'done' | 'flagged'
 const activePill = ref<PillKey>('next-actions')
 
 function setActivePill(pill: PillKey) {
@@ -2251,6 +2294,7 @@ const waitingItems = computed(() => items.value.filter(i => i.status === 'waitin
 const hasStaleWaiting = computed(() => waitingItems.value.some(i => isWaitingStale(i)))
 const somedayItems = computed(() => items.value.filter(i => i.status === 'someday'))
 const ticklerItems = computed(() => items.value.filter(i => i.status === 'tickler').sort((a, b) => (a.tickler_date || '').localeCompare(b.tickler_date || '')))
+const checklistItems = computed(() => items.value.filter(i => i.status === 'checklist'))
 const doneItems = computed(() => items.value.filter(i => i.status === 'done').sort((a, b) => (b.completed_at || '').localeCompare(a.completed_at || '')))
 const flaggedItems = computed(() => items.value.filter(i => i.flagged && i.status !== 'done'))
 
@@ -2304,6 +2348,7 @@ const renderLimits = ref<Record<string, number>>({
   'next-actions': RENDER_BATCH,
   waiting: RENDER_BATCH,
   projects: RENDER_BATCH,
+  checklists: RENDER_BATCH,
   inbox: RENDER_BATCH,
   someday: RENDER_BATCH,
   tickler: RENDER_BATCH,
@@ -2849,6 +2894,7 @@ const activeListCount = computed(() => {
     case 'next-actions': return filteredNextActions.value.length
     case 'waiting': return waitingItems.value.length
     case 'projects': return projects.value.length
+    case 'checklists': return checklistItems.value.length
     case 'inbox': return inbox.value.length
     case 'someday': return somedayItems.value.length
     case 'tickler': return ticklerItems.value.length
@@ -3272,6 +3318,7 @@ function bucketIcon(key: Status) {
   const icons = themeIcons.value
   const map: Partial<Record<Status, string>> = {
     'project':   '📁',
+    'checklist': '☑',
     'someday':   '🌱',
     'tickler':   '🗓️',
     'done':      icons.done,
@@ -3284,6 +3331,7 @@ function bucketVariant(status: Status): 'default' | 'secondary' | 'outline' | 'd
   const map: Partial<Record<Status, 'default' | 'secondary' | 'outline' | 'destructive'>> = {
     'next-action': 'default',
     'project':     'secondary',
+    'checklist':   'secondary',
     'trash':       'destructive',
   }
   return map[status] ?? 'outline'

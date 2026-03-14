@@ -13,7 +13,7 @@ class ItemController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:500',
-            'status' => 'sometimes|in:inbox,next-action,project,waiting,someday,tickler,done,trash',
+            'status' => 'sometimes|in:inbox,next-action,project,checklist,waiting,someday,tickler,done,trash',
             'context' => 'nullable|string',
             'waiting_for' => 'nullable|string',
             'waiting_date' => 'nullable|date',
@@ -39,7 +39,7 @@ class ItemController extends Controller
     {
         $validated = $request->validate([
             'title' => 'sometimes|string|max:500',
-            'status' => 'sometimes|in:inbox,next-action,project,waiting,someday,tickler,done,trash',
+            'status' => 'sometimes|in:inbox,next-action,project,checklist,waiting,someday,tickler,done,trash',
             'context' => 'nullable|string',
             'waiting_for' => 'nullable|string',
             'waiting_date' => 'nullable|date',
@@ -66,7 +66,7 @@ class ItemController extends Controller
     public function process(Request $request, Item $item)
     {
         $validated = $request->validate([
-            'status' => 'required|in:inbox,next-action,project,waiting,someday,tickler,done,trash',
+            'status' => 'required|in:inbox,next-action,project,checklist,waiting,someday,tickler,done,trash',
             'title' => 'sometimes|string|max:500',
             'context' => 'nullable|string',
             'waiting_for' => 'nullable|string',
@@ -133,7 +133,7 @@ class ItemController extends Controller
         $validated = $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'required',
-            'status' => 'required|in:inbox,next-action,project,waiting,someday,tickler,done,trash',
+            'status' => 'required|in:inbox,next-action,project,checklist,waiting,someday,tickler,done,trash',
         ]);
 
         $items = Item::whereIn('id', $validated['ids'])->get();
