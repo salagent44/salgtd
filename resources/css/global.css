@@ -808,162 +808,208 @@
    Inspired by GW2 UI panels. Light warm gradient background,
    cream/tan tones, dark brown text, amber-gold primary.
    ============================================================ */
-.theme-poe {
-  --background: oklch(0.18 0.015 30);
-  --foreground: oklch(0.82 0.02 55);
+/* ===== Gruvbox ===== */
+.theme-gruvbox {
+  --background: oklch(0.25 0.02 75);
+  --foreground: oklch(0.88 0.04 85);
 
-  --card: oklch(0.22 0.018 28);
-  --card-foreground: oklch(0.82 0.02 55);
+  --card: oklch(0.28 0.022 72);
+  --card-foreground: oklch(0.88 0.04 85);
 
-  --popover: oklch(0.22 0.018 28);
-  --popover-foreground: oklch(0.82 0.02 55);
+  --popover: oklch(0.28 0.022 72);
+  --popover-foreground: oklch(0.88 0.04 85);
 
-  /* Blood red primary */
-  --primary: oklch(0.45 0.18 25);
-  --primary-foreground: oklch(0.95 0.01 55);
+  --primary: oklch(0.62 0.18 55);
+  --primary-foreground: oklch(0.20 0.02 75);
 
-  --secondary: oklch(0.25 0.015 30);
-  --secondary-foreground: oklch(0.75 0.02 55);
+  --secondary: oklch(0.32 0.02 72);
+  --secondary-foreground: oklch(0.82 0.04 85);
 
-  --muted: oklch(0.23 0.012 28);
-  --muted-foreground: oklch(0.55 0.02 40);
+  --muted: oklch(0.30 0.018 72);
+  --muted-foreground: oklch(0.60 0.03 80);
 
-  --accent: oklch(0.28 0.02 30);
-  --accent-foreground: oklch(0.80 0.02 55);
+  --accent: oklch(0.35 0.025 72);
+  --accent-foreground: oklch(0.85 0.04 85);
 
-  --destructive: oklch(0.50 0.22 22);
+  --destructive: oklch(0.55 0.20 25);
 
-  --border: oklch(0.30 0.025 30);
-  --input: oklch(0.25 0.015 28);
-  --ring: oklch(0.50 0.15 25);
+  --border: oklch(0.38 0.03 72);
+  --input: oklch(0.30 0.02 72);
+  --ring: oklch(0.62 0.15 55);
 
-  --chart-1: oklch(0.45 0.18 25);
-  --chart-2: oklch(0.55 0.12 55);
-  --chart-3: oklch(0.50 0.10 150);
-  --chart-4: oklch(0.60 0.15 75);
-  --chart-5: oklch(0.45 0.12 280);
+  --chart-1: oklch(0.62 0.18 55);
+  --chart-2: oklch(0.60 0.15 145);
+  --chart-3: oklch(0.65 0.16 250);
+  --chart-4: oklch(0.70 0.14 100);
+  --chart-5: oklch(0.58 0.18 320);
 
-  --sidebar: oklch(0.16 0.015 28);
-  --sidebar-foreground: oklch(0.82 0.02 55);
-  --sidebar-primary: oklch(0.45 0.18 25);
-  --sidebar-primary-foreground: oklch(0.95 0.01 55);
-  --sidebar-accent: oklch(0.28 0.02 30);
-  --sidebar-accent-foreground: oklch(0.80 0.02 55);
-  --sidebar-border: oklch(0.30 0.025 30);
-  --sidebar-ring: oklch(0.50 0.15 25);
+  --sidebar: oklch(0.22 0.02 75);
+  --sidebar-foreground: oklch(0.88 0.04 85);
+  --sidebar-primary: oklch(0.62 0.18 55);
+  --sidebar-primary-foreground: oklch(0.20 0.02 75);
+  --sidebar-accent: oklch(0.35 0.025 72);
+  --sidebar-accent-foreground: oklch(0.85 0.04 85);
+  --sidebar-border: oklch(0.38 0.03 72);
+  --sidebar-ring: oklch(0.62 0.15 55);
 
-  --radius: 0.25rem;
+  --radius: 0.375rem;
 }
 
-/* POE: rugged sans-serif */
-.theme-poe body,
-.theme-poe {
+.theme-gruvbox body,
+.theme-gruvbox {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  letter-spacing: 0.01em;
 }
 
-/* Dark grimy background */
-.theme-poe body {
+.theme-gruvbox body {
+  background: oklch(0.25 0.02 75);
+  background-attachment: fixed;
+}
+
+.theme-gruvbox .bg-card,
+.theme-gruvbox [class*="bg-card"] {
+  box-shadow:
+    0 1px 4px oklch(0.10 0.01 60 / 30%),
+    0 0 0 1px oklch(0.35 0.025 72 / 40%);
+  border-color: oklch(0.38 0.03 72 / 40%);
+}
+
+.theme-gruvbox .bg-primary {
+  background: oklch(0.62 0.18 55);
+  font-weight: 600;
+}
+.theme-gruvbox .bg-primary:hover {
+  background: oklch(0.66 0.18 55);
+}
+
+.theme-gruvbox input[type="text"],
+.theme-gruvbox input[type="date"],
+.theme-gruvbox input[type="time"],
+.theme-gruvbox textarea,
+.theme-gruvbox select {
+  background: oklch(0.22 0.018 75);
+  border: 1px solid oklch(0.38 0.03 72);
+  color: oklch(0.88 0.04 85);
+}
+.theme-gruvbox input[type="text"]:focus,
+.theme-gruvbox textarea:focus {
+  border-color: oklch(0.62 0.15 55 / 60%);
+  box-shadow: 0 0 6px oklch(0.62 0.15 55 / 15%);
+}
+
+.theme-gruvbox .bg-muted,
+.theme-gruvbox [class*="bg-muted"] {
+  background: oklch(0.30 0.018 72);
+}
+
+.theme-gruvbox ::-webkit-scrollbar { width: 8px; }
+.theme-gruvbox ::-webkit-scrollbar-track { background: oklch(0.22 0.015 72); }
+.theme-gruvbox ::-webkit-scrollbar-thumb { background: oklch(0.42 0.04 70); border-radius: 4px; }
+.theme-gruvbox ::-webkit-scrollbar-thumb:hover { background: oklch(0.50 0.06 65); }
+
+/* ===== Everforest ===== */
+.theme-everforest {
+  --background: oklch(0.94 0.015 140);
+  --foreground: oklch(0.30 0.03 140);
+
+  --card: oklch(0.96 0.01 138);
+  --card-foreground: oklch(0.30 0.03 140);
+
+  --popover: oklch(0.96 0.01 138);
+  --popover-foreground: oklch(0.30 0.03 140);
+
+  --primary: oklch(0.55 0.12 145);
+  --primary-foreground: oklch(0.97 0.01 140);
+
+  --secondary: oklch(0.90 0.015 138);
+  --secondary-foreground: oklch(0.35 0.03 140);
+
+  --muted: oklch(0.91 0.012 138);
+  --muted-foreground: oklch(0.50 0.025 140);
+
+  --accent: oklch(0.88 0.02 138);
+  --accent-foreground: oklch(0.30 0.03 140);
+
+  --destructive: oklch(0.55 0.18 25);
+
+  --border: oklch(0.85 0.02 140);
+  --input: oklch(0.92 0.012 138);
+  --ring: oklch(0.55 0.10 145);
+
+  --chart-1: oklch(0.55 0.12 145);
+  --chart-2: oklch(0.58 0.12 55);
+  --chart-3: oklch(0.52 0.14 250);
+  --chart-4: oklch(0.62 0.10 100);
+  --chart-5: oklch(0.55 0.15 320);
+
+  --sidebar: oklch(0.92 0.015 140);
+  --sidebar-foreground: oklch(0.30 0.03 140);
+  --sidebar-primary: oklch(0.55 0.12 145);
+  --sidebar-primary-foreground: oklch(0.97 0.01 140);
+  --sidebar-accent: oklch(0.88 0.02 138);
+  --sidebar-accent-foreground: oklch(0.30 0.03 140);
+  --sidebar-border: oklch(0.85 0.02 140);
+  --sidebar-ring: oklch(0.55 0.10 145);
+
+  --radius: 0.5rem;
+}
+
+.theme-everforest body,
+.theme-everforest {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.theme-everforest body {
   background: linear-gradient(
     160deg,
-    oklch(0.15 0.02 25) 0%,
-    oklch(0.18 0.015 30) 35%,
-    oklch(0.16 0.018 28) 65%,
-    oklch(0.14 0.02 22) 100%
+    oklch(0.93 0.018 138) 0%,
+    oklch(0.95 0.012 142) 35%,
+    oklch(0.94 0.015 140) 65%,
+    oklch(0.92 0.02 136) 100%
   );
   background-attachment: fixed;
 }
 
-/* Cards: dark weathered panels */
-.theme-poe .bg-card,
-.theme-poe [class*="bg-card"] {
+.theme-everforest .bg-card,
+.theme-everforest [class*="bg-card"] {
   box-shadow:
-    inset 0 1px 0 oklch(0.30 0.01 35 / 30%),
-    0 2px 6px oklch(0.05 0.01 20 / 40%),
-    0 0 0 1px oklch(0.28 0.02 28 / 50%);
-  border-color: oklch(0.30 0.025 30 / 50%);
+    inset 0 1px 0 oklch(0.98 0.005 140 / 50%),
+    0 1px 4px oklch(0.50 0.02 140 / 10%),
+    0 0 0 1px oklch(0.82 0.02 140 / 30%);
+  border-color: oklch(0.85 0.02 140 / 40%);
 }
 
-/* Sharp corners */
-.theme-poe [class*="rounded-xl"] { border-radius: 0.25rem !important; }
-.theme-poe [class*="rounded-lg"] { border-radius: 0.2rem !important; }
-.theme-poe [class*="rounded-md"] { border-radius: 0.15rem !important; }
-.theme-poe [class*="rounded-full"] { border-radius: 0.2rem !important; }
-
-/* Blood red buttons */
-.theme-poe .bg-primary {
-  background-image: linear-gradient(
-    to bottom,
-    oklch(0.48 0.18 25),
-    oklch(0.38 0.18 22)
-  );
-  box-shadow:
-    inset 0 1px 0 oklch(0.55 0.12 30 / 30%),
-    inset 0 -1px 0 oklch(0.20 0.08 20 / 30%),
-    0 2px 8px oklch(0.20 0.10 22 / 40%);
+.theme-everforest .bg-primary {
+  background: oklch(0.55 0.12 145);
   font-weight: 600;
-  border: 1px solid oklch(0.40 0.12 25 / 40%);
 }
-.theme-poe .bg-primary:hover {
-  background-image: linear-gradient(
-    to bottom,
-    oklch(0.52 0.18 25),
-    oklch(0.42 0.18 22)
-  );
+.theme-everforest .bg-primary:hover {
+  background: oklch(0.58 0.12 145);
 }
 
-/* Labels: aged gold */
-.theme-poe [class*="tracking-widest"],
-.theme-poe [class*="uppercase"] {
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: oklch(0.65 0.08 55);
+.theme-everforest input[type="text"],
+.theme-everforest input[type="date"],
+.theme-everforest input[type="time"],
+.theme-everforest textarea,
+.theme-everforest select {
+  background: oklch(0.97 0.008 140);
+  border: 1px solid oklch(0.85 0.02 140);
+  color: oklch(0.30 0.03 140);
+}
+.theme-everforest input[type="text"]:focus,
+.theme-everforest textarea:focus {
+  border-color: oklch(0.55 0.10 145 / 55%);
+  box-shadow: 0 0 6px oklch(0.55 0.10 145 / 12%);
 }
 
-/* Inputs: dark recessed */
-.theme-poe input[type="text"],
-.theme-poe input[type="date"],
-.theme-poe input[type="time"],
-.theme-poe textarea,
-.theme-poe select {
-  background: oklch(0.16 0.01 28);
-  border: 1px solid oklch(0.30 0.025 30);
-  color: oklch(0.82 0.02 55);
-  box-shadow: inset 0 2px 4px oklch(0.08 0.01 20 / 30%);
-}
-.theme-poe input[type="text"]:focus,
-.theme-poe textarea:focus {
-  border-color: oklch(0.45 0.15 25 / 60%);
-  box-shadow:
-    inset 0 2px 4px oklch(0.08 0.01 20 / 30%),
-    0 0 8px oklch(0.45 0.15 25 / 15%);
+.theme-everforest .bg-muted,
+.theme-everforest [class*="bg-muted"] {
+  background: oklch(0.91 0.012 138);
 }
 
-/* Borders: dark iron */
-.theme-poe [class*="border-border"] {
-  border-color: oklch(0.30 0.025 30);
-}
-
-/* Muted elements */
-.theme-poe .bg-muted,
-.theme-poe [class*="bg-muted"] {
-  background: oklch(0.23 0.012 28);
-}
-
-/* Scrollbar */
-.theme-poe ::-webkit-scrollbar {
-  width: 8px;
-}
-.theme-poe ::-webkit-scrollbar-track {
-  background: oklch(0.16 0.01 28);
-}
-.theme-poe ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0.04 28);
-  border-radius: 2px;
-}
-.theme-poe ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.42 0.08 25);
-}
+.theme-everforest ::-webkit-scrollbar { width: 8px; }
+.theme-everforest ::-webkit-scrollbar-track { background: oklch(0.92 0.012 138); }
+.theme-everforest ::-webkit-scrollbar-thumb { background: oklch(0.78 0.03 140); border-radius: 4px; }
+.theme-everforest ::-webkit-scrollbar-thumb:hover { background: oklch(0.68 0.05 142); }
 
 @layer base {
   * {

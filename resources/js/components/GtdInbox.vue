@@ -2147,7 +2147,8 @@ const themes = [
   { key: 'theme-sunset', name: 'Sunset', swatch: '#e8a87c', description: 'Playful peach with handwritten labels' },
   { key: 'theme-slate', name: 'Slate', swatch: '#7a8a9e', description: 'Sharp steel-blue, industrial light' },
   { key: 'theme-obsidian', name: 'Obsidian', swatch: '#2a3040', description: 'Bold dark charcoal with steel accents' },
-  { key: 'theme-poe', name: 'Path of Exile', swatch: '#8b1a1a', description: 'Dark blood-red with currency orb vibes' },
+  { key: 'theme-gruvbox', name: 'Gruvbox', swatch: '#d65d0e', description: 'Warm retro with earthy orange and brown' },
+  { key: 'theme-everforest', name: 'Everforest', swatch: '#a7c080', description: 'Soft green woodland with gentle contrast' },
 ]
 const currentTheme = ref('default')
 const settingsOpen = ref(false)
@@ -2155,10 +2156,6 @@ const hotkeysOpen = ref(false)
 const isMac = computed(() => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent))
 
 const themeIcons = computed(() => {
-  if (currentTheme.value === 'theme-poe') {
-    return { nextAction: '🔮', flag: '💀', inbox: '🟠', done: '🟢', calendar: '🟣', project: '🔴', notes: '📜', review: '⚔️',
-      reviewSteps: { collect: '🔮', inbox: '🟠', nextActions: '🟡', projects: '🔴', stuck: '⚫', waiting: '🟤', someday: '⚪', calendar: '🟣', goals: '🔵', complete: '🪙' } }
-  }
   return { nextAction: '⚡', flag: '🚩', inbox: '📥', done: '✅', calendar: '📅', project: '📋', notes: '📝', review: '⚡',
     reviewSteps: { collect: '📥', inbox: '⚡', nextActions: '✓', projects: '📋', stuck: '🧴', waiting: '⏳', someday: '💭', calendar: '📅', goals: '🎯', complete: '🎉' } }
 })
@@ -2188,7 +2185,7 @@ function setNoteFont(key: string) {
 
 function setTheme(key: string) {
   const html = document.documentElement
-  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-poe')
+  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest')
   if (key !== 'default') html.classList.add(key)
   currentTheme.value = key
   guardedRouter.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true })
@@ -2908,7 +2905,7 @@ onMounted(() => {
   const savedTheme = page.props.theme as string
   if (savedTheme) {
     const html = document.documentElement
-    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-poe')
+    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest')
     if (savedTheme !== 'default') html.classList.add(savedTheme)
     currentTheme.value = savedTheme
   }
