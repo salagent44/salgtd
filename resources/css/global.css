@@ -1011,6 +1011,104 @@
 .theme-everforest ::-webkit-scrollbar-thumb { background: oklch(0.78 0.03 140); border-radius: 4px; }
 .theme-everforest ::-webkit-scrollbar-thumb:hover { background: oklch(0.68 0.05 142); }
 
+/* ===== Rosé Pine ===== */
+.theme-rosepine {
+  --background: oklch(0.22 0.02 280);
+  --foreground: oklch(0.85 0.02 290);
+
+  --card: oklch(0.25 0.022 278);
+  --card-foreground: oklch(0.85 0.02 290);
+
+  --popover: oklch(0.25 0.022 278);
+  --popover-foreground: oklch(0.85 0.02 290);
+
+  --primary: oklch(0.68 0.12 310);
+  --primary-foreground: oklch(0.20 0.02 280);
+
+  --secondary: oklch(0.30 0.02 278);
+  --secondary-foreground: oklch(0.78 0.02 290);
+
+  --muted: oklch(0.28 0.018 278);
+  --muted-foreground: oklch(0.55 0.02 285);
+
+  --accent: oklch(0.32 0.025 278);
+  --accent-foreground: oklch(0.82 0.02 290);
+
+  --destructive: oklch(0.58 0.16 15);
+
+  --border: oklch(0.35 0.025 280);
+  --input: oklch(0.28 0.02 278);
+  --ring: oklch(0.68 0.10 310);
+
+  --chart-1: oklch(0.68 0.12 310);
+  --chart-2: oklch(0.65 0.12 350);
+  --chart-3: oklch(0.60 0.10 200);
+  --chart-4: oklch(0.70 0.10 80);
+  --chart-5: oklch(0.55 0.12 250);
+
+  --sidebar: oklch(0.20 0.02 280);
+  --sidebar-foreground: oklch(0.85 0.02 290);
+  --sidebar-primary: oklch(0.68 0.12 310);
+  --sidebar-primary-foreground: oklch(0.20 0.02 280);
+  --sidebar-accent: oklch(0.32 0.025 278);
+  --sidebar-accent-foreground: oklch(0.82 0.02 290);
+  --sidebar-border: oklch(0.35 0.025 280);
+  --sidebar-ring: oklch(0.68 0.10 310);
+
+  --radius: 0.5rem;
+}
+
+.theme-rosepine body,
+.theme-rosepine {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.theme-rosepine body {
+  background: oklch(0.22 0.02 280);
+  background-attachment: fixed;
+}
+
+.theme-rosepine .bg-card,
+.theme-rosepine [class*="bg-card"] {
+  box-shadow:
+    0 1px 4px oklch(0.10 0.01 280 / 30%),
+    0 0 0 1px oklch(0.32 0.02 278 / 40%);
+  border-color: oklch(0.35 0.025 280 / 40%);
+}
+
+.theme-rosepine .bg-primary {
+  background: oklch(0.68 0.12 310);
+  font-weight: 600;
+}
+.theme-rosepine .bg-primary:hover {
+  background: oklch(0.72 0.12 310);
+}
+
+.theme-rosepine input[type="text"],
+.theme-rosepine input[type="date"],
+.theme-rosepine input[type="time"],
+.theme-rosepine textarea,
+.theme-rosepine select {
+  background: oklch(0.20 0.018 280);
+  border: 1px solid oklch(0.35 0.025 280);
+  color: oklch(0.85 0.02 290);
+}
+.theme-rosepine input[type="text"]:focus,
+.theme-rosepine textarea:focus {
+  border-color: oklch(0.68 0.10 310 / 60%);
+  box-shadow: 0 0 6px oklch(0.68 0.10 310 / 15%);
+}
+
+.theme-rosepine .bg-muted,
+.theme-rosepine [class*="bg-muted"] {
+  background: oklch(0.28 0.018 278);
+}
+
+.theme-rosepine ::-webkit-scrollbar { width: 8px; }
+.theme-rosepine ::-webkit-scrollbar-track { background: oklch(0.20 0.015 278); }
+.theme-rosepine ::-webkit-scrollbar-thumb { background: oklch(0.40 0.04 285); border-radius: 4px; }
+.theme-rosepine ::-webkit-scrollbar-thumb:hover { background: oklch(0.50 0.06 310); }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

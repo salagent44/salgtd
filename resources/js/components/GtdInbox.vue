@@ -2149,6 +2149,7 @@ const themes = [
   { key: 'theme-obsidian', name: 'Obsidian', swatch: '#2a3040', description: 'Bold dark charcoal with steel accents' },
   { key: 'theme-gruvbox', name: 'Gruvbox', swatch: '#d65d0e', description: 'Warm retro with earthy orange and brown' },
   { key: 'theme-everforest', name: 'Everforest', swatch: '#a7c080', description: 'Soft green woodland with gentle contrast' },
+  { key: 'theme-rosepine', name: 'Rosé Pine', swatch: '#c4a7e7', description: 'Muted dark with soft lavender accents' },
 ]
 const currentTheme = ref('default')
 const settingsOpen = ref(false)
@@ -2185,7 +2186,7 @@ function setNoteFont(key: string) {
 
 function setTheme(key: string) {
   const html = document.documentElement
-  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest')
+  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
   if (key !== 'default') html.classList.add(key)
   currentTheme.value = key
   guardedRouter.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true })
@@ -2905,7 +2906,7 @@ onMounted(() => {
   const savedTheme = page.props.theme as string
   if (savedTheme) {
     const html = document.documentElement
-    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest')
+    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
     if (savedTheme !== 'default') html.classList.add(savedTheme)
     currentTheme.value = savedTheme
   }
