@@ -247,7 +247,7 @@
           </div>
           <div class="space-y-2">
             <Card v-for="(item, idx) in filteredNextActions.slice(0, renderLimits['next-actions'])" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-              <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+              <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
                 <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -273,7 +273,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in waitingItems.slice(0, renderLimits.waiting)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : isWaitingStale(item) ? 'border-l-red-400' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -320,7 +320,7 @@
           <div v-if="expandedProjects.has(item.id)" class="ml-6 space-y-1 border-l-2 border-border/40 pl-3">
             <div v-if="(projectTasksMap.get(item.id) || []).length === 0" class="py-2 text-xs text-muted-foreground">No linked tasks — assign tasks to this project</div>
             <Card v-for="task in (projectTasksMap.get(item.id) || [])" :key="task.id" class="!py-0 !gap-0 cursor-pointer transition-colors bg-muted/20 hover:!bg-muted/40" @click="openItem(task)">
-              <CardContent class="!px-3 py-2 flex items-center gap-2">
+              <CardContent class="!px-4 py-2 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full shrink-0" :class="{
                   'bg-primary': task.status === 'next-action',
                   'bg-amber-500': task.status === 'waiting',
@@ -377,7 +377,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in checklistItems.slice(0, renderLimits.checklists)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : checklistProgress(item) && checklistProgress(item)!.done === checklistProgress(item)!.total && checklistProgress(item)!.total > 0 ? 'border-l-green-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex flex-col gap-2">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex flex-col gap-2">
               <div class="flex items-center gap-2.5 md:gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
@@ -409,7 +409,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in inbox.slice(0, renderLimits.inbox)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -433,7 +433,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in somedayItems.slice(0, renderLimits.someday)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -457,7 +457,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in ticklerItems.slice(0, renderLimits.tickler)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -491,7 +491,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in doneItems.slice(0, renderLimits.done)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -514,7 +514,7 @@
         </div>
         <div class="space-y-2">
           <Card v-for="(item, idx) in flaggedItems.slice(0, renderLimits.flagged)" :key="item.id" class="cursor-pointer transition-colors !py-0 !gap-0 border-l-2 border-l-red-500" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30']" :style="swipeStyle(item.id)" @click="onCardClick(item, $event)" @touchstart="onTouchStart(item.id, $event)" @touchmove="onTouchMove($event)" @touchend="onTouchEnd(item)">
-            <CardContent class="!px-3 md:!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
+            <CardContent class="!px-4 py-3 md:py-2.5 flex items-center gap-2.5 md:gap-3">
               <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
               <svg v-if="item.email" class="shrink-0 text-blue-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
