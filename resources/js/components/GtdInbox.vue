@@ -1,11 +1,16 @@
 <template>
-  <div class="h-screen bg-background text-foreground flex flex-col overflow-hidden">
+  <div class="h-screen bg-background text-foreground flex flex-col overflow-hidden"
+    @touchstart.passive="onPullStart" @touchmove.passive="onPullMove" @touchend.passive="onPullEnd">
     <Toaster position="top-center" :visible-toasts="1" :duration="3000" />
-    <!-- Offline banner -->
-    <div v-if="!isOnline" class="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium shrink-0">
-      <span class="mr-1">🔌</span> No connection — changes are disabled until reconnected
-    </div>
-
+    <!-- Pull-to-refresh indicator (mobile) -->
+    <Transition name="fade">
+      <div v-if="pullDistance > 0" class="fixed top-0 left-0 right-0 z-[70] flex items-center justify-center transition-transform md:hidden"
+        :style="{ transform: `translateY(${Math.min(pullDistance, 80)}px)` }">
+        <div class="rounded-full bg-card border border-border shadow-lg p-2 -mt-10">
+          <svg :class="{ 'animate-spin': syncing }" :style="{ transform: `rotate(${pullDistance * 3}deg)` }" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        </div>
+      </div>
+    </Transition>
     <div class="max-w-[1800px] w-full mx-auto flex flex-col flex-1 min-h-0 px-4 md:px-6 pt-3 md:pt-6">
 
       <!-- Top nav bar -->
@@ -44,44 +49,6 @@
               </span>
             </button>
           </template>
-          <div class="hidden sm:flex items-center gap-2">
-            <!-- App status -->
-            <div
-              class="group relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors cursor-default"
-              :class="isOnline ? 'text-green-500' : 'text-red-500'"
-              data-testid="app-status"
-            >
-              <span class="relative flex h-2 w-2">
-                <span
-                  class="relative inline-flex h-2 w-2 rounded-full"
-                  :class="isOnline ? 'bg-green-500' : 'bg-red-500'"
-                ></span>
-              </span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M12 8v4l3 3"/></svg>
-              <div class="pointer-events-none absolute top-full right-0 mt-2 w-48 rounded-lg border border-border bg-popover px-3 py-2.5 text-xs shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50">
-                <p class="font-semibold text-popover-foreground mb-0.5">App Server</p>
-                <p class="text-muted-foreground">Polls <span class="font-mono text-[10px]">/health</span> every 15s to check the backend is reachable.</p>
-                <p class="mt-1.5 font-medium" :class="isOnline ? 'text-green-500' : 'text-red-500'">{{ isOnline ? 'Connected' : 'Disconnected' }}</p>
-              </div>
-            </div>
-            <!-- SMTP status -->
-            <div
-              class="group relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors cursor-default"
-              :class="smtpStatus === 'up' ? 'text-green-500' : smtpStatus === 'down' ? 'text-red-500' : 'text-muted-foreground/40'"
-              data-testid="smtp-status"
-            >
-              <span
-                class="inline-flex h-2 w-2 rounded-full"
-                :class="smtpStatus === 'up' ? 'bg-green-500' : smtpStatus === 'down' ? 'bg-red-500' : 'bg-muted-foreground/30'"
-              ></span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <div class="pointer-events-none absolute top-full right-0 mt-2 w-48 rounded-lg border border-border bg-popover px-3 py-2.5 text-xs shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50">
-                <p class="font-semibold text-popover-foreground mb-0.5">Mail Server</p>
-                <p class="text-muted-foreground">Checks the SMTP server on port 25 for inbound email capture.</p>
-                <p class="mt-1.5 font-medium" :class="smtpStatus === 'up' ? 'text-green-500' : smtpStatus === 'down' ? 'text-red-500' : 'text-muted-foreground'">{{ smtpStatus === 'up' ? 'Running' : smtpStatus === 'down' ? 'Down' : 'Checking...' }}</p>
-              </div>
-            </div>
-          </div>
           <button
             @click="hotkeysOpen = true"
             class="hidden md:block rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
@@ -98,7 +65,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
           <button
-            @click="guardedRouter.post('/logout', {}, { onSuccess: () => window.location.href = '/login' })"
+            @click="router.post('/logout', {}, { onSuccess: () => window.location.href = '/login' })"
             class="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title="Log out"
             data-testid="logout-btn"
@@ -585,18 +552,17 @@
 
       <!-- ===== NOTES VIEW ===== -->
       <div v-if="currentView === 'notes'" class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6">
-        <NotesView :is-online="isOnline" />
+        <NotesView />
       </div>
 
       <!-- ===== CALENDAR VIEW ===== -->
       <div v-if="currentView === 'calendar'" class="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-6">
-        <CalendarView :is-online="isOnline" />
+        <CalendarView />
       </div>
 
       <!-- Review modal -->
       <ReviewView
         :open="reviewOpen"
-        :is-online="isOnline"
         @close="reviewOpen = false"
         @review-complete="onReviewComplete"
       />
@@ -1992,52 +1958,37 @@
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 
-// Network connectivity check
-const isOnline = ref(true)
-let healthPollInterval: ReturnType<typeof setInterval> | null = null
-
-// Sync coordination — declared early so guardedRouter can use it
-let lastLocalSaveAt = 0
-let knownSyncVersion = 0
-function markLocalSave() {
-  lastLocalSaveAt = Date.now()
+// Manual sync
+const syncing = ref(false)
+function reloadData() {
+  if (syncing.value) return
+  syncing.value = true
+  router.reload({
+    preserveScroll: true,
+    onFinish: () => { syncing.value = false },
+  })
 }
 
-async function checkHealth() {
-  try {
-    const res = await fetch('/health', { method: 'GET', cache: 'no-store' })
-    isOnline.value = res.ok
-  } catch {
-    isOnline.value = false
-  }
+// Pull-to-refresh (mobile)
+const pullDistance = ref(0)
+let pullStartY = 0
+let pulling = false
+
+function onPullStart(e: TouchEvent) {
+  if (window.scrollY > 0) return
+  pullStartY = e.touches[0].clientY
+  pulling = true
 }
-
-// Fire immediately during setup
-checkHealth()
-
-// Guarded router — blocks POST/PUT/DELETE when offline
-const guardedRouter = {
-  post(...args: Parameters<typeof router.post>) {
-    if (!isOnline.value) return
-    markLocalSave()
-    return router.post(...args)
-  },
-  put(...args: Parameters<typeof router.put>) {
-    if (!isOnline.value) return
-    markLocalSave()
-    return router.put(...args)
-  },
-  delete(...args: Parameters<typeof router.delete>) {
-    if (!isOnline.value) return
-    markLocalSave()
-    return router.delete(...args)
-  },
-  get(...args: Parameters<typeof router.get>) {
-    return router.get(...args)
-  },
-  reload(...args: Parameters<typeof router.reload>) {
-    return router.reload(...args)
-  },
+function onPullMove(e: TouchEvent) {
+  if (!pulling) return
+  const dy = e.touches[0].clientY - pullStartY
+  if (dy < 0) { pullDistance.value = 0; return }
+  pullDistance.value = Math.min(dy * 0.5, 100)
+}
+function onPullEnd() {
+  if (pullDistance.value > 60) reloadData()
+  pullDistance.value = 0
+  pulling = false
 }
 
 // Shared Inertia options: only refetch items (not notes/events) on item mutations
@@ -2050,7 +2001,6 @@ import { Calendar } from '@/components/ui/calendar'
 import { CalendarDate, getLocalTimeZone, today as getToday } from '@internationalized/date'
 import NotesView from './NotesView.vue'
 import CalendarView from './CalendarView.vue'
-import { getEcho } from '@/echo'
 import { toast, Toaster } from 'vue-sonner'
 import ReviewView from './ReviewView.vue'
 import TimePicker from './TimePicker.vue'
@@ -2143,11 +2093,11 @@ function onTouchEnd(item: Item) {
   if (dx > 80) {
     optimisticUpdate(item.id, { status: 'done' as Status, completed_at: new Date().toISOString() })
     toast.success('Marked as done')
-    guardedRouter.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)
+    router.post(`/items/${item.id}/process`, { status: 'done' }, itemOnly)
   } else if (dx < -80) {
     optimisticRemove(item.id)
     toast('Item deleted')
-    guardedRouter.delete(`/items/${item.id}`, itemOnly)
+    router.delete(`/items/${item.id}`, itemOnly)
   }
   swipeState.value = null
 }
@@ -2188,7 +2138,7 @@ function setNoteFont(key: string) {
   if (font) {
     document.documentElement.style.setProperty('--note-font', font.family)
   }
-  guardedRouter.put('/settings/note_font', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/note_font', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 function setTheme(key: string) {
@@ -2196,7 +2146,7 @@ function setTheme(key: string) {
   html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
   if (key !== 'default') html.classList.add(key)
   currentTheme.value = key
-  guardedRouter.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 // User-creatable contexts
@@ -2208,27 +2158,10 @@ const savedEmailAddress = ref((page.props.email_address as string) || '')
 const emailAddressSetting = ref(savedEmailAddress.value)
 const copiedField = ref<string | null>(null)
 
-// SMTP status polling
-const smtpStatus = ref<'up' | 'down' | 'checking'>('checking')
-let smtpPollInterval: ReturnType<typeof setInterval> | null = null
-
-async function checkSmtpStatus() {
-  try {
-    const res = await fetch('/api/smtp-status', { credentials: 'same-origin' })
-    if (!res.ok) { smtpStatus.value = 'down'; return }
-    const data = await res.json()
-    smtpStatus.value = data.up ? 'up' : 'down'
-  } catch {
-    smtpStatus.value = 'down'
-  }
-}
-
-// Fire immediately during setup (don't wait for onMounted)
-checkSmtpStatus()
 
 function saveEmailAddress() {
   const val = emailAddressSetting.value.trim()
-  guardedRouter.put('/settings/email_address', { value: val || null }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/email_address', { value: val || null }, { preserveScroll: true, preserveState: true, only: [] })
   savedEmailAddress.value = val
 }
 
@@ -2338,13 +2271,13 @@ function settingsCommitContext() {
   const name = settingsNewContextName.value.trim()
   if (!name) return
   const ctx = name.startsWith('@') ? name : '@' + name
-  guardedRouter.post('/contexts', { name: ctx }, { preserveScroll: true, preserveState: true })
+  router.post('/contexts', { name: ctx }, { preserveScroll: true, preserveState: true })
   settingsAddingContext.value = false
   settingsNewContextName.value = ''
 }
 
 function deleteContext(id: number) {
-  guardedRouter.delete(`/contexts/${id}`, { preserveScroll: true, preserveState: true })
+  router.delete(`/contexts/${id}`, { preserveScroll: true, preserveState: true })
 }
 
 function startAddingContext() {
@@ -2357,7 +2290,7 @@ function commitNewContext() {
   const name = newContextName.value.trim()
   if (!name) return
   const ctx = name.startsWith('@') ? name : '@' + name
-  guardedRouter.post('/contexts', { name: ctx })
+  router.post('/contexts', { name: ctx })
   clarifyWithContext(ctx)
   addingContext.value = false
   newContextName.value = ''
@@ -2536,7 +2469,7 @@ function deleteProcessItem() {
   if (!item) return
   optimisticRemove(item.id)
   toast('Item deleted')
-  guardedRouter.delete(`/items/${item.id}`, itemOnly)
+  router.delete(`/items/${item.id}`, itemOnly)
   confirmingProcessDelete.value = false
   showFlashAndAdvance('Deleted')
 }
@@ -2556,7 +2489,7 @@ function processAs(status: Status) {
   if (processProjectId.value) changes.project_id = processProjectId.value
   if (status === 'done') changes.completed_at = new Date().toISOString()
   if (status === 'trash') { optimisticRemove(item.id) } else { optimisticUpdate(item.id, changes) }
-  guardedRouter.post(`/items/${item.id}/process`, { status, title, project_id: processProjectId.value }, itemOnly)
+  router.post(`/items/${item.id}/process`, { status, title, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance(bucketLabel(status))
 }
 
@@ -2565,7 +2498,7 @@ function processWithContext(ctx: string) {
   if (!item) return
   const title = processEditedTitle()
   optimisticUpdate(item.id, { status: 'next-action' as Status, context: ctx, ...(title ? { title } : {}), ...(processProjectId.value ? { project_id: processProjectId.value } : {}) })
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'next-action', context: ctx, title, project_id: processProjectId.value }, itemOnly)
+  router.post(`/items/${item.id}/process`, { status: 'next-action', context: ctx, title, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance('Next Action — ' + ctx)
 }
 
@@ -2581,7 +2514,7 @@ function processConfirmWaiting() {
   if (!item) return
   const title = processEditedTitle()
   optimisticUpdate(item.id, { status: 'waiting' as Status, ...(title ? { title } : {}), waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined })
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'waiting', title, waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined, project_id: processProjectId.value }, itemOnly)
+  router.post(`/items/${item.id}/process`, { status: 'waiting', title, waiting_for: processWaitingFor.value.trim() || undefined, waiting_date: processWaitingDate.value || undefined, project_id: processProjectId.value }, itemOnly)
   showFlashAndAdvance('Waiting For')
 }
 
@@ -2594,7 +2527,7 @@ function processConfirmTickler() {
   if (!processTicklerDate.value) return
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'tickler', title: processEditedTitle(), tickler_date: processTicklerDate.value?.toString() }, itemOnly)
+  router.post(`/items/${item.id}/process`, { status: 'tickler', title: processEditedTitle(), tickler_date: processTicklerDate.value?.toString() }, itemOnly)
   showFlashAndAdvance('Tickler')
 }
 
@@ -2623,7 +2556,7 @@ function processStartProject() {
 function processConfirmProject() {
   const item = currentProcessItem.value
   if (!item) return
-  guardedRouter.post(`/items/${item.id}/process`, { status: 'project', title: processEditedTitle() }, itemOnly)
+  router.post(`/items/${item.id}/process`, { status: 'project', title: processEditedTitle() }, itemOnly)
   showFlashAndAdvance('Project')
 }
 
@@ -2745,7 +2678,7 @@ function quickCaptureSubmit() {
   optimisticAdd({ id: tempId, title, status: 'inbox' } as Item)
   quickCapture.value = false
   toast.success('Added to inbox')
-  guardedRouter.post('/items', { title, status: 'inbox' }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
+  router.post('/items', { title, status: 'inbox' }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 function openQuickNextAction() {
@@ -2764,7 +2697,7 @@ function quickNextActionSubmit() {
   optimisticAdd({ id: tempId, title, status: 'next-action', context } as Item)
   quickNextAction.value = false
   toast.success('Next action created')
-  guardedRouter.post('/items', { title, status: 'next-action', context }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
+  router.post('/items', { title, status: 'next-action', context }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 function openQuickWaiting() {
@@ -2785,7 +2718,7 @@ function quickWaitingSubmit() {
   optimisticAdd({ id: tempId, title, status: 'waiting', waiting_for, waiting_date } as Item)
   quickWaiting.value = false
   toast.success('Waiting item created')
-  guardedRouter.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
+  router.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 const templatePickerOpen = ref(false)
@@ -2795,7 +2728,7 @@ const deletingTemplateId = ref<string | null>(null)
 
 function createAndOpenChecklist() {
   const existingIds = new Set(items.value.map(i => i.id))
-  guardedRouter.post('/items', { title: 'Untitled Checklist', status: 'checklist' }, {
+  router.post('/items', { title: 'Untitled Checklist', status: 'checklist' }, {
     ...itemOnly,
     onSuccess: () => {
       activePill.value = 'checklists'
@@ -2816,7 +2749,7 @@ function createAndOpenChecklist() {
 function createFromTemplate(templateId: string) {
   templatePickerOpen.value = false
   const existingIds = new Set(items.value.map(i => i.id))
-  guardedRouter.post('/checklist-templates/apply', { template_id: templateId }, {
+  router.post('/checklist-templates/apply', { template_id: templateId }, {
     ...itemOnly,
     onSuccess: () => {
       activePill.value = 'checklists'
@@ -2830,7 +2763,7 @@ function createFromTemplate(templateId: string) {
 
 function saveAsTemplate() {
   if (!processing.value) return
-  guardedRouter.post('/checklist-templates', { item_id: processing.value.id }, {
+  router.post('/checklist-templates', { item_id: processing.value.id }, {
     preserveScroll: true,
     onSuccess: () => {
       savedAsTemplate.value = true
@@ -2840,7 +2773,7 @@ function saveAsTemplate() {
 }
 
 function deleteTemplate(id: string) {
-  guardedRouter.delete(`/checklist-templates/${id}`, { preserveScroll: true })
+  router.delete(`/checklist-templates/${id}`, { preserveScroll: true })
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -2911,74 +2844,11 @@ onMounted(() => {
     if (savedTheme !== 'default') html.classList.add(savedTheme)
     currentTheme.value = savedTheme
   }
-  checkSmtpStatus()
-  smtpPollInterval = setInterval(checkSmtpStatus, 30000)
-  checkHealth()
-  healthPollInterval = setInterval(checkHealth, 15000)
-  setupEcho()
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateIsMobile)
-  if (smtpPollInterval) clearInterval(smtpPollInterval)
-  if (healthPollInterval) clearInterval(healthPollInterval)
-  teardownEcho()
 })
-
-// Smart sync: lightweight version polling (3s) + full reload only on change
-let syncPollInterval: ReturnType<typeof setInterval> | null = null
-let echoChannel: any = null
-let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
-
-async function checkSyncVersion() {
-  if (!isOnline.value) return
-  // Skip if a local save happened in the last 2 seconds
-  if (Date.now() - lastLocalSaveAt < 2000) return
-  try {
-    const res = await fetch('/api/sync/version', { cache: 'no-store' })
-    if (!res.ok) return
-    const data = await res.json()
-    const serverVersion = data.v as number
-    if (knownSyncVersion === 0) {
-      knownSyncVersion = serverVersion
-      return
-    }
-    if (serverVersion > knownSyncVersion) {
-      knownSyncVersion = serverVersion
-      reloadData()
-    }
-  } catch {}
-}
-
-function reloadData() {
-  if (processing.value) return // don't refresh while editing
-  router.reload({ only: ['items', 'events', 'notes'], preserveScroll: true, preserveState: true })
-}
-
-function setupEcho() {
-  // Start lightweight version polling (every 3s)
-  checkSyncVersion()
-  syncPollInterval = setInterval(checkSyncVersion, 3000)
-
-  const echo = getEcho()
-  if (!echo) return
-
-  echoChannel = echo.private('sync').listen('.SyncUpdated', () => {
-    // WebSocket event = instant check instead of waiting for next poll
-    if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
-    syncDebounceTimer = setTimeout(checkSyncVersion, 300)
-  })
-}
-
-function teardownEcho() {
-  if (echoChannel) {
-    const echo = getEcho()
-    echo?.leave('sync')
-    echoChannel = null
-  }
-  if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
-  if (syncPollInterval) clearInterval(syncPollInterval)
-}
 
 const processing = ref<Item | null>(null)
 const editItem = ref<{ title: string } | null>(null)
@@ -3147,7 +3017,7 @@ function onCardClick(item: Item, e: MouseEvent) {
 function bulkAction(status: Status) {
   const ids = [...selectedIds.value]
   if (ids.length === 0) return
-  guardedRouter.post('/items/bulk-process', { ids, status }, {
+  router.post('/items/bulk-process', { ids, status }, {
     ...itemOnly,
     onSuccess: () => { selectedIds.value = new Set() },
   })
@@ -3159,7 +3029,7 @@ function bulkDelete() {
   ids.forEach(id => optimisticRemove(id))
   selectedIds.value = new Set()
   toast(`${ids.length} item${ids.length > 1 ? 's' : ''} deleted`)
-  guardedRouter.post('/items/bulk-delete', { ids }, itemOnly)
+  router.post('/items/bulk-delete', { ids }, itemOnly)
 }
 
 function bulkToggleFlag() {
@@ -3168,7 +3038,7 @@ function bulkToggleFlag() {
   const anyUnflagged = items.value.filter(i => ids.includes(i.id)).some(i => !i.flagged)
   ids.forEach(id => {
     optimisticUpdate(id, { flagged: anyUnflagged })
-    guardedRouter.put(`/items/${id}`, { flagged: anyUnflagged }, itemOnly)
+    router.put(`/items/${id}`, { flagged: anyUnflagged }, itemOnly)
   })
   selectedIds.value = new Set()
 }
@@ -3181,7 +3051,7 @@ function clearAllDone() {
   ids.forEach(id => optimisticRemove(id))
   confirmingClearDone.value = false
   toast(`${ids.length} completed items cleared`)
-  guardedRouter.post('/items/bulk-delete', { ids }, itemOnly)
+  router.post('/items/bulk-delete', { ids }, itemOnly)
 }
 
 function toggleProcessFlag() {
@@ -3189,7 +3059,7 @@ function toggleProcessFlag() {
   const newVal = !currentProcessItem.value.flagged
   optimisticUpdate(currentProcessItem.value.id, { flagged: newVal })
   currentProcessItem.value.flagged = newVal
-  guardedRouter.put(`/items/${currentProcessItem.value.id}`, { flagged: newVal }, itemOnly)
+  router.put(`/items/${currentProcessItem.value.id}`, { flagged: newVal }, itemOnly)
 }
 
 function toggleFlag() {
@@ -3197,7 +3067,7 @@ function toggleFlag() {
   const newVal = !processing.value.flagged
   optimisticUpdate(processing.value.id, { flagged: newVal })
   processing.value.flagged = newVal
-  guardedRouter.put(`/items/${processing.value.id}`, { flagged: newVal }, itemOnly)
+  router.put(`/items/${processing.value.id}`, { flagged: newVal }, itemOnly)
 }
 
 function openProjectGoal() {
@@ -3210,7 +3080,7 @@ function openProjectGoal() {
 
 function clarifyAsProject() {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/process`, {
+  router.post(`/items/${processing.value.id}/process`, {
     status: 'project',
     title: editItem.value?.title?.trim() || undefined,
   }, {
@@ -3223,7 +3093,7 @@ function clarifyAsProject() {
 
 function addActionToProject() {
   if (!processing.value || !projectActionInput.value.trim()) return
-  guardedRouter.post('/items', {
+  router.post('/items', {
     title: projectActionInput.value.trim(),
     status: 'next-action',
     project_id: processing.value.id,
@@ -3233,7 +3103,7 @@ function addActionToProject() {
 
 function assignProjectToItem(projectId: string | null) {
   if (!processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/assign-project`, { project_id: projectId }, itemOnly)
+  router.post(`/items/${processing.value.id}/assign-project`, { project_id: projectId }, itemOnly)
   processing.value.project_id = projectId
   pickingProject.value = false
 }
@@ -3256,14 +3126,14 @@ const linkableActions = computed(() => {
 
 function linkActionToProject(actionId: string) {
   if (!processing.value) return
-  guardedRouter.post(`/items/${actionId}/assign-project`, { project_id: processing.value.id }, itemOnly)
+  router.post(`/items/${actionId}/assign-project`, { project_id: processing.value.id }, itemOnly)
   const action = items.value.find(i => i.id === actionId)
   if (action) action.project_id = processing.value.id
   projectActionSearch.value = ''
 }
 
 function unlinkActionFromProject(actionId: string) {
-  guardedRouter.post(`/items/${actionId}/assign-project`, { project_id: null }, itemOnly)
+  router.post(`/items/${actionId}/assign-project`, { project_id: null }, itemOnly)
   const action = items.value.find(i => i.id === actionId)
   if (action) action.project_id = null
 }
@@ -3311,7 +3181,7 @@ function checklistProgress(item: Item): { done: number; total: number } | null {
 }
 
 function toggleChecklistItem(ci: ChecklistItemRecord) {
-  guardedRouter.post(`/checklist-items/${ci.id}/toggle`, {}, itemOnly)
+  router.post(`/checklist-items/${ci.id}/toggle`, {}, itemOnly)
   ci.completed = !ci.completed
   // Auto-mark checklist as done when all items are checked
   if (processing.value?.checklist_items && processing.value.checklist_items.length > 0) {
@@ -3329,7 +3199,7 @@ function addChecklistStep() {
   const title = newChecklistStepTitle.value.trim()
   if (!title || !processing.value) return
   const itemId = processing.value.id
-  guardedRouter.post(`/items/${itemId}/checklist`, { title }, {
+  router.post(`/items/${itemId}/checklist`, { title }, {
     ...itemOnly,
     onSuccess: () => {
       // Refresh processing with server data so IDs are real
@@ -3345,7 +3215,7 @@ function addChecklistStep() {
 
 function removeChecklistItem(ci: ChecklistItemRecord) {
   if (!processing.value) return
-  guardedRouter.delete(`/checklist-items/${ci.id}`, itemOnly)
+  router.delete(`/checklist-items/${ci.id}`, itemOnly)
   if (processing.value.checklist_items) {
     processing.value.checklist_items = processing.value.checklist_items.filter(c => c.id !== ci.id)
   }
@@ -3393,7 +3263,7 @@ function commitTag() {
   }
   const tag = newTagValue.value.trim().toLowerCase()
   if (!tag || !processing.value) return
-  guardedRouter.post(`/items/${processing.value.id}/tags`, { tag }, itemOnly)
+  router.post(`/items/${processing.value.id}/tags`, { tag }, itemOnly)
   // Optimistically add to local state
   if (processing.value.tags) {
     if (!processing.value.tags.some(t => t.tag === tag)) {
@@ -3408,7 +3278,7 @@ function commitTag() {
 
 function removeItemTag(tag: string) {
   if (!processing.value) return
-  guardedRouter.delete(`/items/${processing.value.id}/tags/${encodeURIComponent(tag)}`, itemOnly)
+  router.delete(`/items/${processing.value.id}/tags/${encodeURIComponent(tag)}`, itemOnly)
   if (processing.value.tags) {
     processing.value.tags = processing.value.tags.filter(t => t.tag !== tag)
   }
@@ -3429,7 +3299,7 @@ function clarifyWaiting() {
   const wd = waitingDateInput.value || undefined
   optimisticUpdate(id, { status: 'waiting' as Status, ...(title ? { title } : {}), waiting_for: wf, waiting_date: wd })
   processing.value = null; editItem.value = null; pickingWaiting.value = false
-  guardedRouter.post(`/items/${id}/process`, { status: 'waiting', title, waiting_for: wf, waiting_date: wd }, itemOnly)
+  router.post(`/items/${id}/process`, { status: 'waiting', title, waiting_for: wf, waiting_date: wd }, itemOnly)
 }
 
 function openTickler() {
@@ -3444,7 +3314,7 @@ function clarifyTickler() {
   const td = ticklerDate.value.toString()
   optimisticUpdate(id, { status: 'tickler' as Status, ...(title ? { title } : {}), tickler_date: td })
   processing.value = null; editItem.value = null; pickingTickler.value = false; ticklerDate.value = undefined
-  guardedRouter.post(`/items/${id}/process`, { status: 'tickler', title, tickler_date: td }, itemOnly)
+  router.post(`/items/${id}/process`, { status: 'tickler', title, tickler_date: td }, itemOnly)
 }
 
 function openEvent() {
@@ -3462,7 +3332,7 @@ function clarifyAsEvent() {
   const id = processing.value.id
   optimisticRemove(id) // item becomes an event, leaves the items list
   processing.value = null; editItem.value = null; pickingEvent.value = false
-  guardedRouter.post(`/items/${id}/schedule-event`, {
+  router.post(`/items/${id}/schedule-event`, {
     event_date: eventDate.value.toString(),
     end_date: eventEndDate.value?.toString() || undefined,
     event_time: eventTime.value || undefined,
@@ -3488,7 +3358,7 @@ function processConfirmEvent() {
   const item = currentProcessItem.value
   if (!item) return
   optimisticRemove(item.id)
-  guardedRouter.post(`/items/${item.id}/schedule-event`, {
+  router.post(`/items/${item.id}/schedule-event`, {
     event_date: processEventDate.value.toString(),
     end_date: processEventEndDate.value?.toString() || undefined,
     event_time: processEventTime.value || undefined,
@@ -3505,7 +3375,7 @@ function saveEdits() {
     const title = editItem.value.title.trim()
     optimisticUpdate(id, { title })
     processing.value = null; editItem.value = null
-    guardedRouter.put(`/items/${id}`, { title }, itemOnly)
+    router.put(`/items/${id}`, { title }, itemOnly)
   }
 }
 
@@ -3515,7 +3385,7 @@ function saveChecklist() {
     const title = editItem.value.title.trim()
     optimisticUpdate(id, { title })
     processing.value = null; editItem.value = null
-    guardedRouter.put(`/items/${id}`, { title }, itemOnly)
+    router.put(`/items/${id}`, { title }, itemOnly)
   }
 }
 
@@ -3525,14 +3395,14 @@ function deleteItem() {
     optimisticRemove(id)
     processing.value = null; editItem.value = null
     toast('Item deleted')
-    guardedRouter.delete(`/items/${id}`, itemOnly)
+    router.delete(`/items/${id}`, itemOnly)
   }
 }
 
 function remove(id: string) {
   optimisticRemove(id)
   toast('Item deleted')
-  guardedRouter.delete(`/items/${id}`, itemOnly)
+  router.delete(`/items/${id}`, itemOnly)
 }
 
 function moveToInbox() {
@@ -3551,7 +3421,7 @@ function moveToInbox() {
     original_status: undefined,
   })
   processing.value = null; editItem.value = null
-  guardedRouter.post(`/items/${id}/move-to-inbox`, {}, itemOnly)
+  router.post(`/items/${id}/move-to-inbox`, {}, itemOnly)
 }
 
 function clarify(status: Status, context?: string | null, waitingForName?: string) {
@@ -3565,7 +3435,7 @@ function clarify(status: Status, context?: string | null, waitingForName?: strin
   if (status === 'done') changes.completed_at = new Date().toISOString()
   if (status === 'trash') { optimisticRemove(id) } else { optimisticUpdate(id, changes) }
   processing.value = null; editItem.value = null; pickingContext.value = false; pickingWaiting.value = false
-  guardedRouter.post(`/items/${id}/process`, { status, title, context: context ?? null, waiting_for: waitingForName }, itemOnly)
+  router.post(`/items/${id}/process`, { status, title, context: context ?? null, waiting_for: waitingForName }, itemOnly)
 }
 
 function clarifyWithContext(ctx: string) {
