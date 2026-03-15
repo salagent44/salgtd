@@ -607,14 +607,6 @@ import { usePage, router } from '@inertiajs/vue3'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
-const props = defineProps<{ isOnline: boolean }>()
-
-const guardedRouter = {
-  post(...args: Parameters<typeof router.post>) { if (!props.isOnline) return; return router.post(...args) },
-  put(...args: Parameters<typeof router.put>) { if (!props.isOnline) return; return router.put(...args) },
-  delete(...args: Parameters<typeof router.delete>) { if (!props.isOnline) return; return router.delete(...args) },
-}
-
 const page = usePage()
 
 interface NoteTag {
@@ -872,7 +864,7 @@ function previewVersion(v: NoteVersion) {
 
 function restoreVersion(v: NoteVersion) {
   if (!selectedNote.value) return
-  guardedRouter.post(`/notes/${selectedNote.value.id}/versions/${v.id}/restore`, {}, {
+  router.post(`/notes/${selectedNote.value.id}/versions/${v.id}/restore`, {}, {
     preserveScroll: true, only: ['notes'],
     onSuccess: () => { showingVersions.value = false; previewingVersion.value = null }
   })
@@ -1175,7 +1167,7 @@ function selectSearchResult() {
 function createNoteFromSearch() {
   const title = searchQuery.value.trim()
   if (!title) return
-  guardedRouter.post('/notes', { title }, { preserveScroll: true, only: ['notes'], onSuccess: (page) => {
+  router.post('/notes', { title }, { preserveScroll: true, only: ['notes'], onSuccess: (page) => {
     const newNotes = (page as any).props.notes as Note[]
     if (newNotes.length > 0) selectedNoteId.value = newNotes[0].id
     closeSearch()
@@ -1188,7 +1180,7 @@ watch(searchQuery, () => { searchSelectedIdx.value = 0 })
 
 function createNote() {
   showTrash.value = false
-  guardedRouter.post('/notes', {}, { preserveScroll: true, only: ['notes'], onSuccess: (page) => {
+  router.post('/notes', {}, { preserveScroll: true, only: ['notes'], onSuccess: (page) => {
     const newNotes = (page as any).props.notes as Note[]
     if (newNotes.length > 0) selectedNoteId.value = newNotes[0].id
     nextTick(() => titleInputEl.value?.focus())
@@ -1224,13 +1216,24 @@ function debouncedSaveNote(note: Note) {
   if (saveTimeout) clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
     saveStatus.value = 'saving'
-    guardedRouter.put(`/notes/${note.id}`, { title: note.title, content: note.content }, {
-      preserveScroll: true,
-      preserveState: true,
-      only: ['notes'],
-      onSuccess: () => { saveStatus.value = 'saved' },
-      onError: () => { saveStatus.value = 'unsaved' },
+    fetch(`/notes/${note.id}`, {
+      method: 'PUT',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ title: note.title, content: note.content }),
     })
+    .then(res => {
+      if (res.ok) {
+        saveStatus.value = 'saved'
+        note.updated_at = new Date().toISOString()
+      } else {
+        saveStatus.value = 'unsaved'
+      }
+    })
+    .catch(() => { saveStatus.value = 'unsaved' })
   }, 2000)
 }
 
@@ -1243,33 +1246,33 @@ function onNoteInput() {
 function trashNote() {
   if (!selectedNote.value) return
   const noteId = selectedNote.value.id
-  guardedRouter.put(`/notes/${noteId}/trash`, {}, { preserveScroll: true, only: ['notes'], onSuccess: () => {
+  router.put(`/notes/${noteId}/trash`, {}, { preserveScroll: true, only: ['notes'], onSuccess: () => {
     selectedNoteId.value = null
   }})
 }
 
 function restoreNote() {
   if (!selectedNote.value) return
-  guardedRouter.put(`/notes/${selectedNote.value.id}/restore`, {}, { preserveScroll: true, only: ['notes'], onSuccess: () => {
+  router.put(`/notes/${selectedNote.value.id}/restore`, {}, { preserveScroll: true, only: ['notes'], onSuccess: () => {
     selectedNoteId.value = null
   }})
 }
 
 function permanentlyDeleteNote() {
   if (!selectedNoteId.value) return
-  guardedRouter.delete(`/notes/${selectedNoteId.value}`, { preserveScroll: true, only: ['notes'], onSuccess: () => {
+  router.delete(`/notes/${selectedNoteId.value}`, { preserveScroll: true, only: ['notes'], onSuccess: () => {
     selectedNoteId.value = null
   }})
 }
 
 function togglePin() {
   if (!selectedNote.value) return
-  guardedRouter.put(`/notes/${selectedNote.value.id}/toggle-pin`, {}, { preserveScroll: true, only: ['notes'] })
+  router.put(`/notes/${selectedNote.value.id}/toggle-pin`, {}, { preserveScroll: true, only: ['notes'] })
 }
 
 function toggleLock() {
   if (!selectedNote.value) return
-  guardedRouter.put(`/notes/${selectedNote.value.id}/toggle-lock`, {}, { preserveScroll: true, only: ['notes'] })
+  router.put(`/notes/${selectedNote.value.id}/toggle-lock`, {}, { preserveScroll: true, only: ['notes'] })
   if (!selectedNote.value.locked && viewMode.value === 'edit') {
     switchToPreview()
   }
@@ -1309,7 +1312,7 @@ function cancelAddingTag() {
 
 function pickTag(tag: string) {
   if (selectedNote.value) {
-    guardedRouter.post(`/notes/${selectedNote.value.id}/tags`, { tag }, { preserveScroll: true, only: ['notes'] })
+    router.post(`/notes/${selectedNote.value.id}/tags`, { tag }, { preserveScroll: true, only: ['notes'] })
   }
   addingTag.value = false
   newTagName.value = ''
@@ -1335,7 +1338,7 @@ function removeTag(idx: number) {
   if (selectedNote.value) {
     const tagName = getTagNames(selectedNote.value)[idx]
     if (tagName) {
-      guardedRouter.delete(`/notes/${selectedNote.value.id}/tags/${encodeURIComponent(tagName)}`, { preserveScroll: true, only: ['notes'] })
+      router.delete(`/notes/${selectedNote.value.id}/tags/${encodeURIComponent(tagName)}`, { preserveScroll: true, only: ['notes'] })
     }
   }
 }
