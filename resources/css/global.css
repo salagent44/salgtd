@@ -1169,14 +1169,14 @@
   letter-spacing: -0.011em;
 }
 
-/* Subtle dot-grid texture + soft depth gradients */
+/* Transparent geometric background pattern + soft depth gradients */
 .theme-things body {
   background-image:
-    url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='0.8' fill='%23666' fill-opacity='0.07'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse at 25% 15%, oklch(0.84 0.02 250 / 12%) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 85%, oklch(0.82 0.015 240 / 8%) 0%, transparent 50%);
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23888' stroke-width='0.5'%3E%3Cpath d='M30 0 L30 60' opacity='0.06'/%3E%3Cpath d='M0 30 L60 30' opacity='0.06'/%3E%3Ccircle cx='30' cy='30' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='0' cy='0' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='60' cy='0' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='0' cy='60' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='60' cy='60' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 20% 10%, oklch(0.82 0.03 250 / 15%) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, oklch(0.80 0.025 235 / 10%) 0%, transparent 45%);
   background-attachment: fixed;
-  background-size: 24px 24px, auto, auto;
+  background-size: 60px 60px, auto, auto;
 }
 
 /* Cards: clean lift through shadow, no visible border */
