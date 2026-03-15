@@ -864,6 +864,7 @@
             <div class="space-y-1 mb-4">
               <div class="hotkey-row"><span>New next action</span><kbd>N</kbd></div>
               <div class="hotkey-row"><span>New waiting for</span><kbd>W</kbd></div>
+              <div class="hotkey-row"><span>New project</span><kbd>P</kbd></div>
               <div class="hotkey-row"><span>New checklist</span><kbd>C</kbd></div>
             </div>
           </template>
@@ -996,18 +997,57 @@
               type="text"
               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
               placeholder="Who? (person or org)"
-              class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             />
             <input
               v-model="quickWaitingDate"
               type="date"
-              class="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring text-foreground"
+              class="rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div class="flex justify-end">
             <button
               @click="quickWaitingSubmit"
               :disabled="!quickWaitingTitle.trim() || !quickWaitingFor.trim()"
+              class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            >Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Project modal -->
+    <div
+      v-if="quickProject"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      @click.self="quickProject = false"
+    >
+      <div class="bg-card border border-border rounded-xl p-5 w-full max-w-lg shadow-xl">
+        <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">New Project <span class="ml-1 opacity-50">— press P</span></p>
+        <div class="space-y-3">
+          <textarea
+            ref="quickProjectInput"
+            v-model="quickProjectTitle"
+            @keydown.esc="quickProject = false"
+            rows="1"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            placeholder="What's the outcome you're committed to?"
+            class="w-full rounded-xl border border-input bg-background px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none overflow-hidden"
+            @input="autoResize($event)"
+          ></textarea>
+          <input
+            v-model="quickProjectNextAction"
+            @keydown.enter="quickProjectSubmit"
+            @keydown.esc="quickProject = false"
+            type="text"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            placeholder="What's the very next step?"
+            class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          />
+          <div class="flex justify-end">
+            <button
+              @click="quickProjectSubmit"
+              :disabled="!quickProjectTitle.trim() || !quickProjectNextAction.trim()"
               class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
             >Add</button>
           </div>
@@ -2376,6 +2416,11 @@ const quickWaitingFor = ref('')
 const quickWaitingDate = ref('')
 const quickWaitingInput = ref<HTMLTextAreaElement | null>(null)
 
+const quickProject = ref(false)
+const quickProjectTitle = ref('')
+const quickProjectNextAction = ref('')
+const quickProjectInput = ref<HTMLTextAreaElement | null>(null)
+
 
 // Process inbox
 const processingInbox = ref(false)
@@ -2663,6 +2708,37 @@ function quickWaitingSubmit() {
   router.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
+function openQuickProject() {
+  quickProject.value = true
+  quickProjectTitle.value = ''
+  quickProjectNextAction.value = ''
+  nextTick(() => quickProjectInput.value?.focus())
+}
+
+function quickProjectSubmit() {
+  if (!quickProjectTitle.value.trim() || !quickProjectNextAction.value.trim() || quickSubmitting.value) return
+  quickSubmitting.value = true
+  const title = quickProjectTitle.value.trim()
+  const nextActionTitle = quickProjectNextAction.value.trim()
+  const tempId = 'temp-' + Date.now()
+  optimisticAdd({ id: tempId, title, status: 'project' } as Item)
+  quickProject.value = false
+  toast.success('Project created')
+  router.post('/items', { title, status: 'project' }, {
+    ...itemOnly,
+    onSuccess: (page) => {
+      const allItems = (page as any).props.items as Item[]
+      const newProject = allItems.find(i => i.title === title && i.status === 'project')
+      if (newProject) {
+        router.post(`/items/${newProject.id}/set-next-action`, { next_action_title: nextActionTitle }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
+      } else {
+        quickSubmitting.value = false
+      }
+    },
+    onError: () => { quickSubmitting.value = false },
+  })
+}
+
 const templatePickerOpen = ref(false)
 const manageTemplatesOpen = ref(false)
 const savedAsTemplate = ref(false)
@@ -2728,6 +2804,7 @@ function onKeydown(e: KeyboardEvent) {
     if (quickCapture.value) { e.preventDefault(); quickCapture.value = false; return }
     if (quickNextAction.value) { e.preventDefault(); quickNextAction.value = false; return }
     if (quickWaiting.value) { e.preventDefault(); quickWaiting.value = false; return }
+    if (quickProject.value) { e.preventDefault(); quickProject.value = false; return }
     if (searchOpen.value) { e.preventDefault(); searchOpen.value = false; return
     }
     if (settingsOpen.value) { e.preventDefault(); settingsOpen.value = false; return }
@@ -2765,11 +2842,12 @@ function onKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement).tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
   // Skip single-key hotkeys when any modal/dialog is open
-  if (dialogOpen.value || settingsOpen.value || quickCapture.value || quickNextAction.value || quickWaiting.value || hotkeysOpen.value || templatePickerOpen.value || manageTemplatesOpen.value || exportModalOpen.value) return
+  if (dialogOpen.value || settingsOpen.value || quickCapture.value || quickNextAction.value || quickWaiting.value || quickProject.value || hotkeysOpen.value || templatePickerOpen.value || manageTemplatesOpen.value || exportModalOpen.value) return
   if (e.key === '?') { e.preventDefault(); hotkeysOpen.value = true; return }
   if (e.key === 'i') { e.preventDefault(); openQuickCapture() }
   if (e.key === 'n' && currentView.value === 'tasks') { e.preventDefault(); openQuickNextAction() }
   if (e.key === 'w' && currentView.value === 'tasks') { e.preventDefault(); openQuickWaiting() }
+  if (e.key === 'p' && currentView.value === 'tasks') { e.preventDefault(); openQuickProject() }
   if (e.key === 'c' && currentView.value === 'tasks') { e.preventDefault(); createAndOpenChecklist() }
 }
 
