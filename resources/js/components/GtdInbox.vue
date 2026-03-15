@@ -2736,14 +2736,16 @@ function openQuickCapture() {
   nextTick(() => quickInput.value?.focus())
 }
 
+const quickSubmitting = ref(false)
 function quickCaptureSubmit() {
-  if (!quickTitle.value.trim()) return
+  if (!quickTitle.value.trim() || quickSubmitting.value) return
+  quickSubmitting.value = true
   const title = quickTitle.value.trim()
   const tempId = 'temp-' + Date.now()
   optimisticAdd({ id: tempId, title, status: 'inbox' } as Item)
   quickCapture.value = false
   toast.success('Added to inbox')
-  guardedRouter.post('/items', { title, status: 'inbox' }, itemOnly)
+  guardedRouter.post('/items', { title, status: 'inbox' }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 function openQuickNextAction() {
@@ -2754,14 +2756,15 @@ function openQuickNextAction() {
 }
 
 function quickNextActionSubmit() {
-  if (!quickNextTitle.value.trim()) return
+  if (!quickNextTitle.value.trim() || quickSubmitting.value) return
+  quickSubmitting.value = true
   const title = quickNextTitle.value.trim()
   const context = quickNextContext.value || undefined
   const tempId = 'temp-' + Date.now()
   optimisticAdd({ id: tempId, title, status: 'next-action', context } as Item)
   quickNextAction.value = false
   toast.success('Next action created')
-  guardedRouter.post('/items', { title, status: 'next-action', context }, itemOnly)
+  guardedRouter.post('/items', { title, status: 'next-action', context }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 function openQuickWaiting() {
@@ -2773,7 +2776,8 @@ function openQuickWaiting() {
 }
 
 function quickWaitingSubmit() {
-  if (!quickWaitingTitle.value.trim() || !quickWaitingFor.value.trim()) return
+  if (!quickWaitingTitle.value.trim() || !quickWaitingFor.value.trim() || quickSubmitting.value) return
+  quickSubmitting.value = true
   const title = quickWaitingTitle.value.trim()
   const waiting_for = quickWaitingFor.value.trim()
   const waiting_date = quickWaitingDate.value || undefined
@@ -2781,7 +2785,7 @@ function quickWaitingSubmit() {
   optimisticAdd({ id: tempId, title, status: 'waiting', waiting_for, waiting_date } as Item)
   quickWaiting.value = false
   toast.success('Waiting item created')
-  guardedRouter.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, itemOnly)
+  guardedRouter.post('/items', { title, status: 'waiting', waiting_for, waiting_date }, { ...itemOnly, onFinish: () => { quickSubmitting.value = false } })
 }
 
 const templatePickerOpen = ref(false)
