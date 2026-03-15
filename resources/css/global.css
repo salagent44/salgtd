@@ -1172,11 +1172,11 @@
 /* Transparent geometric background pattern + soft depth gradients */
 .theme-things body {
   background-image:
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23888' stroke-width='0.5'%3E%3Cpath d='M30 0 L30 60' opacity='0.06'/%3E%3Cpath d='M0 30 L60 30' opacity='0.06'/%3E%3Ccircle cx='30' cy='30' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='0' cy='0' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='60' cy='0' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='0' cy='60' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3Ccircle cx='60' cy='60' r='1' fill='%23777' fill-opacity='0.12' stroke='none'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cline x1='20' y1='0' x2='20' y2='40' stroke='%23555' stroke-width='0.5' opacity='0.15'/%3E%3Cline x1='0' y1='20' x2='40' y2='20' stroke='%23555' stroke-width='0.5' opacity='0.15'/%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23555' opacity='0.2'/%3E%3Ccircle cx='0' cy='0' r='1.5' fill='%23555' opacity='0.2'/%3E%3Ccircle cx='40' cy='0' r='1.5' fill='%23555' opacity='0.2'/%3E%3Ccircle cx='0' cy='40' r='1.5' fill='%23555' opacity='0.2'/%3E%3Ccircle cx='40' cy='40' r='1.5' fill='%23555' opacity='0.2'/%3E%3C/g%3E%3C/svg%3E"),
     radial-gradient(ellipse at 20% 10%, oklch(0.82 0.03 250 / 15%) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 90%, oklch(0.80 0.025 235 / 10%) 0%, transparent 45%);
   background-attachment: fixed;
-  background-size: 60px 60px, auto, auto;
+  background-size: 40px 40px, auto, auto;
 }
 
 /* Cards: clean lift through shadow, no visible border */
