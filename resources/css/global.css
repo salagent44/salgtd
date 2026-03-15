@@ -1172,11 +1172,11 @@
 /* Subtle dot-grid texture + soft depth gradients */
 .theme-things body {
   background-image:
-    url('/images/things-pattern.svg'),
+    url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='0.8' fill='%23666' fill-opacity='0.07'/%3E%3C/svg%3E"),
     radial-gradient(ellipse at 25% 15%, oklch(0.84 0.02 250 / 12%) 0%, transparent 55%),
     radial-gradient(ellipse at 75% 85%, oklch(0.82 0.015 240 / 8%) 0%, transparent 50%);
   background-attachment: fixed;
-  background-size: 100% 100%, auto, auto;
+  background-size: 24px 24px, auto, auto;
 }
 
 /* Cards: clean lift through shadow, no visible border */
