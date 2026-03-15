@@ -185,10 +185,8 @@
             data-testid="notes-title"
           />
           <!-- Save indicator -->
-          <transition name="save-fade">
-            <svg v-if="saveStatus === 'saving'" class="bear-save-spinner shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>
-            <svg v-else-if="saveStatus === 'saved' && showSavedCheck" key="check" class="bear-save-check shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </transition>
+          <svg v-if="saveStatus === 'saving'" class="bear-save-spinner shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>
+          <svg v-else-if="saveStatus === 'saved' && showSavedCheck" class="bear-save-check shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span v-if="selectedNote.locked" class="bear-lock-badge" data-testid="notes-locked-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Locked
@@ -1703,10 +1701,6 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-.save-fade-enter-active { transition: opacity 0.15s ease; }
-.save-fade-leave-active { transition: opacity 0.4s ease; }
-.save-fade-enter-from,
-.save-fade-leave-to { opacity: 0; }
 
 .bear-toolbar-btn {
   padding: 5px 10px;
