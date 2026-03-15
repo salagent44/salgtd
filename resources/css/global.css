@@ -1188,17 +1188,29 @@
   border-color: oklch(0.84 0.004 250 / 50%);
 }
 
-/* Buttons: confident, slightly elevated blue */
+/* Buttons: confident blue with subtle 3D press effect */
 .theme-things .bg-primary {
   box-shadow:
-    0 1px 3px oklch(0.35 0.15 252 / 20%),
-    0 4px 10px oklch(0.35 0.15 252 / 12%);
+    inset 0 1px 0 oklch(1 0 0 / 15%),
+    inset 0 -1px 0 oklch(0 0 0 / 12%),
+    0 1px 3px oklch(0.35 0.15 252 / 22%),
+    0 3px 8px oklch(0.35 0.15 252 / 14%);
   font-weight: 600;
+  border-bottom: 1px solid oklch(0.40 0.18 252);
 }
 .theme-things .bg-primary:hover {
   box-shadow:
-    0 2px 4px oklch(0.35 0.15 252 / 25%),
-    0 6px 14px oklch(0.35 0.15 252 / 16%);
+    inset 0 1px 0 oklch(1 0 0 / 18%),
+    inset 0 -1px 0 oklch(0 0 0 / 14%),
+    0 2px 4px oklch(0.35 0.15 252 / 28%),
+    0 5px 12px oklch(0.35 0.15 252 / 18%);
+}
+.theme-things .bg-primary:active {
+  box-shadow:
+    inset 0 1px 2px oklch(0 0 0 / 15%),
+    0 1px 2px oklch(0.35 0.15 252 / 12%);
+  border-bottom: 1px solid transparent;
+  transform: translateY(0.5px);
 }
 
 /* Moderate, clean radius */
