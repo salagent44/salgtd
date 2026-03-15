@@ -1421,10 +1421,9 @@
           <textarea
             v-if="editItem"
             v-model="editItem.title"
-            ref="dialogTitleEl"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             rows="1"
-            @input="autoResizeTitle"
+            @input="autoResizeTitle($event)"
             @keydown.enter.prevent="processing?.status === 'checklist' ? (addingChecklistStep ? undefined : saveChecklist()) : saveEdits()"
             @keydown.esc="!emailViewerOpen && (dialogOpen = false)"
             class="dialog-title-input w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden"
@@ -3169,7 +3168,7 @@ function openItem(item: Item) {
   eventEndTime.value = ''
   eventColor.value = 'blue'
   eventRecurrence.value = ''
-  nextTick(autoResizeTitle)
+  nextTick(() => { autoResizeTitle(); setTimeout(autoResizeTitle, 100) })
 }
 
 // Checklist step management
@@ -3234,10 +3233,8 @@ function startAddingStep() {
 const addingTag = ref(false)
 const newTagValue = ref('')
 const tagInput = ref<HTMLInputElement | null>(null)
-const dialogTitleEl = ref<HTMLTextAreaElement | null>(null)
-
-function autoResizeTitle() {
-  const el = dialogTitleEl.value
+function autoResizeTitle(e?: Event) {
+  const el = e ? e.target as HTMLTextAreaElement : document.querySelector<HTMLTextAreaElement>('.dialog-title-input')
   if (!el) return
   el.style.height = 'auto'
   el.style.height = el.scrollHeight + 'px'
