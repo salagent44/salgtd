@@ -2072,7 +2072,7 @@ const views = computed(() => {
     { key: 'notes' as ViewKey, label: 'Notes', icon: themeIcons.value.notes },
     { key: 'calendar' as ViewKey, label: 'Calendar', icon: themeIcons.value.calendar },
   ]
-  return isMobile.value ? all.filter(v => v.key !== 'notes') : all
+  return all
 })
 
 // Reload lazy props when switching views

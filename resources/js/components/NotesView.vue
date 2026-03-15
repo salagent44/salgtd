@@ -1,5 +1,5 @@
 <template>
-  <div class="bear-notes flex h-[calc(100vh-7rem)] rounded-xl overflow-hidden" :class="{ 'bear-fullscreen': fullscreen }" data-testid="notes-view">
+  <div class="bear-notes flex rounded-xl overflow-hidden" :class="[fullscreen ? 'bear-fullscreen' : '', isMobile ? 'h-[calc(100vh-8.5rem)]' : 'h-[calc(100vh-7rem)]']" data-testid="notes-view">
 
     <!-- ===== Notes Sidebar (desktop only) ===== -->
     <div v-if="!fullscreen && !sidebarCollapsed && !isMobile" class="bear-sidebar w-80 shrink-0 flex flex-col border-r border-border">
@@ -79,70 +79,63 @@
     </div>
 
     <!-- ===== Mobile Note List (shown when no note selected on mobile) ===== -->
-    <div v-if="isMobile && !selectedNote && !fullscreen" class="flex-1 flex flex-col min-w-0 min-h-0 bear-editor-area">
+    <div v-if="isMobile && !selectedNote && !fullscreen" class="flex-1 flex flex-col min-w-0 min-h-0 bear-editor-area bear-mobile-list-enter">
       <!-- Mobile list header -->
-      <div class="px-4 py-3 flex items-center justify-between border-b border-border/50">
-        <p class="text-sm font-semibold uppercase tracking-wider bear-muted-dim">Notes <span class="opacity-50">{{ displayedSidebarNotes.length }}</span></p>
-        <div class="flex items-center gap-2">
-          <button
-            @click="openSearch"
-            class="bear-toolbar-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            title="Search"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
-          <button
-            @click="createNote"
-            class="bear-toolbar-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            title="New note"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-        </div>
+      <div class="px-4 pt-3 pb-2.5 flex items-center justify-between">
+        <p class="text-lg font-bold text-foreground">Notes</p>
+        <button
+          @click="openSearch"
+          class="bear-toolbar-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          title="Search"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
       </div>
 
       <!-- Mobile filter tabs -->
-      <div class="px-3 py-2 flex items-center gap-1 border-b border-border/30 overflow-x-auto">
+      <div class="px-3 pb-2 flex items-center gap-1.5 overflow-x-auto bear-hide-scrollbar">
         <button
           @click="sidebarFilter = 'all'"
-          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap"
-          :class="sidebarFilter === 'all' ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
-        >All</button>
+          class="bear-mobile-filter-pill"
+          :class="sidebarFilter === 'all' ? 'bear-mobile-filter-active' : ''"
+        >All <span class="opacity-50">{{ notes.filter(n => !n.trashed).length }}</span></button>
         <button
-          v-for="tag in allTags.slice(0, 4)"
+          v-for="tag in allTags.slice(0, 5)"
           :key="tag"
           @click="sidebarFilter = sidebarFilter === tag ? 'all' : tag"
-          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors truncate max-w-[6rem] whitespace-nowrap"
-          :class="sidebarFilter === tag ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
+          class="bear-mobile-filter-pill"
+          :class="sidebarFilter === tag ? 'bear-mobile-filter-active' : ''"
         >#{{ tag }}</button>
         <button
           v-if="trashedNotes.length > 0"
           @click="sidebarFilter = sidebarFilter === 'trash' ? 'all' : 'trash'"
-          class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors whitespace-nowrap"
-          :class="sidebarFilter === 'trash' ? 'bg-primary/10 text-primary' : 'bear-muted-dim hover:text-foreground'"
+          class="bear-mobile-filter-pill"
+          :class="sidebarFilter === 'trash' ? 'bear-mobile-filter-active' : ''"
         >Trash</button>
       </div>
 
       <!-- Mobile note list -->
-      <div class="flex-1 overflow-y-auto pb-20">
-        <div v-if="displayedSidebarNotes.length === 0" class="p-6 text-center">
-          <p class="text-sm bear-muted-dim">No notes</p>
+      <div class="flex-1 overflow-y-auto">
+        <div v-if="displayedSidebarNotes.length === 0" class="flex flex-col items-center justify-center h-full px-6">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="bear-muted-dim mb-4 opacity-40"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          <p class="text-sm bear-muted-dim">{{ sidebarFilter === 'trash' ? 'Trash is empty' : 'No notes yet' }}</p>
+          <p v-if="sidebarFilter !== 'trash'" class="text-xs bear-muted-dim mt-1">Tap + to create your first note</p>
         </div>
         <button
           v-for="note in displayedSidebarNotes"
           :key="note.id"
           @click="selectNote(note.id)"
-          class="bear-sidebar-item w-full text-left py-3 px-4"
+          class="bear-mobile-note-item w-full text-left"
         >
-          <div class="flex items-center gap-1.5 mb-0.5">
+          <div class="flex items-center gap-1.5 mb-1">
             <span v-if="note.pinned" class="text-xs">📌</span>
             <svg v-if="note.locked" class="shrink-0 bear-muted-dim" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <p class="text-base font-medium truncate text-foreground/80">{{ noteDisplayTitle(note) }}</p>
+            <p class="text-[15px] font-semibold truncate text-foreground">{{ noteDisplayTitle(note) }}</p>
           </div>
-          <p class="text-xs bear-muted-dim truncate">{{ notePreview(note) || 'No content' }}</p>
-          <div class="flex items-center gap-1.5 mt-1">
-            <span class="text-[10px] bear-muted-dim">{{ formatDate(note.updated_at) }}</span>
-            <span v-for="tag in getTagNames(note).slice(0, 2)" :key="tag" class="text-[10px] bear-muted-dim">#{{ tag }}</span>
+          <p class="text-[13px] bear-muted truncate leading-snug">{{ notePreview(note) || 'No content' }}</p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="text-[11px] bear-muted-dim">{{ formatDate(note.updated_at) }}</span>
+            <span v-for="tag in getTagNames(note).slice(0, 2)" :key="tag" class="bear-mobile-note-tag">#{{ tag }}</span>
           </div>
         </button>
         <button
@@ -151,6 +144,15 @@
           class="w-full py-3 text-xs font-medium bear-muted-dim hover:text-foreground transition-colors"
         >Show more ({{ allSidebarNotes.length - sidebarRenderLimit }} remaining)</button>
       </div>
+
+      <!-- Mobile floating new-note button -->
+      <button
+        @click="createNote"
+        class="bear-mobile-fab"
+        title="New note"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
     </div>
 
     <!-- ===== Editor Area ===== -->
@@ -160,15 +162,14 @@
     <div v-if="selectedNote" class="flex-1 flex flex-col min-w-0 min-h-0 bear-editor-area">
 
       <!-- Title bar -->
-      <div class="bear-title-bar px-5 py-3 flex items-center gap-3">
+      <div class="bear-title-bar flex items-center gap-3" :class="isMobile ? 'px-3 py-2' : 'px-5 py-3'">
         <!-- Mobile back button -->
         <button
           v-if="isMobile"
           @click="mobileBackToList"
-          class="shrink-0 flex items-center gap-1 text-primary font-medium text-sm min-w-[44px] min-h-[44px] -ml-2 px-2"
+          class="shrink-0 flex items-center gap-0.5 text-primary font-semibold text-sm min-w-[44px] min-h-[44px] -ml-1 px-1"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Notes
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="flex-1 min-w-0 flex items-center gap-2">
           <input
@@ -180,7 +181,7 @@
             placeholder="Untitled Note"
             class="bear-title-input flex-1"
             :readonly="selectedNote.locked"
-            :class="{ 'opacity-70': selectedNote.locked }"
+            :class="[selectedNote.locked ? 'opacity-70' : '', isMobile ? 'text-lg' : '']"
             data-testid="notes-title"
           />
           <span v-if="selectedNote.locked" class="bear-lock-badge" data-testid="notes-locked-badge">
@@ -188,75 +189,59 @@
             Locked
           </span>
         </div>
-        <div class="flex items-center gap-1 shrink-0" :class="{ 'gap-0': isMobile }">
-          <button
-            @click="createNote"
-            class="bear-toolbar-btn"
-            :class="{ 'min-w-[44px] min-h-[44px] flex items-center justify-center': isMobile }"
-            title="New note (N)"
-            data-testid="notes-new-btn"
-          >
+        <!-- Mobile: compact action menu -->
+        <div v-if="isMobile" class="flex items-center gap-0 shrink-0">
+          <button v-if="!selectedNote.trashed" @click="showMobileMenu = !showMobileMenu" class="bear-toolbar-btn min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+          <button v-if="selectedNote.trashed" @click="restoreNote" class="bear-toolbar-btn min-w-[44px] min-h-[44px] flex items-center justify-center text-primary text-xs font-semibold">Restore</button>
+        </div>
+        <!-- Desktop: full toolbar -->
+        <div v-if="!isMobile" class="flex items-center gap-1 shrink-0">
+          <button @click="createNote" class="bear-toolbar-btn" title="New note (N)" data-testid="notes-new-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
-          <button
-            v-if="!selectedNote.trashed"
-            @click="openVersionHistory"
-            class="bear-toolbar-btn"
-            title="Version history"
-            data-testid="notes-history-btn"
-          >
+          <button v-if="!selectedNote.trashed" @click="openVersionHistory" class="bear-toolbar-btn" title="Version history" data-testid="notes-history-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </button>
           <span class="w-px h-4 bg-border mx-0.5"></span>
-          <button
-            v-if="!selectedNote.trashed"
-            @click="toggleLock"
-            class="bear-toolbar-btn"
-            :class="selectedNote.locked ? 'bear-accent' : ''"
-            :title="selectedNote.locked ? 'Unlock note (Ctrl+L)' : 'Lock note (Ctrl+L)'"
-            data-testid="notes-lock-btn"
-          >
+          <button v-if="!selectedNote.trashed" @click="toggleLock" class="bear-toolbar-btn" :class="selectedNote.locked ? 'bear-accent' : ''" :title="selectedNote.locked ? 'Unlock (Ctrl+L)' : 'Lock (Ctrl+L)'" data-testid="notes-lock-btn">
             <svg v-if="selectedNote.locked" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 8.7-2.7"/></svg>
           </button>
-          <button
-            v-if="!selectedNote.trashed"
-            @click="toggleFullscreen"
-            class="bear-toolbar-btn"
-            :class="fullscreen ? 'bear-accent' : ''"
-            :title="fullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (Ctrl+Shift+F)'"
-            data-testid="notes-fullscreen-btn"
-          >
+          <button v-if="!selectedNote.trashed" @click="toggleFullscreen" class="bear-toolbar-btn" :class="fullscreen ? 'bear-accent' : ''" :title="fullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'" data-testid="notes-fullscreen-btn">
             <svg v-if="!fullscreen" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
           </button>
-          <button
-            v-if="!selectedNote.trashed"
-            @click="togglePin"
-            class="bear-toolbar-btn"
-            :class="selectedNote.pinned ? 'bear-accent' : ''"
-            title="Pin note"
-          >📌</button>
-          <button
-            v-if="selectedNote.trashed"
-            @click="restoreNote"
-            class="bear-toolbar-btn"
-            title="Restore from trash"
-            data-testid="notes-restore-btn"
-          >↩ Restore</button>
-          <button
-            v-if="selectedNote.trashed"
-            @click="permanentlyDeleteNote"
-            class="bear-toolbar-btn bear-destructive"
-            title="Permanently delete"
-          >Delete Forever</button>
-          <button
-            v-if="!selectedNote.trashed"
-            @click="trashNote"
-            class="bear-toolbar-btn bear-muted-dim hover:bear-destructive"
-            title="Move to trash"
-          >🗑</button>
+          <button v-if="!selectedNote.trashed" @click="togglePin" class="bear-toolbar-btn" :class="selectedNote.pinned ? 'bear-accent' : ''" title="Pin note">📌</button>
+          <button v-if="selectedNote.trashed" @click="restoreNote" class="bear-toolbar-btn" title="Restore" data-testid="notes-restore-btn">↩ Restore</button>
+          <button v-if="selectedNote.trashed" @click="permanentlyDeleteNote" class="bear-toolbar-btn bear-destructive" title="Delete forever">Delete Forever</button>
+          <button v-if="!selectedNote.trashed" @click="trashNote" class="bear-toolbar-btn bear-muted-dim hover:bear-destructive" title="Move to trash">🗑</button>
         </div>
+      </div>
+
+      <!-- Mobile dropdown menu -->
+      <div v-if="isMobile && showMobileMenu && !selectedNote?.trashed" class="bear-mobile-dropdown">
+        <button @click="togglePin(); showMobileMenu = false" class="bear-mobile-dropdown-item">
+          <span>{{ selectedNote?.pinned ? 'Unpin' : 'Pin' }}</span>
+          <span v-if="selectedNote?.pinned" class="text-primary text-xs">📌</span>
+        </button>
+        <button @click="toggleLock(); showMobileMenu = false" class="bear-mobile-dropdown-item">
+          <span>{{ selectedNote?.locked ? 'Unlock' : 'Lock' }}</span>
+        </button>
+        <button @click="switchToPreview(); showMobileMenu = false" class="bear-mobile-dropdown-item">
+          <span>{{ viewMode === 'preview' ? 'Edit' : 'Preview' }}</span>
+        </button>
+        <button @click="openVersionHistory(); showMobileMenu = false" class="bear-mobile-dropdown-item">
+          <span>History</span>
+        </button>
+        <button @click="createNote(); showMobileMenu = false" class="bear-mobile-dropdown-item">
+          <span>New Note</span>
+        </button>
+        <div class="border-t border-border/30 my-1"></div>
+        <button @click="trashNote(); showMobileMenu = false" class="bear-mobile-dropdown-item text-destructive">
+          <span>Delete</span>
+        </button>
       </div>
 
       <!-- Tags bar + mode toggle -->
@@ -324,7 +309,7 @@
       </div>
 
       <!-- Editor (edit mode) -->
-      <div v-if="viewMode === 'edit'" class="flex-1 flex flex-col min-h-0" :class="{ 'pb-20': isMobile }">
+      <div v-if="viewMode === 'edit'" class="flex-1 flex flex-col min-h-0">
         <textarea
           ref="editorEl"
           v-model="selectedNote.content"
@@ -332,8 +317,56 @@
           @keydown.tab.prevent="handleTab"
           placeholder="Start writing..."
           class="bear-textarea flex-1 w-full"
+          :class="{ 'pb-2': isMobile }"
+          @focus="showMobileMenu = false"
           data-testid="notes-editor"
         ></textarea>
+
+        <!-- Bear-style mobile formatting toolbar -->
+        <div v-if="isMobile && !selectedNote?.locked" class="bear-format-bar">
+          <div class="bear-format-bar-scroll bear-hide-scrollbar">
+            <button @click="insertFormat('heading')" class="bear-format-btn" title="Heading">
+              <span class="text-xs font-bold">H</span>
+            </button>
+            <button @click="insertFormat('bold')" class="bear-format-btn" title="Bold">
+              <span class="text-xs font-extrabold">B</span>
+            </button>
+            <button @click="insertFormat('italic')" class="bear-format-btn" title="Italic">
+              <span class="text-xs font-semibold italic">I</span>
+            </button>
+            <button @click="insertFormat('strikethrough')" class="bear-format-btn" title="Strikethrough">
+              <span class="text-xs font-semibold line-through">S</span>
+            </button>
+            <span class="bear-format-divider"></span>
+            <button @click="insertFormat('ul')" class="bear-format-btn" title="Bullet list">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <button @click="insertFormat('ol')" class="bear-format-btn" title="Numbered list">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="10" y1="18" x2="20" y2="18"/><text x="2" y="8" font-size="8" fill="currentColor" stroke="none" font-weight="700">1</text><text x="2" y="14" font-size="8" fill="currentColor" stroke="none" font-weight="700">2</text><text x="2" y="20" font-size="8" fill="currentColor" stroke="none" font-weight="700">3</text></svg>
+            </button>
+            <button @click="insertFormat('checklist')" class="bear-format-btn" title="Checklist">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><polyline points="5 6 6.5 8 10 4"/><line x1="14" y1="6" x2="21" y2="6"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="17" x2="21" y2="17"/></svg>
+            </button>
+            <span class="bear-format-divider"></span>
+            <button @click="insertFormat('link')" class="bear-format-btn" title="Link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+            <button @click="insertFormat('code')" class="bear-format-btn" title="Code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </button>
+            <button @click="insertFormat('quote')" class="bear-format-btn" title="Quote">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"/></svg>
+            </button>
+            <button @click="insertFormat('hr')" class="bear-format-btn" title="Divider">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+            </button>
+            <button @click="insertFormat('tag')" class="bear-format-btn" title="Tag">
+              <span class="text-xs font-bold text-primary">#</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Word count / status bar -->
         <div class="bear-word-count px-4 py-1.5 flex items-center justify-between">
           <div>
             <span>{{ wordCount }} words</span>
@@ -626,12 +659,136 @@ const sidebarCollapsed = ref(false)
 
 // Mobile detection
 const isMobile = ref(false)
+const showMobileMenu = ref(false)
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
 }
 
 function mobileBackToList() {
   selectedNoteId.value = null
+  showMobileMenu.value = false
+}
+
+// Bear-style formatting toolbar insert
+function insertFormat(type: string) {
+  const el = editorEl.value
+  if (!el || !selectedNote.value || selectedNote.value.locked) return
+  const start = el.selectionStart
+  const end = el.selectionEnd
+  const val = selectedNote.value.content
+  const selected = val.substring(start, end)
+  const before = val.substring(0, start)
+  const after = val.substring(end)
+  // Find start of current line
+  const lineStart = before.lastIndexOf('\n') + 1
+  const linePrefix = before.substring(lineStart)
+
+  let insert = ''
+  let cursorOffset = 0
+
+  switch (type) {
+    case 'heading': {
+      // Cycle through #, ##, ### or add # to line start
+      const fullLine = linePrefix + selected + (after.split('\n')[0] || '')
+      const match = fullLine.match(/^(#{1,3})\s/)
+      if (match) {
+        const level = match[1].length
+        if (level < 3) {
+          // Add one more #
+          selectedNote.value.content = before.substring(0, lineStart) + '#' + before.substring(lineStart) + selected + after
+          cursorOffset = 1
+        } else {
+          // Remove all ###
+          selectedNote.value.content = before.substring(0, lineStart) + before.substring(lineStart).replace(/^#{1,3}\s/, '') + selected + after
+          cursorOffset = -(level + 1)
+        }
+      } else {
+        selectedNote.value.content = before.substring(0, lineStart) + '# ' + before.substring(lineStart) + selected + after
+        cursorOffset = 2
+      }
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + cursorOffset })
+      break
+    }
+    case 'bold':
+      insert = selected ? `**${selected}**` : '****'
+      selectedNote.value.content = before + insert + after
+      nextTick(() => {
+        if (selected) { el.selectionStart = start; el.selectionEnd = start + insert.length }
+        else { el.selectionStart = el.selectionEnd = start + 2 }
+      })
+      break
+    case 'italic':
+      insert = selected ? `_${selected}_` : '__'
+      selectedNote.value.content = before + insert + after
+      nextTick(() => {
+        if (selected) { el.selectionStart = start; el.selectionEnd = start + insert.length }
+        else { el.selectionStart = el.selectionEnd = start + 1 }
+      })
+      break
+    case 'strikethrough':
+      insert = selected ? `~~${selected}~~` : '~~~~'
+      selectedNote.value.content = before + insert + after
+      nextTick(() => {
+        if (selected) { el.selectionStart = start; el.selectionEnd = start + insert.length }
+        else { el.selectionStart = el.selectionEnd = start + 2 }
+      })
+      break
+    case 'ul':
+      insert = linePrefix ? `\n- ` : '- '
+      selectedNote.value.content = before + insert + selected + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + insert.length + selected.length })
+      break
+    case 'ol':
+      insert = linePrefix ? `\n1. ` : '1. '
+      selectedNote.value.content = before + insert + selected + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + insert.length + selected.length })
+      break
+    case 'checklist':
+      insert = linePrefix ? `\n- [ ] ` : '- [ ] '
+      selectedNote.value.content = before + insert + selected + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + insert.length + selected.length })
+      break
+    case 'link':
+      if (selected) {
+        insert = `[${selected}](url)`
+        selectedNote.value.content = before + insert + after
+        nextTick(() => { el.selectionStart = start + selected.length + 3; el.selectionEnd = start + selected.length + 6 })
+      } else {
+        insert = '[](url)'
+        selectedNote.value.content = before + insert + after
+        nextTick(() => { el.selectionStart = el.selectionEnd = start + 1 })
+      }
+      break
+    case 'code':
+      if (selected && selected.includes('\n')) {
+        insert = `\`\`\`\n${selected}\n\`\`\``
+      } else {
+        insert = selected ? `\`${selected}\`` : '``'
+      }
+      selectedNote.value.content = before + insert + after
+      nextTick(() => {
+        if (!selected) { el.selectionStart = el.selectionEnd = start + 1 }
+        else { el.selectionStart = start; el.selectionEnd = start + insert.length }
+      })
+      break
+    case 'quote':
+      insert = linePrefix ? `\n> ` : '> '
+      selectedNote.value.content = before + insert + selected + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + insert.length + selected.length })
+      break
+    case 'hr':
+      insert = linePrefix ? `\n\n---\n\n` : '---\n\n'
+      selectedNote.value.content = before + insert + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + insert.length })
+      break
+    case 'tag':
+      insert = '#'
+      selectedNote.value.content = before + insert + after
+      nextTick(() => { el.selectionStart = el.selectionEnd = start + 1 })
+      break
+  }
+  onNoteInput()
+  el.focus()
 }
 
 // Persistence + auto-save
@@ -1041,6 +1198,7 @@ function createNote() {
 function selectNote(id: string) {
   selectedNoteId.value = id
   viewMode.value = 'edit'
+  showMobileMenu.value = false
 }
 
 function extractInlineTags(content: string): string[] {
@@ -1856,5 +2014,181 @@ onUnmounted(() => {
   background: color-mix(in oklch, var(--primary), transparent 85%);
   color: var(--primary);
   white-space: nowrap;
+}
+
+/* ===== Mobile-specific styles ===== */
+
+/* Hide scrollbar for filter pills */
+.bear-hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.bear-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile filter pills */
+.bear-mobile-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: color-mix(in oklch, var(--foreground), transparent 40%);
+  background: color-mix(in oklch, var(--foreground), transparent 93%);
+  transition: all 150ms;
+}
+.bear-mobile-filter-active {
+  background: color-mix(in oklch, var(--primary), transparent 82%);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Mobile note list items */
+.bear-mobile-note-item {
+  display: block;
+  padding: 14px 16px;
+  border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 50%);
+  transition: background 100ms;
+}
+.bear-mobile-note-item:active {
+  background: color-mix(in oklch, var(--accent), transparent 20%);
+}
+
+.bear-mobile-note-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--primary), transparent 88%);
+  color: var(--primary);
+}
+
+/* Floating action button for new note */
+.bear-mobile-fab {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 14px color-mix(in oklch, var(--primary), transparent 50%),
+    0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 150ms, box-shadow 150ms;
+  z-index: 10;
+}
+.bear-mobile-fab:active {
+  transform: scale(0.92);
+}
+
+/* Mobile dropdown menu */
+.bear-mobile-dropdown {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card), var(--background) 50%);
+  padding: 4px 8px;
+  animation: dropdownIn 120ms ease-out;
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bear-mobile-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 12px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  transition: background 80ms;
+}
+.bear-mobile-dropdown-item:active {
+  background: color-mix(in oklch, var(--accent), transparent 30%);
+}
+
+/* Bear-style mobile formatting toolbar */
+.bear-format-bar {
+  border-top: 1px solid color-mix(in oklch, var(--border), transparent 40%);
+  background: color-mix(in oklch, var(--card), var(--background) 40%);
+  padding: 6px 4px;
+}
+.bear-format-bar-scroll {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  padding: 0 4px;
+}
+.bear-format-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
+  border-radius: 8px;
+  color: color-mix(in oklch, var(--foreground), transparent 30%);
+  transition: all 100ms;
+  flex-shrink: 0;
+}
+.bear-format-btn:active {
+  background: color-mix(in oklch, var(--primary), transparent 80%);
+  color: var(--primary);
+  transform: scale(0.92);
+}
+.bear-format-divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in oklch, var(--border), transparent 30%);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Mobile list enter animation */
+.bear-mobile-list-enter {
+  animation: mobileListIn 200ms ease-out;
+}
+@keyframes mobileListIn {
+  from { opacity: 0.6; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Mobile note tags bar adjustments */
+@media (max-width: 767px) {
+  .bear-tags-bar {
+    padding: 6px 12px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .bear-tag-pill {
+    font-size: 12px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+  .bear-textarea {
+    font-size: 16px; /* prevent iOS zoom */
+    padding: 12px 16px;
+  }
+  .bear-preview-content {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  .bear-mode-toggle {
+    display: none; /* handled via mobile menu */
+  }
+  .bear-add-tag {
+    white-space: nowrap;
+  }
 }
 </style>
