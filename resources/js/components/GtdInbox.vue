@@ -1418,15 +1418,17 @@
               :class="processing.flagged ? 'bg-red-500/15 text-red-500 ring-1 ring-red-500/30' : 'text-muted-foreground/50 hover:text-red-500 hover:bg-red-500/10'"
             >{{ themeIcons.flag }} {{ processing.flagged ? 'Flagged' : 'Flag' }}</button>
           </div>
-          <input
+          <textarea
             v-if="editItem"
             v-model="editItem.title"
-            type="text"
+            ref="dialogTitleEl"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            @keydown.enter="processing?.status === 'checklist' ? (addingChecklistStep ? undefined : saveChecklist()) : saveEdits()"
+            rows="1"
+            @input="autoResizeTitle"
+            @keydown.enter.prevent="processing?.status === 'checklist' ? (addingChecklistStep ? undefined : saveChecklist()) : saveEdits()"
             @keydown.esc="!emailViewerOpen && (dialogOpen = false)"
-            class="dialog-title-input w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2"
-          />
+            class="dialog-title-input w-full bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/40 text-foreground rounded-lg border border-border/40 px-3 py-2 resize-none overflow-hidden"
+          ></textarea>
         </div>
 
         <!-- Tag management (not for checklists) -->
@@ -2737,7 +2739,7 @@ function createAndOpenChecklist() {
         if (newItem) {
           openItem(newItem)
           nextTick(() => {
-            const titleInput = document.querySelector<HTMLInputElement>('.dialog-title-input')
+            const titleInput = document.querySelector<HTMLTextAreaElement>('.dialog-title-input')
             titleInput?.select()
           })
         }
@@ -3167,6 +3169,7 @@ function openItem(item: Item) {
   eventEndTime.value = ''
   eventColor.value = 'blue'
   eventRecurrence.value = ''
+  nextTick(autoResizeTitle)
 }
 
 // Checklist step management
@@ -3231,6 +3234,14 @@ function startAddingStep() {
 const addingTag = ref(false)
 const newTagValue = ref('')
 const tagInput = ref<HTMLInputElement | null>(null)
+const dialogTitleEl = ref<HTMLTextAreaElement | null>(null)
+
+function autoResizeTitle() {
+  const el = dialogTitleEl.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
 const tagSuggestIdx = ref(0)
 
 const allItemTags = computed(() => {
