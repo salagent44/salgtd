@@ -266,42 +266,20 @@
         </div>
         <div class="space-y-2">
           <template v-for="(item, idx) in projects.slice(0, renderLimits.projects)" :key="item.id">
-          <Card class="!py-0 !gap-0 cursor-pointer transition-colors border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
+          <Card class="!py-0 !gap-0 cursor-pointer transition-colors border-l-2" :class="[selectedIds.has(item.id) ? 'ring-2 ring-primary bg-primary/10' : idx % 2 === 0 ? 'bg-muted/30 hover:!bg-muted/50' : 'bg-muted/10 hover:!bg-muted/30', item.flagged ? 'border-l-red-500' : stuckProjects.has(item.id) ? 'border-l-amber-500' : 'border-l-transparent']" @click="onCardClick(item, $event)">
             <CardContent class="!px-4 py-2.5">
               <div class="flex items-center gap-3">
                 <span v-if="selectedIds.size > 0" class="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all" :class="selectedIds.has(item.id) ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40'"><svg v-if="selectedIds.has(item.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-                <button @click.stop="toggleProjectExpand(item.id)" class="text-muted-foreground hover:text-foreground transition-colors shrink-0">
-                  <svg :class="expandedProjects.has(item.id) ? 'rotate-90' : ''" class="transition-transform" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
                 <span v-if="item.flagged" class="text-red-500 text-xs shrink-0">{{ themeIcons.flag }}</span>
                 <div class="flex-1 min-w-0">
                   <p class="text-[15px] font-semibold truncate" :title="item.title">{{ item.title }}</p>
+                  <p v-if="projectNextAction.get(item.id)" class="text-xs text-muted-foreground truncate mt-0.5">Next: {{ projectNextAction.get(item.id)!.title }}</p>
+                  <p v-else class="text-xs text-amber-500 mt-0.5">No next action</p>
                 </div>
                 <span v-for="t in (item.tags || [])" :key="t.id" class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">#{{ t.tag }}</span>
-                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground shrink-0">{{ (projectTasksMap.get(item.id) || []).length }} tasks</span>
-                <span v-if="stuckProjects.has(item.id)" class="shrink-0" title="No next action">🧴</span>
               </div>
             </CardContent>
           </Card>
-          <!-- Expanded project tasks -->
-          <div v-if="expandedProjects.has(item.id)" class="ml-6 space-y-1 border-l-2 border-border/40 pl-3">
-            <div v-if="(projectTasksMap.get(item.id) || []).length === 0" class="py-2 text-xs text-muted-foreground">No linked actions — assign from the Next Actions view</div>
-            <Card v-for="task in (projectTasksMap.get(item.id) || [])" :key="task.id" class="!py-0 !gap-0 cursor-pointer transition-colors bg-muted/20 hover:!bg-muted/40" @click="openItem(task)">
-              <CardContent class="!px-4 py-2 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full shrink-0" :class="{
-                  'bg-primary': task.status === 'next-action',
-                  'bg-amber-500': task.status === 'waiting',
-                  'bg-violet-500': task.status === 'tickler',
-                  'bg-green-500': task.status === 'done',
-                  'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
-                }"></span>
-                <p class="text-[13px] font-medium flex-1 truncate min-w-0" :title="task.title">{{ task.title }}</p>
-                <span v-if="checklistProgress(task)" class="text-[10px] font-medium px-1 py-0.5 rounded shrink-0" :class="checklistProgress(task)!.done === checklistProgress(task)!.total ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'">{{ checklistProgress(task)!.done }}/{{ checklistProgress(task)!.total }}</span>
-                <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0">{{ task.context }}</span>
-                <Badge :variant="bucketVariant(task.status)" class="text-[10px]">{{ bucketLabel(task.status) }}</Badge>
-              </CardContent>
-            </Card>
-          </div>
           </template>
         </div>
         <button v-if="projects.length > renderLimits.projects" @click="showMore('projects')" class="w-full mt-3 rounded-lg bg-muted/50 hover:bg-muted py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -1260,10 +1238,19 @@
             <p class="text-sm font-semibold">Set up project</p>
           </div>
 
-          <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
+          <div class="space-y-2.5">
+            <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Next Action</p>
+            <input
+              v-model="processProjectNextAction"
+              type="text"
+              placeholder="What's the very next physical step?"
+              @keydown.enter="processConfirmProject"
+              class="w-full rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
+            />
+          </div>
 
           <div class="flex gap-2 justify-end">
-            <button @click="processConfirmProject" class="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
+            <button @click="processConfirmProject" :disabled="!processProjectNextAction.trim()" class="rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
           </div>
         </div>
 
@@ -1694,9 +1681,18 @@
                 <button @click="pickingProjectGoal = false" class="w-7 h-7 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors text-sm">←</button>
                 <p class="text-sm font-semibold">Set up project</p>
               </div>
-              <p class="text-xs text-muted-foreground">Link actions to this project from the Next Actions view.</p>
+              <div class="space-y-2.5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Next Action</p>
+                <input
+                  v-model="projectNextActionTitle"
+                  type="text"
+                  placeholder="What's the very next physical step?"
+                  @keydown.enter="clarifyAsProjectWithNextAction"
+                  class="w-full rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
+                />
+              </div>
               <div class="flex gap-2 justify-end">
-                <button @click="clarifyAsProject" class="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
+                <button @click="clarifyAsProjectWithNextAction" :disabled="!projectNextActionTitle.trim()" class="rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Save as Project</button>
               </div>
             </div>
 
@@ -1842,53 +1838,26 @@
               <button @click="clarifyTickler" :disabled="!ticklerDate" class="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:pointer-events-none text-white px-5 py-2.5 text-sm font-semibold transition-colors">Save</button>
             </div>
 
-            <!-- Project: link/unlink actions -->
+            <!-- Project: next action -->
             <div v-else-if="processing?.status === 'project'" class="space-y-4">
-              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Linked actions</p>
-              <div v-if="(projectTasksMap.get(processing.id) || []).length > 0" class="space-y-1.5">
-                <div v-for="task in (projectTasksMap.get(processing.id) || [])" :key="task.id" class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-muted/30 group">
-                  <span class="w-2 h-2 rounded-full shrink-0" :class="{
-                    'bg-primary': task.status === 'next-action',
-                    'bg-amber-500': task.status === 'waiting',
-                    'bg-violet-500': task.status === 'tickler',
-                    'bg-green-500': task.status === 'done',
-                    'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler', 'done'].includes(task.status),
-                  }"></span>
-                  <span class="text-[13px] font-medium flex-1 truncate">{{ task.title }}</span>
-                  <span v-if="task.context" class="text-[11px] text-muted-foreground shrink-0 mr-1">{{ task.context }}</span>
-                  <button @click="unlinkActionFromProject(task.id)" class="text-muted-foreground/40 hover:text-destructive transition-colors shrink-0 opacity-0 group-hover:opacity-100" title="Unlink">&times;</button>
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Next Action</p>
+              <div v-if="projectNextAction.get(processing.id)" class="rounded-lg px-3 py-2.5 bg-primary/10 border border-primary/20">
+                <p class="text-sm font-medium">{{ projectNextAction.get(processing.id)!.title }}</p>
+                <div class="flex gap-3 mt-2">
+                  <button @click="openItem(projectNextAction.get(processing.id)!)" class="text-xs text-primary hover:underline">View</button>
+                  <button @click="markProjectNextActionDone(processing.id)" class="text-xs text-green-500 hover:underline">Mark Done</button>
                 </div>
               </div>
-              <p v-else class="text-sm text-muted-foreground/60">No linked actions yet.</p>
-              <div class="space-y-2.5">
-                <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Add action</p>
-                <div class="relative">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input
-                    v-model="projectActionSearch"
-                    type="text"
-                    placeholder="Search actions to link..."
-                    class="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-                <div v-if="projectActionSearch.trim()" class="max-h-[200px] overflow-y-auto space-y-0.5">
-                  <button
-                    v-for="action in linkableActions"
-                    :key="action.id"
-                    @click="linkActionToProject(action.id)"
-                    class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <span class="w-2 h-2 rounded-full shrink-0" :class="{
-                      'bg-primary': action.status === 'next-action',
-                      'bg-amber-500': action.status === 'waiting',
-                      'bg-violet-500': action.status === 'tickler',
-                      'bg-muted-foreground/40': !['next-action', 'waiting', 'tickler'].includes(action.status),
-                    }"></span>
-                    <span class="text-sm font-medium flex-1 truncate">{{ action.title }}</span>
-                    <span v-if="action.context" class="text-[11px] text-muted-foreground shrink-0">{{ action.context }}</span>
-                  </button>
-                  <p v-if="linkableActions.length === 0" class="text-sm text-muted-foreground text-center py-4">No matching actions</p>
-                </div>
+              <div v-else class="space-y-2.5">
+                <p class="text-sm text-amber-500">No next action defined</p>
+                <input
+                  v-model="projectNextActionTitle"
+                  type="text"
+                  placeholder="What's the very next step?"
+                  @keydown.enter="createNextActionForProject"
+                  class="w-full rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-ring"
+                />
+                <button @click="createNextActionForProject" :disabled="!projectNextActionTitle.trim()" class="rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 text-primary-foreground px-5 py-2 text-sm font-semibold transition-colors">Create Next Action</button>
               </div>
             </div>
 
@@ -2336,22 +2305,18 @@ const flaggedItems = computed(() => items.value.filter(i => i.flagged && i.statu
 // Project computeds
 const projects = computed(() => items.value.filter(i => i.status === 'project'))
 
-const projectTasksMap = computed(() => {
-  const map = new Map<string, Item[]>()
-  for (const item of items.value) {
-    if (item.project_id) {
-      if (!map.has(item.project_id)) map.set(item.project_id, [])
-      map.get(item.project_id)!.push(item)
-    }
+const projectNextAction = computed(() => {
+  const map = new Map<string, Item | null>()
+  for (const p of projects.value) {
+    map.set(p.id, items.value.find(i => i.project_id === p.id && i.status === 'next-action') || null)
   }
   return map
 })
 
 const stuckProjects = computed(() => {
   const set = new Set<string>()
-  for (const p of projects.value) {
-    const tasks = projectTasksMap.value.get(p.id) || []
-    if (!tasks.some(t => t.status === 'next-action')) set.add(p.id)
+  for (const [pid, na] of projectNextAction.value) {
+    if (!na) set.add(pid)
   }
   return set
 })
@@ -2365,17 +2330,6 @@ function projectStatus(id: string): Status | undefined {
   return items.value.find(i => i.id === id)?.status
 }
 
-// Expanded projects in clarified view
-const expandedProjects = ref(new Set<string>())
-
-function toggleProjectExpand(id: string) {
-  if (expandedProjects.value.has(id)) {
-    expandedProjects.value.delete(id)
-  } else {
-    expandedProjects.value.add(id)
-  }
-  expandedProjects.value = new Set(expandedProjects.value)
-}
 
 // Render limits for large lists (performance)
 const RENDER_BATCH = 50
@@ -2427,7 +2381,6 @@ const quickWaitingInput = ref<HTMLTextAreaElement | null>(null)
 const processingInbox = ref(false)
 const processIndex = ref(0)
 const processStep = ref<'main' | 'context' | 'waiting' | 'tickler' | 'event' | 'project'>('main')
-const processGoal = ref('')
 const processProjectId = ref<string | null>(null)
 const processFlash = ref(false)
 const processFlashLabel = ref('')
@@ -2533,31 +2486,19 @@ function processConfirmTickler() {
 }
 
 const processProjectNextAction = ref('')
-const processProjectLinkExisting = ref(false)
-const processProjectSearchItems = ref('')
-const processProjectLinkedIds = ref<string[]>([])
-
-const processProjectSearchResults = computed(() => {
-  const q = processProjectSearchItems.value.trim().toLowerCase()
-  if (!q) return []
-  return items.value
-    .filter(i => i.status !== 'done' && i.status !== 'trash' && i.status !== 'inbox' && i.status !== 'project' && i.title.toLowerCase().includes(q) && !processProjectLinkedIds.value.includes(i.id))
-    .slice(0, 8)
-})
 
 function processStartProject() {
   processStep.value = 'project'
-  processGoal.value = ''
   processProjectNextAction.value = ''
-  processProjectLinkExisting.value = false
-  processProjectSearchItems.value = ''
-  processProjectLinkedIds.value = []
 }
 
 function processConfirmProject() {
   const item = currentProcessItem.value
-  if (!item) return
-  router.post(`/items/${item.id}/process`, { status: 'project', title: processEditedTitle() }, itemOnly)
+  if (!item || !processProjectNextAction.value.trim()) return
+  router.post(`/items/${item.id}/process-as-project`, {
+    title: processEditedTitle(),
+    next_action_title: processProjectNextAction.value.trim(),
+  }, itemOnly)
   showFlashAndAdvance('Project')
 }
 
@@ -2877,33 +2818,7 @@ const confirmingChecklistDelete = ref(false)
 const confirmingStepDelete = ref<string | null>(null)
 const pickingProject = ref(false)
 const pickingProjectGoal = ref(false)
-const editGoal = ref('')
-const editProjectNextAction = ref('')
-const editProjectLinkExisting = ref(false)
-const editProjectSearchItems = ref('')
-const editProjectLinkedIds = ref<string[]>([])
-
-const editProjectSearchResults = computed(() => {
-  const q = editProjectSearchItems.value.trim().toLowerCase()
-  if (!q) return []
-  return items.value
-    .filter(i => i.status !== 'done' && i.status !== 'trash' && i.status !== 'inbox' && i.status !== 'project' && i.title.toLowerCase().includes(q) && !editProjectLinkedIds.value.includes(i.id))
-    .slice(0, 10)
-})
-
-const projectActionInput = ref('')
-const projectSearchQuery = ref('')
-const projectSearchInput = ref<HTMLInputElement | null>(null)
-
-const filteredProjects = computed(() => {
-  const q = projectSearchQuery.value.trim().toLowerCase()
-  if (!q) return projects.value
-  return projects.value.filter(p => p.title.toLowerCase().includes(q))
-})
-
-watch(pickingProject, (v) => {
-  if (v) nextTick(() => projectSearchInput.value?.focus())
-})
+const projectNextActionTitle = ref('')
 const waitingFor = ref('')
 const waitingDateInput = ref('')
 const waitingInput = ref<HTMLInputElement | null>(null)
@@ -3073,17 +2988,14 @@ function toggleFlag() {
 
 function openProjectGoal() {
   pickingProjectGoal.value = true
-  editProjectNextAction.value = ''
-  editProjectLinkExisting.value = false
-  editProjectSearchItems.value = ''
-  editProjectLinkedIds.value = []
+  projectNextActionTitle.value = ''
 }
 
-function clarifyAsProject() {
-  if (!processing.value) return
-  router.post(`/items/${processing.value.id}/process`, {
-    status: 'project',
+function clarifyAsProjectWithNextAction() {
+  if (!processing.value || !projectNextActionTitle.value.trim()) return
+  router.post(`/items/${processing.value.id}/process-as-project`, {
     title: editItem.value?.title?.trim() || undefined,
+    next_action_title: projectNextActionTitle.value.trim(),
   }, {
     ...itemOnly,
     onSuccess: () => {
@@ -3092,14 +3004,19 @@ function clarifyAsProject() {
   })
 }
 
-function addActionToProject() {
-  if (!processing.value || !projectActionInput.value.trim()) return
-  router.post('/items', {
-    title: projectActionInput.value.trim(),
-    status: 'next-action',
-    project_id: processing.value.id,
+function createNextActionForProject() {
+  if (!processing.value || !projectNextActionTitle.value.trim()) return
+  router.post(`/items/${processing.value.id}/set-next-action`, {
+    next_action_title: projectNextActionTitle.value.trim(),
   }, itemOnly)
-  projectActionInput.value = ''
+  projectNextActionTitle.value = ''
+}
+
+function markProjectNextActionDone(projectId: string) {
+  const na = projectNextAction.value.get(projectId)
+  if (!na) return
+  optimisticUpdate(na.id, { status: 'done' as Status, completed_at: new Date().toISOString() })
+  router.post(`/items/${na.id}/process`, { status: 'done' }, itemOnly)
 }
 
 function assignProjectToItem(projectId: string | null) {
@@ -3107,36 +3024,6 @@ function assignProjectToItem(projectId: string | null) {
   router.post(`/items/${processing.value.id}/assign-project`, { project_id: projectId }, itemOnly)
   processing.value.project_id = projectId
   pickingProject.value = false
-}
-
-const projectActionSearch = ref('')
-
-const linkableActions = computed(() => {
-  const q = projectActionSearch.value.trim().toLowerCase()
-  if (!q || !processing.value) return []
-  const linkedIds = (projectTasksMap.value.get(processing.value.id) || []).map(t => t.id)
-  return items.value
-    .filter(i =>
-      i.id !== processing.value!.id &&
-      !linkedIds.includes(i.id) &&
-      ['next-action', 'waiting', 'tickler', 'someday'].includes(i.status) &&
-      i.title.toLowerCase().includes(q)
-    )
-    .slice(0, 10)
-})
-
-function linkActionToProject(actionId: string) {
-  if (!processing.value) return
-  router.post(`/items/${actionId}/assign-project`, { project_id: processing.value.id }, itemOnly)
-  const action = items.value.find(i => i.id === actionId)
-  if (action) action.project_id = processing.value.id
-  projectActionSearch.value = ''
-}
-
-function unlinkActionFromProject(actionId: string) {
-  router.post(`/items/${actionId}/assign-project`, { project_id: null }, itemOnly)
-  const action = items.value.find(i => i.id === actionId)
-  if (action) action.project_id = null
 }
 
 function openItem(item: Item) {

@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/items/{item}/process', [ItemController::class, 'process']);
     Route::post('/items/{item}/move-to-inbox', [ItemController::class, 'moveToInbox']);
     Route::post('/items/{item}/schedule-event', [ItemController::class, 'scheduleEvent']);
+    Route::post('/items/{item}/process-as-project', [ItemController::class, 'processAsProject']);
+    Route::post('/items/{item}/set-next-action', [ItemController::class, 'setNextAction']);
     Route::post('/items/{item}/assign-project', [ItemController::class, 'assignProject']);
     Route::post('/items/{item}/tags', [ItemController::class, 'addTag']);
     Route::delete('/items/{item}/tags/{tag}', [ItemController::class, 'removeTag']);

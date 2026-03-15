@@ -216,6 +216,58 @@ class ItemController extends Controller
         return back();
     }
 
+    public function processAsProject(Request $request, Item $item)
+    {
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:500',
+            'next_action_title' => 'required|string|max:500',
+        ]);
+
+        // Update item to project
+        if (isset($validated['title']) && $validated['title'] !== '') {
+            $item->title = $validated['title'];
+        }
+        $item->status = 'project';
+        $item->project_id = null; // no nesting
+        $item->context = null;
+        $item->waiting_for = null;
+        $item->waiting_date = null;
+        $item->tickler_date = null;
+        $item->save();
+
+        // Create the next action linked to this project
+        Item::create([
+            'id' => Str::ulid(),
+            'title' => $validated['next_action_title'],
+            'status' => 'next-action',
+            'project_id' => $item->id,
+        ]);
+
+        return back();
+    }
+
+    public function setNextAction(Request $request, Item $item)
+    {
+        $validated = $request->validate([
+            'next_action_title' => 'required|string|max:500',
+        ]);
+
+        // Unlink any existing next action for this project
+        Item::where('project_id', $item->id)
+            ->where('status', 'next-action')
+            ->update(['project_id' => null]);
+
+        // Create new next action
+        Item::create([
+            'id' => Str::ulid(),
+            'title' => $validated['next_action_title'],
+            'status' => 'next-action',
+            'project_id' => $item->id,
+        ]);
+
+        return back();
+    }
+
     public function assignProject(Request $request, Item $item)
     {
         $validated = $request->validate([
