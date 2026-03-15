@@ -184,6 +184,11 @@
             :class="[selectedNote.locked ? 'opacity-70' : '', isMobile ? 'text-lg' : '']"
             data-testid="notes-title"
           />
+          <!-- Save indicator -->
+          <transition name="save-fade">
+            <svg v-if="saveStatus === 'saving'" class="bear-save-spinner shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>
+            <svg v-else-if="saveStatus === 'saved' && showSavedCheck" key="check" class="bear-save-check shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </transition>
           <span v-if="selectedNote.locked" class="bear-lock-badge" data-testid="notes-locked-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Locked
@@ -374,9 +379,6 @@
             <span>{{ charCount }} characters</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-[10px]" :class="saveStatus === 'saved' ? 'bear-muted-dim' : 'text-primary'">
-              {{ saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved' }}
-            </span>
           </div>
         </div>
       </div>
@@ -785,7 +787,19 @@ function insertFormat(type: string) {
 
 // Persistence + auto-save
 const saveStatus = ref<'saved' | 'saving' | 'unsaved'>('saved')
+const showSavedCheck = ref(false)
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
+let savedCheckTimeout: ReturnType<typeof setTimeout> | null = null
+
+watch(saveStatus, (status) => {
+  if (savedCheckTimeout) clearTimeout(savedCheckTimeout)
+  if (status === 'saved') {
+    showSavedCheck.value = true
+    savedCheckTimeout = setTimeout(() => { showSavedCheck.value = false }, 2000)
+  } else {
+    showSavedCheck.value = false
+  }
+})
 const MAX_VERSIONS_PER_NOTE = 20
 
 
@@ -1660,7 +1674,7 @@ onUnmounted(() => {
 }
 
 .bear-title-bar {
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
 }
 
 .bear-title-input {
@@ -1676,6 +1690,23 @@ onUnmounted(() => {
 .bear-title-input::placeholder {
   color: color-mix(in oklch, var(--foreground), transparent 70%);
 }
+
+/* Save indicator */
+.bear-save-spinner {
+  color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+.bear-save-check {
+  color: color-mix(in oklch, var(--foreground), transparent 60%);
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.save-fade-enter-active { transition: opacity 0.15s ease; }
+.save-fade-leave-active { transition: opacity 0.4s ease; }
+.save-fade-enter-from,
+.save-fade-leave-to { opacity: 0; }
 
 .bear-toolbar-btn {
   padding: 5px 10px;
