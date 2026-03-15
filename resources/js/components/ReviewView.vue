@@ -84,17 +84,12 @@ import { usePage, router } from '@inertiajs/vue3'
 
 const props = defineProps<{
   open: boolean
-  isOnline: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
   'review-complete': []
 }>()
-
-const guardedRouter = {
-  put(...args: Parameters<typeof router.put>) { if (!props.isOnline) return; return router.put(...args) },
-}
 
 const page = usePage()
 
@@ -153,7 +148,7 @@ function saveProgress() {
   if (saveTimeout) clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
     const progress = JSON.stringify({ checked: checked.value })
-    guardedRouter.put('/settings/review_progress', { value: progress }, { preserveScroll: true, preserveState: true, only: [] })
+    router.put('/settings/review_progress', { value: progress }, { preserveScroll: true, preserveState: true, only: [] })
   }, 500)
 }
 
@@ -166,14 +161,14 @@ const progressPercent = computed(() => {
 
 function resetReview() {
   checked.value = {}
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
 }
 
 function completeReview() {
   checked.value = {}
   justCompleted.value = true
-  guardedRouter.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
-  guardedRouter.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/review_progress', { value: null }, { preserveScroll: true, preserveState: true, only: [] })
+  router.put('/settings/last_review', { value: new Date().toISOString() }, { preserveScroll: true, preserveState: true, only: [] })
   emit('review-complete')
   emit('close')
 }

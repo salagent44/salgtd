@@ -414,14 +414,6 @@ import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 import TimePicker from './TimePicker.vue'
 
-const props = defineProps<{ isOnline: boolean }>()
-
-const guardedRouter = {
-  post(...args: Parameters<typeof router.post>) { if (!props.isOnline) return; return router.post(...args) },
-  put(...args: Parameters<typeof router.put>) { if (!props.isOnline) return; return router.put(...args) },
-  delete(...args: Parameters<typeof router.delete>) { if (!props.isOnline) return; return router.delete(...args) },
-}
-
 const page = usePage()
 
 interface CalendarEvent {
@@ -753,7 +745,7 @@ watch(() => newEvent.value.startDate, (newStart) => {
 
 function saveNewEvent() {
   if (!newEvent.value.title.trim()) return
-  guardedRouter.post('/events', {
+  router.post('/events', {
     title: newEvent.value.title.trim(),
     event_date: newEvent.value.startDate,
     end_date: newEvent.value.endDate || null,
@@ -781,7 +773,7 @@ function editEvent(event: CalendarEvent) {
 
 function saveEditEvent() {
   if (!editingEvent.value) return
-  guardedRouter.put(`/events/${editingEvent.value.id}`, {
+  router.put(`/events/${editingEvent.value.id}`, {
     title: editingEvent.value.title,
     event_date: editingEvent.value.event_date,
     end_date: editingEvent.value.end_date || null,
@@ -794,7 +786,7 @@ function saveEditEvent() {
 }
 
 function deleteEvent(id: string) {
-  guardedRouter.delete(`/events/${id}`, { preserveScroll: true, only: ['events'], onSuccess: () => { editingEvent.value = null } })
+  router.delete(`/events/${id}`, { preserveScroll: true, only: ['events'], onSuccess: () => { editingEvent.value = null } })
 }
 
 // ===== Drag and drop =====
@@ -823,7 +815,7 @@ function onDrop(targetDate: string) {
   if (!draggingId.value) return
   const event = events.value.find(e => e.id === draggingId.value)
   if (event && event.event_date !== targetDate) {
-    guardedRouter.put(`/events/${event.id}/move`, { event_date: targetDate }, { preserveScroll: true, only: ['events'] })
+    router.put(`/events/${event.id}/move`, { event_date: targetDate }, { preserveScroll: true, only: ['events'] })
   }
   draggingId.value = null
   dragOverDate.value = null

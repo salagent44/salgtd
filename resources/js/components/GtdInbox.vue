@@ -2067,6 +2067,7 @@ const themes = [
   { key: 'theme-gruvbox', name: 'Gruvbox', swatch: '#d65d0e', description: 'Warm retro with earthy orange and brown' },
   { key: 'theme-everforest', name: 'Everforest', swatch: '#a7c080', description: 'Soft green woodland with gentle contrast' },
   { key: 'theme-rosepine', name: 'Rosé Pine', swatch: '#c4a7e7', description: 'Muted dark with soft lavender accents' },
+  { key: 'theme-things', name: 'Things', swatch: '#8faabe', description: 'Calm focused blue on neutral gray' },
 ]
 const currentTheme = ref('default')
 const settingsOpen = ref(false)
@@ -2153,7 +2154,7 @@ function setNoteFont(key: string) {
 
 function setTheme(key: string) {
   const html = document.documentElement
-  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
+  html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine', 'theme-things')
   if (key !== 'default') html.classList.add(key)
   currentTheme.value = key
   router.put('/settings/theme', { value: key }, { preserveScroll: true, preserveState: true, only: [] })
@@ -2860,7 +2861,7 @@ onMounted(() => {
   const savedTheme = page.props.theme as string
   if (savedTheme) {
     const html = document.documentElement
-    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine')
+    html.classList.remove('dark', 'theme-ocean', 'theme-forest', 'theme-midnight', 'theme-sunset', 'theme-slate', 'theme-obsidian', 'theme-gruvbox', 'theme-everforest', 'theme-rosepine', 'theme-things')
     if (savedTheme !== 'default') html.classList.add(savedTheme)
     currentTheme.value = savedTheme
   }

@@ -1109,6 +1109,146 @@
 .theme-rosepine ::-webkit-scrollbar-thumb { background: oklch(0.40 0.04 285); border-radius: 4px; }
 .theme-rosepine ::-webkit-scrollbar-thumb:hover { background: oklch(0.50 0.06 310); }
 
+/* ============================================================
+   Theme: Things — calm, focused, professional
+   Inspired by Things 3. Clean blue accent on warm neutral grays,
+   between dark and light. Minimal borders, subtle depth through
+   shadows. Quiet confidence with a transparent dot-grid texture.
+   ============================================================ */
+.theme-things {
+  --background: oklch(0.89 0.004 250);
+  --foreground: oklch(0.20 0.008 250);
+
+  --card: oklch(0.94 0.003 250);
+  --card-foreground: oklch(0.20 0.008 250);
+
+  --popover: oklch(0.95 0.003 250);
+  --popover-foreground: oklch(0.20 0.008 250);
+
+  /* Things-style confident blue */
+  --primary: oklch(0.56 0.19 252);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.86 0.004 250);
+  --secondary-foreground: oklch(0.28 0.008 250);
+
+  --muted: oklch(0.86 0.004 250);
+  --muted-foreground: oklch(0.50 0.006 250);
+
+  --accent: oklch(0.84 0.006 250);
+  --accent-foreground: oklch(0.22 0.008 250);
+
+  --destructive: oklch(0.58 0.20 22);
+
+  --border: oklch(0.82 0.005 250);
+  --input: oklch(0.87 0.004 250);
+  --ring: oklch(0.56 0.16 252);
+
+  --chart-1: oklch(0.56 0.19 252);
+  --chart-2: oklch(0.58 0.12 170);
+  --chart-3: oklch(0.52 0.10 40);
+  --chart-4: oklch(0.62 0.14 90);
+  --chart-5: oklch(0.55 0.12 320);
+
+  --sidebar: oklch(0.87 0.004 250);
+  --sidebar-foreground: oklch(0.20 0.008 250);
+  --sidebar-primary: oklch(0.56 0.19 252);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.84 0.006 250);
+  --sidebar-accent-foreground: oklch(0.22 0.008 250);
+  --sidebar-border: oklch(0.82 0.005 250);
+  --sidebar-ring: oklch(0.56 0.16 252);
+
+  --radius: 0.5rem;
+}
+
+/* Things: clean sans-serif, tight and modern */
+.theme-things body,
+.theme-things {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.011em;
+}
+
+/* Subtle dot-grid texture + soft depth gradients */
+.theme-things body {
+  background-image:
+    url('/images/things-pattern.svg'),
+    radial-gradient(ellipse at 25% 15%, oklch(0.84 0.02 250 / 12%) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 85%, oklch(0.82 0.015 240 / 8%) 0%, transparent 50%);
+  background-attachment: fixed;
+  background-size: 100% 100%, auto, auto;
+}
+
+/* Cards: clean lift through shadow, no visible border */
+.theme-things .bg-card,
+.theme-things [class*="bg-card"] {
+  box-shadow:
+    0 1px 3px oklch(0.15 0.01 250 / 6%),
+    0 4px 12px oklch(0.15 0.01 250 / 4%);
+  border-color: oklch(0.84 0.004 250 / 50%);
+}
+
+/* Buttons: confident, slightly elevated blue */
+.theme-things .bg-primary {
+  box-shadow:
+    0 1px 3px oklch(0.35 0.15 252 / 20%),
+    0 4px 10px oklch(0.35 0.15 252 / 12%);
+  font-weight: 600;
+}
+.theme-things .bg-primary:hover {
+  box-shadow:
+    0 2px 4px oklch(0.35 0.15 252 / 25%),
+    0 6px 14px oklch(0.35 0.15 252 / 16%);
+}
+
+/* Moderate, clean radius */
+.theme-things [class*="rounded-xl"] { border-radius: 0.625rem !important; }
+.theme-things [class*="rounded-lg"] { border-radius: 0.5rem !important; }
+.theme-things [class*="rounded-md"] { border-radius: 0.375rem !important; }
+.theme-things [class*="rounded-full"] { border-radius: 9999px !important; }
+
+/* Inputs: clean, subtle inset */
+.theme-things input[type="text"],
+.theme-things input[type="date"],
+.theme-things input[type="time"],
+.theme-things textarea,
+.theme-things select {
+  background: oklch(0.92 0.003 250);
+  border-color: oklch(0.80 0.005 250);
+  box-shadow: inset 0 1px 2px oklch(0.15 0.01 250 / 5%);
+}
+.theme-things input[type="text"]:focus,
+.theme-things textarea:focus {
+  border-color: oklch(0.56 0.15 252 / 50%);
+  box-shadow:
+    inset 0 1px 2px oklch(0.15 0.01 250 / 5%),
+    0 0 0 3px oklch(0.56 0.16 252 / 10%);
+}
+
+/* Muted elements: slightly recessed */
+.theme-things .bg-muted,
+.theme-things [class*="bg-muted"] {
+  background: oklch(0.86 0.004 250);
+}
+
+/* Borders: nearly invisible, just a hint of structure */
+.theme-things [class*="border-border"] {
+  border-color: oklch(0.82 0.004 250 / 60%);
+}
+
+/* Subtle uppercase labels */
+.theme-things [class*="tracking-widest"],
+.theme-things [class*="uppercase"] {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Scrollbar: minimal, matching */
+.theme-things ::-webkit-scrollbar { width: 6px; }
+.theme-things ::-webkit-scrollbar-track { background: transparent; }
+.theme-things ::-webkit-scrollbar-thumb { background: oklch(0.72 0.006 250); border-radius: 3px; }
+.theme-things ::-webkit-scrollbar-thumb:hover { background: oklch(0.60 0.008 250); }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
